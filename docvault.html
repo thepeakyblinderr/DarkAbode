@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DocVault">
+<title>DocVault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --f:'Outfit',system-ui,sans-serif;
+  --fm:'JetBrains Mono',monospace;
+  --bg:#f5f5f3;
+  --surface:#fff;
+  --surface2:#f0f0ee;
+  --ink:#0a0a0a;
+  --ink2:#4a4a47;
+  --ink3:#9a9a96;
+  --ink4:#c8c8c4;
+  --line:#e4e4e0;
+  --line2:#d0d0cc;
+  --blue:#1a56db;--blue-bg:#eff4ff;--blue-line:#c3d4fb;
+  --red:#c81e1e;--red-bg:#fdf2f2;--red-line:#f8c6c6;
+  --amber:#b45309;--amber-bg:#fffbeb;
+  --green:#047857;--green-bg:#ecfdf5;--green-line:#a7f3d0;
+  --r:12px;--rsm:8px;--rlg:16px;--rxl:20px;
+  --tr:150ms cubic-bezier(.4,0,.2,1);
+  --bot:env(safe-area-inset-bottom,0px);
+  --top:env(safe-area-inset-top,0px);
+}
+html[data-theme="dark"]{
+  --bg:#0f0f0e;
+  --surface:#1a1a18;
+  --surface2:#242422;
+  --ink:#f0f0ec;
+  --ink2:#c8c8c0;
+  --ink3:#8a8a80;
+  --ink4:#5a5a54;
+  --line:#2a2a28;
+  --line2:#3a3a36;
+  --blue:#4d80e6;--blue-bg:rgba(77,128,230,.12);--blue-line:rgba(77,128,230,.25);
+  --red:#e05a4e;--red-bg:rgba(224,90,78,.1);--red-line:rgba(224,90,78,.25);
+  --amber:#d4900a;--amber-bg:rgba(212,144,10,.1);
+  --green:#2ea878;--green-bg:rgba(46,168,120,.1);--green-line:rgba(46,168,120,.25);
+}
+html{-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{font-family:var(--f);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;min-height:100dvh;overscroll-behavior:none;touch-action:manipulation}
+::-webkit-scrollbar{display:none}
+
+/* ── Shell ── */
+.shell{display:flex;flex-direction:column;height:100dvh;overflow:hidden;padding-top:var(--top)}
+
+/* ── Top bar ── */
+.bar{
+  height:54px;background:var(--surface);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;flex-shrink:0;position:relative;z-index:50;
+}
+.wm{font-size:16px;font-weight:600;letter-spacing:-.04em;display:flex;align-items:center;gap:9px}
+.wm-m{width:26px;height:26px;background:var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.wm-m svg{width:14px;height:14px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.bar-add{
+  width:36px;height:36px;background:var(--ink);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;
+  transition:background var(--tr);flex-shrink:0;
+}
+.bar-add:active{background:#333}
+.bar-add svg{width:18px;height:18px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round}
+
+/* ── Stage ── */
+.stage{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.stage-inner{padding:16px 16px 100px}
+
+/* ── Bottom nav ── */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--surface);border-top:1px solid var(--line);
+  display:flex;align-items:stretch;
+  padding-bottom:var(--bot);
+}
+.bn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:10px 4px;border:none;background:none;cursor:pointer;
+  color:var(--ink3);font-family:var(--f);font-size:10px;font-weight:500;
+  transition:color var(--tr);letter-spacing:.02em;min-height:56px;
+}
+.bn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke var(--tr)}
+.bn.on{color:var(--ink)}
+.bn-badge{
+  position:absolute;top:6px;right:calc(50% - 22px);
+  min-width:16px;height:16px;background:var(--red);color:white;
+  font-size:9px;font-weight:700;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;
+  border:2px solid var(--surface);
+}
+.bn-badge.a{background:var(--amber)}
+.bn-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+
+/* ── Page ── */
+.page{display:none}.page.on{display:block}
+
+/* ── Section header ── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sh-t{font-size:18px;font-weight:600;letter-spacing:-.03em}
+.sh-s{font-size:12px;color:var(--ink3);margin-top:2px}
+
+/* ── Stat row ── */
+.srow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.sc{background:var(--surface);border:1px solid var(--line);border-radius:var(--rlg);padding:16px 18px}
+.sc-n{font-size:28px;font-weight:300;letter-spacing:-.04em;line-height:1}
+.sc-l{font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-top:5px}
+.sc.r .sc-n{color:var(--red)}.sc.a .sc-n{color:var(--amber)}.sc.g .sc-n{color:var(--green)}
+
+/* ── Doc cards ── */
+.dc{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--rlg);
+  margin-bottom:10px;position:relative;
+  transition:box-shadow var(--tr);
+}
+.dc-stripe{border-radius:var(--rlg) var(--rlg) 0 0}
+.dc-stripe{height:3px}
+.dc-stripe.r{background:var(--red)}.dc-stripe.a{background:var(--amber)}.dc-stripe.g{background:var(--green)}.dc-stripe.n{background:var(--line)}
+.dc-inner{padding:14px 16px}
+.dc-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.dc-ico{width:38px;height:38px;border-radius:10px;background:var(--surface2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dc-ico svg{width:16px;height:16px;stroke:var(--ink2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dc-meta{flex:1;min-width:0}
+.dc-name{font-size:15px;font-weight:600;letter-spacing:-.02em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-type{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-top:1px}
+.dc-menu{position:relative;flex-shrink:0}
+.dc-mb{width:32px;height:32px;background:none;border:none;cursor:pointer;color:var(--ink4);border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background var(--tr)}
+.dc-mb:active{background:var(--surface2)}
+.dc-mb svg{width:16px;height:16px}
+
+.dc-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.dc-holder{font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.dc-holder svg{width:12px;height:12px;opacity:.5;flex-shrink:0}
+.dc-num{font-family:var(--fm);font-size:11px;color:var(--ink3);letter-spacing:.04em}
+
+.dc-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+
+/* ── Pill ── */
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;letter-spacing:.02em;padding:4px 9px;border-radius:20px}
+.pill.r{background:var(--red-bg);color:var(--red)}.pill.a{background:var(--amber-bg);color:var(--amber)}.pill.g{background:var(--green-bg);color:var(--green)}.pill.n{background:var(--surface2);color:var(--ink3)}
+.pd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.pd.r{background:var(--red)}.pd.a{background:var(--amber)}.pd.g{background:var(--green)}.pd.n{background:var(--ink4)}
+
+/* ── View PDF button on card ── */
+.view-link-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:8px;
+  background:var(--blue-bg);border:1px solid var(--blue-line);
+  color:var(--blue);font-size:12px;font-weight:600;
+  cursor:pointer;text-decoration:none;transition:background var(--tr);
+  font-family:var(--f);
+}
+.view-link-btn:active{background:#dce8fd}
+.view-link-btn svg{width:12px;height:12px;stroke:var(--blue);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── Dropdown ── */
+.dc-menu{position:relative;z-index:10;flex-shrink:0}
+.drop{position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.16);min-width:150px;z-index:500;display:none}
+.drop.on{display:block}
+.di{padding:13px 16px;font-size:14px;cursor:pointer;color:var(--ink2);display:flex;align-items:center;gap:10px;transition:background var(--tr);border-bottom:1px solid var(--line)}
+.di:last-child{border-bottom:none}
+.di:active{background:var(--surface2)}.di svg{width:14px;height:14px;opacity:.6}
+.di.rd{color:var(--red)}.di.rd:active{background:var(--red-bg)}
+
+/* ── Timeline rows ── */
+.tl-i{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:border-color var(--tr);
+}
+.tl-i:active{border-color:var(--line2)}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tl-dot.r{background:var(--red)}.tl-dot.a{background:var(--amber)}.tl-dot.g{background:var(--green)}.tl-dot.n{background:var(--ink4)}
+.tl-ico svg{width:15px;height:15px;stroke:var(--ink3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tl-info{flex:1;min-width:0}
+.tl-name{font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-sub{font-size:12px;color:var(--ink3)}
+.tl-r{text-align:right;flex-shrink:0}
+.tl-date{font-size:12px;font-weight:500}
+.tl-days{font-size:11px;color:var(--ink3)}
+.tl-gh{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.tl-g{margin-bottom:22px}
+
+/* ── Overlays / Modals ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(10,10,10,.5);
+  z-index:400;display:flex;flex-direction:column;justify-content:flex-end;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.overlay.on{opacity:1;pointer-events:all}
+
+/* Sheet style modal (slides up from bottom on mobile) */
+.sheet{
+  background:var(--surface);
+  border-radius:var(--rxl) var(--rxl) 0 0;
+  max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  transform:translateY(100%);transition:transform .28s cubic-bezier(.32,0,.67,0);
+  padding-bottom:calc(var(--bot) + 8px);
+}
+.overlay.on .sheet{transform:none}
+
+/* Desktop: center modal */
+@media(min-width:640px){
+  .overlay{justify-content:center;align-items:center;padding:16px}
+  .sheet{border-radius:var(--rxl);max-height:88vh;max-width:540px;width:100%;transform:translateY(12px) scale(.99)}
+  .overlay.on .sheet{transform:none}
+}
+
+.sheet-handle{width:36px;height:4px;background:var(--line2);border-radius:2px;margin:12px auto 4px}
+.mh{padding:16px 20px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.mh-t{font-size:17px;font-weight:600;letter-spacing:-.03em}
+.mhc{width:30px;height:30px;background:var(--surface2);border:none;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.mhc svg{width:14px;height:14px;stroke:var(--ink2);fill:none;stroke-width:2.5;stroke-linecap:round}
+.mb{padding:16px 20px}
+.mf{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+
+/* ── Form ── */
+.fs{margin-bottom:20px}
+.fs-t{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fr.full{grid-template-columns:1fr}
+.ff{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:13px;font-weight:500;color:var(--ink2)}
+.fl .opt{font-weight:400;color:var(--ink4);font-size:11px;margin-left:3px}
+.fi,.fsel,.fta{
+  padding:11px 13px;border:1.5px solid var(--line);border-radius:var(--rsm);
+  font-family:var(--f);font-size:15px;color:var(--ink);background:var(--surface);
+  outline:none;transition:border var(--tr),box-shadow var(--tr);width:100%;
+  -webkit-appearance:none;appearance:none;
+}
+.fi:focus,.fsel:focus,.fta:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.fi::placeholder,.fta::placeholder{color:var(--ink4)}
+.fsel{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9a96' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+.fta{resize:vertical;min-height:72px}
+
+/* ── Link field special style ── */
+.link-fi{border-color:var(--blue-line);background:var(--blue-bg)}
+.link-fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.link-fi::placeholder{color:#93b4e8}
+
+/* ── Type picker ── */
+.tc-h{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:12px 0 7px}
+.tc-h:first-child{padding-top:0}
+.tc-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px}
+.to{padding:11px 13px;border-radius:var(--rsm);border:1.5px solid var(--line);cursor:pointer;transition:all var(--tr);background:var(--surface);-webkit-tap-highlight-color:transparent}
+.to:active{background:var(--surface2)}
+.to.on{border-color:var(--blue);background:var(--blue-bg)}
+.to-l{font-size:13px;font-weight:500;color:var(--ink2)}
+.to.on .to-l{color:var(--blue)}
+
+/* ── Search bar ── */
+.sb{display:flex;align-items:center;gap:9px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--rsm);padding:10px 13px;margin-bottom:12px}
+.sb:focus-within{border-color:var(--blue)}
+.sb svg{width:15px;height:15px;color:var(--ink4);flex-shrink:0}
+.sb input{border:none;outline:none;font-family:var(--f);font-size:15px;color:var(--ink);background:transparent;flex:1;min-width:0}
+.sb input::placeholder{color:var(--ink4)}
+
+/* ── Filter chips (horizontal scroll) ── */
+.chips-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:14px;padding-bottom:2px}
+.chips-wrap::-webkit-scrollbar{display:none}
+.chips{display:flex;gap:7px;width:max-content}
+.cp{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1.5px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer;transition:all var(--tr);white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.cp.on{background:var(--ink);border-color:var(--ink);color:white}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:var(--rsm);font-family:var(--f);font-size:15px;font-weight:500;cursor:pointer;border:none;transition:all var(--tr);white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.btn svg{width:15px;height:15px;flex-shrink:0}
+.btn-dk{background:var(--ink);color:white}.btn-dk:active{background:#333}
+.btn-gh{background:transparent;color:var(--ink2);border:1.5px solid var(--line)}.btn-gh:active{background:var(--surface2)}
+.btn-rd{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-line)}.btn-rd:active{background:#fde8e8}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-full{width:100%;justify-content:center}
+
+/* ── View modal ── */
+.vfg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.vf{padding-bottom:12px;border-bottom:1px solid var(--line)}
+.vf:last-child{border-bottom:none}
+.vf-l{font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.vf-v{font-size:14px;font-weight:500;color:var(--ink)}
+.vf-v.mono{font-family:var(--fm);font-size:12px;letter-spacing:.05em}
+
+/* ── View link in detail sheet ── */
+.link-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--blue-bg);border:1px solid var(--blue-line);
+  border-radius:var(--r);padding:12px 14px;margin-bottom:14px;
+  cursor:pointer;text-decoration:none;
+  transition:background var(--tr);
+}
+.link-row:active{background:#dce8fd}
+.link-row-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.link-row-icon svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.link-row-text{flex:1;min-width:0}
+.link-row-label{font-size:12px;font-weight:600;color:var(--blue);letter-spacing:.02em}
+.link-row-url{font-size:11px;color:var(--blue);opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.link-row-arrow svg{width:14px;height:14px;stroke:var(--blue);fill:none;stroke-width:2.5;stroke-linecap:round;opacity:.7}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:48px 20px}
+.ei{width:52px;height:52px;border-radius:14px;background:var(--surface2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.ei svg{width:22px;height:22px;stroke:var(--ink3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.et{font-size:16px;font-weight:600;margin-bottom:5px;letter-spacing:-.02em}
+.es{font-size:14px;color:var(--ink3);margin-bottom:18px}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:calc(72px + var(--bot));left:50%;transform:translateX(-50%) translateY(20px);
+  z-index:1000;background:var(--ink);color:white;padding:10px 18px;
+  border-radius:20px;font-size:13px;font-weight:500;
+  opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── Section divider ── */
+.sec-div{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+
+/* ── Google sync button ── */
+.gsync-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 12px;border-radius:var(--rsm);font-size:12px;font-weight:500;
+  border:1.5px solid var(--line);background:var(--surface);color:var(--ink2);
+  cursor:pointer;transition:all var(--tr);font-family:var(--f);white-space:nowrap;
+}
+.gsync-btn:active{background:var(--surface2)}
+.gsync-btn.signed-in{border-color:var(--green-line);background:var(--green-bg);color:var(--green)}
+.gsync-btn.syncing{border-color:var(--amber-bg);background:var(--amber-bg);color:var(--amber)}
+.gsync-btn svg{width:14px;height:14px;flex-shrink:0}
+.gsync-avatar{width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0}
+
+/* ── Sync setup sheet ── */
+.setup-step{display:flex;gap:11px;align-items:flex-start;margin-bottom:16px}
+.setup-num{width:22px;height:22px;border-radius:50%;background:var(--ink);color:white;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.setup-t{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.setup-s{font-size:12px;color:var(--ink3);line-height:1.6}
+.setup-s a{color:var(--blue);text-decoration:none}
+.setup-s code{font-family:var(--fm);font-size:11px;background:var(--surface2);padding:2px 5px;border-radius:4px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin 1s linear infinite}
+.page.on .sc{animation:fu .22s ease both}
+.page.on .sc:nth-child(2){animation-delay:.05s}
+.page.on .sc:nth-child(3){animation-delay:.1s}
+.page.on .sc:nth-child(4){animation-delay:.15s}
+.dc{animation:fu .18s ease both}
+
+
+/* Logo fix in dark */
+html[data-theme="dark"] .bar-add svg{stroke:#0f0f0e;}
+html[data-theme="dark"] .bar-add:active{background:var(--ink2);}
+
+html[data-theme="dark"] .wm-m{background:#f0f0ec;}
+html[data-theme="dark"] .wm-m svg{stroke:#0f0f0e;}
+html[data-theme="dark"] .wm{color:var(--ink);}
+
+/* ════ DARK MODE — DocVault ════ */
+html[data-theme="dark"] body{background:var(--bg);}
+/* Top bar */
+html[data-theme="dark"] .bar{background:var(--surface);border-bottom-color:var(--line);}
+html[data-theme="dark"] .wm-m{background:var(--ink);}
+html[data-theme="dark"] .bar-add{background:var(--ink);}
+html[data-theme="dark"] .bar-add:active{background:var(--ink2);}
+/* Sync/backup button */
+html[data-theme="dark"] .gsync-btn{background:var(--surface2);border-color:var(--line2);color:var(--ink2);}
+html[data-theme="dark"] .gsync-btn:hover{background:var(--line);border-color:var(--line2);}
+/* Stage / content area */
+html[data-theme="dark"] .stage{background:var(--bg);}
+/* Filter bar */
+html[data-theme="dark"] .filter-bar{background:var(--surface);border-bottom-color:var(--line);}
+html[data-theme="dark"] .search-box{background:var(--surface2);border-color:var(--line2);color:var(--ink);}
+html[data-theme="dark"] .search-box::placeholder{color:var(--ink4);}
+html[data-theme="dark"] .search-icon{color:var(--ink4);}
+html[data-theme="dark"] .filter-chip{background:var(--surface2);border-color:var(--line2);color:var(--ink3);}
+html[data-theme="dark"] .filter-chip.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+html[data-theme="dark"] .sort-btn{background:var(--surface2);border-color:var(--line2);color:var(--ink3);}
+/* Doc cards */
+html[data-theme="dark"] .doc-card{background:var(--surface);border-color:var(--line);}
+html[data-theme="dark"] .doc-card:hover{border-color:var(--line2);box-shadow:var(--sh);}
+html[data-theme="dark"] .doc-card-footer{border-top-color:var(--line);}
+html[data-theme="dark"] .doc-icon{background:var(--surface2);}
+/* Category chips */
+html[data-theme="dark"] .cat-chip{background:var(--surface2);color:var(--ink2);}
+html[data-theme="dark"] .cat-chip.cat-id{background:rgba(77,128,230,.2);color:var(--blue);}
+html[data-theme="dark"] .cat-chip.cat-med{background:rgba(224,90,78,.2);color:var(--red);}
+html[data-theme="dark"] .cat-chip.cat-fin{background:rgba(46,168,120,.2);color:var(--green);}
+html[data-theme="dark"] .cat-chip.cat-prop{background:rgba(212,144,10,.2);color:var(--amber);}
+/* Expiry badges */
+html[data-theme="dark"] .expiry-badge.expired{background:var(--red-bg);color:var(--red);}
+html[data-theme="dark"] .expiry-badge.soon{background:var(--amber-bg);color:var(--amber);}
+html[data-theme="dark"] .expiry-badge.ok{background:var(--green-bg);color:var(--green);}
+html[data-theme="dark"] .expiry-chip.expired{background:var(--red-bg);color:var(--red);}
+html[data-theme="dark"] .expiry-chip.soon{background:var(--amber-bg);color:var(--amber);}
+html[data-theme="dark"] .expiry-chip.ok{background:var(--green-bg);color:var(--green);}
+/* Sheets / overlays */
+html[data-theme="dark"] .overlay-bg,.sheet-bg,.modal-bg{background:rgba(0,0,0,.7);}
+html[data-theme="dark"] .add-sheet,html[data-theme="dark"] .edit-sheet,
+html[data-theme="dark"] .view-sheet,html[data-theme="dark"] .sort-sheet,
+html[data-theme="dark"] .sheet-panel,html[data-theme="dark"] .bottom-sheet{background:var(--surface);}
+html[data-theme="dark"] .sheet-handle{background:var(--line2);}
+html[data-theme="dark"] .sheet-header{border-bottom-color:var(--line);}
+html[data-theme="dark"] .sheet-footer{border-top-color:var(--line);}
+/* Inputs inside sheets */
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{
+  background:var(--surface2);color:var(--ink);border-color:var(--line2);color-scheme:dark;}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:var(--ink4);}
+html[data-theme="dark"] input:focus,html[data-theme="dark"] select:focus,html[data-theme="dark"] textarea:focus{
+  border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-line);}
+/* Link buttons */
+html[data-theme="dark"] .view-link-btn{background:rgba(77,128,230,.15);color:var(--blue);}
+html[data-theme="dark"] .view-link-btn:active{background:rgba(77,128,230,.25);}
+html[data-theme="dark"] .link-fi::placeholder{color:rgba(77,128,230,.5);}
+html[data-theme="dark"] .link-row:active{background:rgba(77,128,230,.15);}
+/* Empty state */
+html[data-theme="dark"] .empty-state{background:var(--bg);}
+html[data-theme="dark"] .empty-icon{background:var(--surface2);}
+/* Section labels */
+html[data-theme="dark"] .section-label{color:var(--ink4);}
+/* Pill row */
+html[data-theme="dark"] .pill,html[data-theme="dark"] .tag-pill{background:var(--surface2);color:var(--ink2);}
+html[data-theme="dark"] .pill.active,.tag-pill.active{background:var(--ink);color:var(--bg);}
+/* Theme toggle */
+.theme-btn{
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--line2);background:var(--surface2);
+  color:var(--ink3);cursor:pointer;display:grid;place-items:center;
+  font-size:15px;transition:background .15s;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.theme-btn:hover{background:var(--line);}
+.theme-btn:active{opacity:.7;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Top bar -->
+  <header class="bar">
+    <div class="wm">
+      <div class="wm-m"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      DocVault
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="gsync-btn" id="gsync-btn" onclick="openSyncSheet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="gsync-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span id="gsync-label">Backup</span>
+      </button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <button class="bar-add" onclick="openAdd()" aria-label="Add document">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stage -->
+  <div class="stage">
+    <div class="stage-inner">
+
+      <!-- Dashboard -->
+      <div class="page on" id="pg-dashboard">
+        <div class="srow" id="stats"></div>
+
+        <div style="margin-bottom:20px">
+          <div class="sec-div">
+            <span>Expiring soon</span>
+            <button onclick="nav('timeline',2)" style="background:none;border:none;font-family:var(--f);font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;letter-spacing:.02em">See all →</button>
+          </div>
+          <div id="d-exp"></div>
+        </div>
+
+        <div>
+          <div class="sec-div"><span>Recently added</span></div>
+          <div id="d-rec"></div>
+        </div>
+      </div>
+
+      <!-- All docs -->
+      <div class="page" id="pg-all">
+        <div class="sh"><div><div class="sh-t">Documents</div><div class="sh-s" id="doc-sub"></div></div></div>
+        <div class="sb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search name, holder, number…" id="search" oninput="renderAll()">
+        </div>
+        <div class="chips-wrap"><div class="chips" id="chips"></div></div>
+        <div id="dgrid"></div>
+        <div id="dempty"></div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="page" id="pg-timeline">
+        <div class="sh"><div><div class="sh-t">Expiry</div><div class="sh-s">Sorted by urgency</div></div></div>
+        <div id="tl-body"></div>
+      </div>
+
+      <!-- Holders -->
+      <div class="page" id="pg-holders">
+        <div class="sh"><div><div class="sh-t">Holders</div><div class="sh-s" id="holders-sub"></div></div></div>
+        <div class="chips-wrap" style="margin-bottom:16px"><div class="chips" id="holder-tabs"></div></div>
+        <div id="holders-body"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bnav">
+    <button class="bn on" id="bn-0" onclick="nav('dashboard',0)">
+      <div class="bn-wrap">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Home
+      </div>
+    </button>
+    <button class="bn" id="bn-1" onclick="nav('all',1)">
+      <div class="bn-wrap">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Docs
+      </div>
+    </button>
+    <button class="bn" id="bn-2" onclick="nav('timeline',2)">
+      <div class="bn-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Expiry
+        <div class="bn-badge" id="exp-badge" style="display:none">0</div>
+      </div>
+    </button>
+    <button class="bn" id="bn-3" onclick="nav('holders',3)">
+      <div class="bn-wrap">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Holders
+      </div>
+    </button>
+  </nav>
+</div>
+
+<!-- ── Add / Edit Sheet ── -->
+<div class="overlay" id="add-ov">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="mh">
+      <div class="mh-t" id="add-t">Add Document</div>
+      <button class="mhc" onclick="closeAdd()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mb">
+      <!-- Step 1: type -->
+      <div id="s1">
+        <div class="fs-t">Choose type</div>
+        <div id="type-list"></div>
+        <div style="margin-top:14px">
+          <div class="fs-t">Or enter your own</div>
+          <input class="fi" id="ctype" placeholder="e.g. Gym Membership, Library Card…">
+        </div>
+      </div>
+      <!-- Step 2: fields -->
+      <div id="s2" style="display:none">
+        <div class="fs">
+          <div class="fs-t">Core details</div>
+          <div class="fr full"><div class="ff"><label class="fl">Document name <span style="color:var(--red)">*</span></label><input class="fi" id="f-name" placeholder="e.g. My Passport, HDFC Regalia…"></div></div>
+          <div class="fr">
+            <div class="ff"><label class="fl">Document number <span class="opt">optional</span></label><input class="fi" id="f-num" placeholder="ID / ref no."></div>
+            <div class="ff"><label class="fl">Holder name <span class="opt">optional</span></label><input class="fi" id="f-holder" placeholder="Who owns this"></div>
+          </div>
+          <div class="fr">
+            <div class="ff"><label class="fl">Issue date <span class="opt">optional</span></label><input class="fi" type="date" id="f-issue"></div>
+            <div class="ff"><label class="fl">Expiry date <span class="opt">optional</span></label><input class="fi" type="date" id="f-exp"></div>
+          </div>
+        </div>
+
+        <div class="fs" id="extra-sec"><div class="fs-t">Type-specific fields</div><div id="extra-fields"></div></div>
+
+        <div class="fs">
+          <div class="fs-t">Document link <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink4)">optional — paste Google Drive, Dropbox, etc.</span></div>
+          <div class="ff">
+            <input class="fi link-fi" id="f-link" type="url" placeholder="https://drive.google.com/file/…">
+          </div>
+        </div>
+
+        <div class="fs" style="margin-bottom:0">
+          <div class="fs-t">Notes <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink4)">optional</span></div>
+          <textarea class="fta" id="f-notes" placeholder="Reminders, renewal info, anything useful…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-gh btn-sm" id="back-btn" onclick="stepBack()" style="display:none;margin-right:auto">← Back</button>
+      <button class="btn btn-gh btn-sm" onclick="closeAdd()">Cancel</button>
+      <button class="btn btn-dk btn-sm" id="next-btn" onclick="stepNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── View Sheet ── -->
+<div class="overlay" id="view-ov">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="mh" id="vm-h"></div>
+    <div class="mb" id="vm-b"></div>
+    <div class="mf">
+      <button class="btn btn-gh btn-sm" onclick="closeView()">Close</button>
+      <button class="btn btn-gh btn-sm" id="vm-edit">Edit</button>
+      <button class="btn btn-rd btn-sm" id="vm-del">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Backup Sheet ── -->
+<div class="overlay" id="sync-ov">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="mh">
+      <div class="mh-t">Backup & Restore</div>
+      <button class="mhc" onclick="closeSyncSheet()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mb" id="sync-sheet-body"></div>
+    <div class="mf" id="sync-sheet-footer"></div>
+  </div>
+</div>
+
+<!-- hidden file input for import -->
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Types ──────────────────────────────────────────────────────────
+const TYPES=[
+  {id:'passport',     l:'Passport',              c:'Identity',  f:['nationality','place_of_issue','file_no']},
+  {id:'aadhar',       l:'Aadhaar',               c:'Identity',  f:['dob','linked_mobile','address']},
+  {id:'pan',          l:'PAN Card',              c:'Identity',  f:['dob','father_name']},
+  {id:'voter',        l:'Voter ID (EPIC)',        c:'Identity',  f:['dob','constituency']},
+  {id:'dl',           l:"Driver's Licence",      c:'Identity',  f:['vehicle_class','dob','blood_group']},
+  {id:'visa',         l:'Visa',                  c:'Identity',  f:['country','visa_type','entries','port_of_entry']},
+  {id:'ration',       l:'Ration Card',           c:'Identity',  f:['category','family_members']},
+  {id:'birth_cert',   l:'Birth Certificate',     c:'Identity',  f:['dob','place_of_birth','registrar']},
+  {id:'credit_card',  l:'Credit Card',           c:'Financial', f:['bank_name','card_network','credit_limit','billing_cycle','reward_type']},
+  {id:'debit_card',   l:'Debit Card',            c:'Financial', f:['bank_name','account_number','card_network']},
+  {id:'bank_account', l:'Bank Account',          c:'Financial', f:['bank_name','account_number','ifsc','account_type','branch']},
+  {id:'ins_life',     l:'Life Insurance',        c:'Financial', f:['insurer','sum_assured','premium','nominee']},
+  {id:'ins_health',   l:'Health Insurance',      c:'Financial', f:['insurer','sum_insured','premium','nominee','tpa']},
+  {id:'ins_gen',      l:'General Insurance',     c:'Financial', f:['insurer','policy_type','sum_insured','premium']},
+  {id:'ppf',          l:'PPF Account',           c:'Financial', f:['bank_name','account_number','maturity_amount']},
+  {id:'nps',          l:'NPS / PRAN',            c:'Financial', f:['pran_no','fund_manager','tier']},
+  {id:'epf',          l:'EPF / UAN',             c:'Financial', f:['uan_no','epf_no','employer_name']},
+  {id:'mutual_fund',  l:'Mutual Fund / Demat',   c:'Financial', f:['folio_no','fund_house','dp_name']},
+  {id:'form16',       l:'Form 16 / ITR',         c:'Financial', f:['ay_year','employer_name','gross_income']},
+  {id:'locker',       l:'Bank Locker',           c:'Financial', f:['bank_name','branch','locker_no']},
+  {id:'rc',           l:'RC / Registration',     c:'Vehicle',   f:['vehicle_number','make_model','chassis_no','engine_no','fuel_type','color']},
+  {id:'puc',          l:'PUC Certificate',       c:'Vehicle',   f:['vehicle_number','test_centre','test_no']},
+  {id:'fastag',       l:'FASTag',                c:'Vehicle',   f:['vehicle_number','bank_name','wallet_id']},
+  {id:'veh_ins',      l:'Vehicle Insurance',     c:'Vehicle',   f:['vehicle_number','insurer','policy_type','idv']},
+  {id:'medical_rec',  l:'Medical Record',        c:'Medical',   f:['hospital','doctor','diagnosis','blood_group']},
+  {id:'vaccine',      l:'Vaccine Certificate',   c:'Medical',   f:['vaccine_name','dose_no','hospital','beneficiary_id']},
+  {id:'disability',   l:'Disability Certificate',c:'Medical',   f:['disability_type','percentage','issuing_authority']},
+  {id:'property_deed',l:'Property Deed',         c:'Property',  f:['property_address','survey_no','area','registrar_office','circle_rate']},
+  {id:'rent_agr',     l:'Rent / Lease Agreement',c:'Property',  f:['property_address','landlord','tenant','monthly_rent','deposit']},
+  {id:'utility',      l:'Utility Connection',    c:'Property',  f:['utility_type','consumer_no','utility_provider']},
+  {id:'lpg',          l:'LPG / Gas Connection',  c:'Property',  f:['consumer_no','gas_agency','cylinder_type','subsidy_link']},
+  {id:'degree',       l:'Degree / Certificate',  c:'Education', f:['institution','course','grade','roll_no']},
+  {id:'marksheet',    l:'Marksheet',             c:'Education', f:['institution','exam_name','percentage','roll_no']},
+  {id:'employee_id',  l:'Employee ID',           c:'Legal',     f:['employer_name','emp_id','department']},
+  {id:'will',         l:'Will / Nomination',     c:'Legal',     f:['executor','witness','registrar']},
+  {id:'custom',       l:'Custom',                c:'Other',     f:[]},
+];
+
+const FD={
+  nationality:{l:'Nationality',t:'text'},place_of_issue:{l:'Place of Issue',t:'text'},file_no:{l:'File Number',t:'text'},
+  dob:{l:'Date of Birth',t:'date'},linked_mobile:{l:'Linked Mobile',t:'text'},address:{l:'Address',t:'textarea'},
+  father_name:{l:"Father's Name",t:'text'},constituency:{l:'Constituency',t:'text'},
+  vehicle_class:{l:'Vehicle Class',t:'text'},blood_group:{l:'Blood Group',t:'text'},
+  country:{l:'Country',t:'text'},visa_type:{l:'Visa Type',t:'text'},entries:{l:'Entries',t:'sel',o:['Single','Double','Multiple']},port_of_entry:{l:'Port of Entry',t:'text'},
+  category:{l:'Card Category',t:'sel',o:['APL','BPL','AAY','PHH']},family_members:{l:'Family Members',t:'number'},
+  place_of_birth:{l:'Place of Birth',t:'text'},registrar:{l:'Registrar Office',t:'text'},
+  bank_name:{l:'Bank Name',t:'text'},card_network:{l:'Network',t:'sel',o:['Visa','Mastercard','RuPay','Amex','Diners','Other']},
+  credit_limit:{l:'Credit Limit (₹)',t:'number'},billing_cycle:{l:'Billing Date',t:'number'},reward_type:{l:'Reward Type',t:'text'},
+  account_number:{l:'Account Number',t:'text'},ifsc:{l:'IFSC Code',t:'text'},account_type:{l:'Account Type',t:'sel',o:['Savings','Current','Salary','FD','NRE','NRO']},branch:{l:'Branch',t:'text'},
+  insurer:{l:'Insurer',t:'text'},policy_type:{l:'Policy Type',t:'text'},sum_assured:{l:'Sum Assured (₹)',t:'number'},sum_insured:{l:'Sum Insured (₹)',t:'number'},
+  premium:{l:'Annual Premium (₹)',t:'number'},nominee:{l:'Nominee',t:'text'},tpa:{l:'TPA Name',t:'text'},
+  maturity_amount:{l:'Maturity Amount (₹)',t:'number'},pran_no:{l:'PRAN Number',t:'text'},fund_manager:{l:'Fund Manager',t:'text'},tier:{l:'Tier',t:'sel',o:['Tier I','Tier II','Both']},
+  uan_no:{l:'UAN Number',t:'text'},epf_no:{l:'EPF Account No',t:'text'},employer_name:{l:'Employer Name',t:'text'},
+  folio_no:{l:'Folio / Client ID',t:'text'},fund_house:{l:'Fund House',t:'text'},dp_name:{l:'Depository / Broker',t:'text'},
+  ay_year:{l:'Assessment Year',t:'text'},gross_income:{l:'Gross Income (₹)',t:'number'},locker_no:{l:'Locker Number',t:'text'},
+  vehicle_number:{l:'Vehicle Number',t:'text'},make_model:{l:'Make & Model',t:'text'},chassis_no:{l:'Chassis No',t:'text'},engine_no:{l:'Engine No',t:'text'},
+  fuel_type:{l:'Fuel Type',t:'sel',o:['Petrol','Diesel','CNG','EV','Hybrid','Other']},color:{l:'Color',t:'text'},
+  test_centre:{l:'Test Centre',t:'text'},test_no:{l:'Test No',t:'text'},wallet_id:{l:'Wallet / Tag ID',t:'text'},idv:{l:'IDV (₹)',t:'number'},
+  hospital:{l:'Hospital / Clinic',t:'text'},doctor:{l:'Doctor Name',t:'text'},diagnosis:{l:'Condition',t:'text'},
+  vaccine_name:{l:'Vaccine Name',t:'text'},dose_no:{l:'Dose',t:'sel',o:['1st','2nd','Booster']},beneficiary_id:{l:'Beneficiary ID',t:'text'},
+  disability_type:{l:'Disability Type',t:'text'},percentage:{l:'Percentage',t:'text'},issuing_authority:{l:'Issuing Authority',t:'text'},
+  property_address:{l:'Property Address',t:'textarea'},survey_no:{l:'Survey / Plot No',t:'text'},area:{l:'Area',t:'text'},registrar_office:{l:'Sub-Registrar',t:'text'},circle_rate:{l:'Circle Rate (₹)',t:'number'},
+  landlord:{l:'Landlord Name',t:'text'},tenant:{l:'Tenant Name',t:'text'},monthly_rent:{l:'Monthly Rent (₹)',t:'number'},deposit:{l:'Security Deposit (₹)',t:'number'},
+  utility_type:{l:'Utility Type',t:'sel',o:['Electricity','Water','Gas','Internet','Other']},consumer_no:{l:'Consumer Number',t:'text'},utility_provider:{l:'Provider',t:'text'},
+  gas_agency:{l:'Gas Agency',t:'text'},cylinder_type:{l:'Cylinder Type',t:'sel',o:['14.2 kg','5 kg','19 kg']},subsidy_link:{l:'Aadhaar Linked',t:'sel',o:['Yes','No']},
+  institution:{l:'Institution',t:'text'},course:{l:'Course / Degree',t:'text'},grade:{l:'Grade / Score',t:'text'},roll_no:{l:'Roll / Reg Number',t:'text'},
+  exam_name:{l:'Exam Name',t:'text'},
+  emp_id:{l:'Employee ID',t:'text'},department:{l:'Department',t:'text'},
+  parties:{l:'Parties Involved',t:'text'},contract_value:{l:'Contract Value (₹)',t:'number'},ref_no:{l:'Reference Number',t:'text'},scope:{l:'Scope of Work',t:'textarea'},
+  tender_no:{l:'Tender Number',t:'text'},issuing_auth:{l:'Issuing Authority',t:'text'},bid_value:{l:'Bid Value (₹)',t:'number'},work_desc:{l:'Work Description',t:'textarea'},
+  executor:{l:'Executor Name',t:'text'},witness:{l:'Witness',t:'text'},
+};
+
+const ICONS={
+  Identity:`<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>`,
+  Financial:`<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>`,
+  Vehicle:`<rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>`,
+  Medical:`<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>`,
+  Property:`<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
+  Legal:`<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>`,
+  Education:`<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>`,
+  Other:`<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>`,
+};
+
+// ── State ──────────────────────────────────────────────────────────
+let docs=JSON.parse(localStorage.getItem('dv3b_docs')||'[]');
+let editId=null,step=1,selType=null,activeCat='All',curPage=0;
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const today=()=>new Date().toISOString().split('T')[0];
+const san=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+function days(ds){
+  if(!ds)return null;
+  const d=new Date(ds);d.setHours(0,0,0,0);
+  const n=new Date();n.setHours(0,0,0,0);
+  return Math.floor((d-n)/86400000);
+}
+function statusOf(doc){if(!doc.expiry)return'n';const d=days(doc.expiry);if(d<0)return'r';if(d<=90)return'a';return'g';}
+function expText(doc){
+  if(!doc.expiry)return{t:'No expiry',c:'n'};
+  const d=days(doc.expiry);
+  if(d<0)return{t:`Expired ${Math.abs(d)}d ago`,c:'r'};
+  if(d===0)return{t:'Expires today!',c:'r'};
+  if(d<=30)return{t:`${d}d left`,c:'a'};
+  if(d<=90)return{t:`${d}d left`,c:'a'};
+  return{t:fd(doc.expiry),c:'g'};
+}
+function fd(s){if(!s)return'—';return new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function typeOf(id){return TYPES.find(t=>t.id===id)||TYPES.find(t=>t.id==='custom');}
+function icoOf(cat){return ICONS[cat]||ICONS.Other;}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2400);}
+
+// ── Nav ────────────────────────────────────────────────────────────
+const PAGES=['dashboard','all','timeline','holders'];
+function nav(page,idx){
+  PAGES.forEach(p=>document.getElementById(`pg-${p}`).classList.remove('on'));
+  document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
+  document.getElementById(`pg-${page}`).classList.add('on');
+  document.getElementById(`bn-${idx}`).classList.add('on');
+  curPage=idx;
+  if(page==='dashboard')renderDash();
+  if(page==='all'){activeCat='All';renderAll();}
+  if(page==='timeline')renderTL();
+  if(page==='holders')renderHolders();
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────
+function renderDash(){
+  const total=docs.length;
+  const expired=docs.filter(d=>statusOf(d)==='r').length;
+  const soon=docs.filter(d=>statusOf(d)==='a').length;
+  const holders=new Set(docs.filter(d=>d.holder).map(d=>d.holder)).size;
+
+  document.getElementById('stats').innerHTML=`
+    <div class="sc"><div class="sc-n">${total}</div><div class="sc-l">Total docs</div></div>
+    <div class="sc r"><div class="sc-n">${expired}</div><div class="sc-l">Expired</div></div>
+    <div class="sc a"><div class="sc-n">${soon}</div><div class="sc-l">Expiring soon</div></div>
+    <div class="sc g"><div class="sc-n">${holders||'—'}</div><div class="sc-l">Holders</div></div>`;
+
+  const ac=expired+soon;
+  const b=document.getElementById('exp-badge');
+  if(ac>0){b.style.display='flex';b.textContent=ac;b.className='bn-badge'+(expired>0?'':' a');}
+  else b.style.display='none';
+
+  const expiry=docs.filter(d=>d.expiry).sort((a,b)=>new Date(a.expiry)-new Date(b.expiry)).slice(0,5);
+  document.getElementById('d-exp').innerHTML=expiry.length?expiry.map(tlRow).join(''):'<div style="color:var(--ink3);font-size:13px;padding:8px 0">No expiry dates set yet.</div>';
+
+  const rec=[...docs].reverse().slice(0,5);
+  document.getElementById('d-rec').innerHTML=rec.length?rec.map(tlRow).join(''):'<div style="color:var(--ink3);font-size:13px;padding:8px 0">No documents yet.</div>';
+}
+
+function tlRow(d){
+  const ty=typeOf(d.type);
+  const{t,c}=expText(d);const st=statusOf(d);
+  const col=c==='r'?'var(--red)':c==='a'?'var(--amber)':c==='g'?'var(--green)':'var(--ink3)';
+  return`<div class="tl-i" onclick="viewDoc('${san(d.id)}')">
+    <div class="tl-dot ${st}"></div>
+    <div class="tl-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icoOf(d.category||ty.c)}</svg></div>
+    <div class="tl-info"><div class="tl-name">${san(d.name)}</div><div class="tl-sub">${d.holder?san(d.holder)+' · ':''}${san(ty.l)}</div></div>
+    <div class="tl-r"><div class="tl-date" style="color:${col}">${san(t)}</div></div>
+  </div>`;
+}
+
+// ── All docs ───────────────────────────────────────────────────────
+const ALL_CATS=['All','Identity','Financial','Vehicle','Medical','Property','Legal','Education','Other'];
+
+function renderAll(){
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  document.getElementById('chips').innerHTML=ALL_CATS.map(c=>`<div class="cp ${activeCat===c?'on':''}" onclick="setCat('${c}')">${c}</div>`).join('');
+
+  let filtered=docs.filter(d=>{
+    const ty=typeOf(d.type);
+    const mC=activeCat==='All'||(d.category||ty.c)===activeCat;
+    const mQ=!q||d.name.toLowerCase().includes(q)||(d.holder||'').toLowerCase().includes(q)||(d.number||'').toLowerCase().includes(q);
+    return mC&&mQ;
+  });
+
+  document.getElementById('doc-sub').textContent=`${filtered.length} document${filtered.length!==1?'s':''}`;
+  const grid=document.getElementById('dgrid');
+  const empty=document.getElementById('dempty');
+
+  if(!filtered.length){
+    grid.innerHTML='';
+    empty.innerHTML=`<div class="empty"><div class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="et">No documents here</div><div class="es">${docs.length?'Try a different filter.':'Tap + to add your first document.'}</div>${!docs.length?'<button class="btn btn-dk" onclick="openAdd()">Add Document</button>':''}</div>`;
+  }else{
+    empty.innerHTML='';
+    grid.innerHTML=filtered.map(docCard).join('');
+  }
+}
+
+function setCat(c){activeCat=c;renderAll();}
+
+function docCard(d){
+  const ty=typeOf(d.type);
+  const{t,c}=expText(d);const st=statusOf(d);
+  const hasLink=!!d.link;
+  return`<div class="dc">
+    <div class="dc-stripe ${st}"></div>
+    <div class="dc-inner" onclick="viewDoc('${san(d.id)}')">
+      <div class="dc-head">
+        <div class="dc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icoOf(d.category||ty.c)}</svg></div>
+        <div class="dc-meta">
+          <div class="dc-name">${san(d.name)}</div>
+          <div class="dc-type">${san(d.category||ty.c)} · ${san(ty.l)}</div>
+        </div>
+        <div class="dc-menu" onclick="event.stopPropagation()">
+          <button class="dc-mb" onclick="toggleDrop('dm-${san(d.id)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+          <div class="drop" id="dm-${san(d.id)}">
+            <div class="di" onclick="editDoc('${san(d.id)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</div>
+            <div class="di rd" onclick="delDoc('${san(d.id)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>Delete</div>
+          </div>
+        </div>
+      </div>
+      ${d.holder?`<div class="dc-row"><div class="dc-holder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${san(d.holder)}</div></div>`:''}
+      ${d.number?`<div class="dc-num">•••• ${san(d.number.slice(-4))}</div>`:''}
+      <div class="dc-footer">
+        <span class="pill ${c}"><span class="pd ${c}"></span>${san(t)}</span>
+        ${hasLink?`<a class="view-link-btn" href="${san(d.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Doc</a>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleDrop(id){
+  document.querySelectorAll('.drop').forEach(d=>{if(d.id!==id)d.classList.remove('on');});
+  document.getElementById(id)?.classList.toggle('on');
+}
+document.addEventListener('click',()=>document.querySelectorAll('.drop').forEach(d=>d.classList.remove('on')));
+
+// ── Timeline ───────────────────────────────────────────────────────
+function renderTL(){
+  const wE=docs.filter(d=>d.expiry).sort((a,b)=>new Date(a.expiry)-new Date(b.expiry));
+  const nE=docs.filter(d=>!d.expiry);
+  const el=document.getElementById('tl-body');
+  if(!wE.length&&!nE.length){el.innerHTML='<div class="empty"><div class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="et">No documents yet</div></div>';return;}
+  const groups={
+    'Expired':wE.filter(d=>days(d.expiry)<0),
+    'This Month':wE.filter(d=>{const x=days(d.expiry);return x>=0&&x<=30;}),
+    'Next 90 Days':wE.filter(d=>{const x=days(d.expiry);return x>30&&x<=90;}),
+    'This Year':wE.filter(d=>{const x=days(d.expiry);return x>90&&x<=365;}),
+    'Later':wE.filter(d=>days(d.expiry)>365),
+  };
+  let html='';
+  Object.entries(groups).forEach(([label,items])=>{
+    if(!items.length)return;
+    html+=`<div class="tl-g"><div class="tl-gh"><span>${label}</span><span style="font-weight:400;letter-spacing:0">${items.length} doc${items.length!==1?'s':''}</span></div>`;
+    items.forEach(d=>html+=tlRow(d));
+    html+='</div>';
+  });
+  if(nE.length){
+    html+=`<div class="tl-g"><div class="tl-gh"><span>No Expiry Date</span><span style="font-weight:400;letter-spacing:0">${nE.length}</span></div>`;
+    nE.forEach(d=>html+=tlRow(d));
+    html+='</div>';
+  }
+  el.innerHTML=html;
+}
+
+// ── Holders ────────────────────────────────────────────────────────
+let activeHolder='';
+
+function renderHolders(){
+  const holders=[...new Set(docs.filter(d=>d.holder).map(d=>d.holder))];
+  const hasUnnamed=docs.some(d=>!d.holder);
+  const allTabs=[...holders,...(hasUnnamed?['Unassigned']:[])];
+
+  if(!docs.length){
+    document.getElementById('holders-body').innerHTML='<div class="empty"><div class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="et">No documents yet</div></div>';
+    document.getElementById('holder-tabs').innerHTML='';
+    return;
+  }
+
+  // Set default active tab if not set or no longer valid
+  if(!activeHolder||!allTabs.includes(activeHolder)) activeHolder=allTabs[0]||'';
+
+  // Render tabs
+  document.getElementById('holder-tabs').innerHTML=allTabs.map(h=>`
+    <div class="cp ${activeHolder===h?'on':''}" onclick="switchHolder('${h}')">${h}</div>`).join('');
+
+  // Render docs for active holder
+  const hDocs = activeHolder==='Unassigned'
+    ? docs.filter(d=>!d.holder)
+    : docs.filter(d=>d.holder===activeHolder);
+
+  document.getElementById('holders-sub').textContent=`${hDocs.length} document${hDocs.length!==1?'s':''}`;
+  document.getElementById('holders-body').innerHTML=hDocs.length
+    ? hDocs.map(docCard).join('')
+    : '<div style="color:var(--ink3);font-size:13px;padding:10px 0">No documents for this holder.</div>';
+}
+
+function switchHolder(h){
+  activeHolder=h;
+  renderHolders();
+}
+
+// ── View ───────────────────────────────────────────────────────────
+function viewDoc(id){
+  const d=docs.find(x=>x.id===id);if(!d)return;
+  const ty=typeOf(d.type);
+  const{t,c}=expText(d);
+
+  document.getElementById('vm-h').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+      <div style="width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;stroke:var(--ink2)">${icoOf(d.category||ty.c)}</svg>
+      </div>
+      <div style="min-width:0">
+        <div class="mh-t" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${san(d.name)}</div>
+        <div style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-top:1px">${san(d.category||ty.c)} · ${san(ty.l)}</div>
+      </div>
+    </div>
+    <button class="mhc" onclick="closeView()" style="flex-shrink:0"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+
+  let body=`<div style="margin-bottom:14px"><span class="pill ${c}"><span class="pd ${c}"></span>${san(t)}</span></div>`;
+
+  // Linked doc row (prominent)
+  if(d.link){
+    body+=`<a class="link-row" href="${san(d.link)}" target="_blank" rel="noopener">
+      <div class="link-row-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="link-row-text"><div class="link-row-label">View Document</div><div class="link-row-url">${san(d.link)}</div></div>
+      <div class="link-row-arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+    </a>`;
+  }
+
+  body+=`<div class="vfg">`;
+  if(d.holder)body+=vf('Holder',san(d.holder));
+  if(d.number)body+=vf('Number',san(d.number),true);
+  if(d.issue)body+=vf('Issue Date',fd(d.issue));
+  if(d.expiry)body+=vf('Expiry Date',fd(d.expiry));
+  body+='</div>';
+
+  const extras=Object.entries(d.extra||{});
+  if(extras.length){
+    body+=`<div style="border-top:1px solid var(--line);padding-top:14px;margin-top:2px;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px">Type Details</div>
+      <div class="vfg">`;
+    extras.forEach(([k,v])=>{const def=FD[k];body+=vf(def?.l||k,san(v));});
+    body+='</div></div>';
+  }
+
+  if(d.notes){
+    body+=`<div style="border-top:1px solid var(--line);padding-top:13px">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px">Notes</div>
+      <div style="font-size:14px;color:var(--ink2);line-height:1.7">${san(d.notes)}</div>
+    </div>`;
+  }
+  body+=`<div style="font-size:11px;color:var(--ink4);margin-top:14px;border-top:1px solid var(--line);padding-top:10px">Added ${fd(d.addedOn)}</div>`;
+
+  document.getElementById('vm-b').innerHTML=body;
+  document.getElementById('vm-edit').onclick=()=>editDoc(id);
+  document.getElementById('vm-del').onclick=()=>delDoc(id);
+  document.getElementById('view-ov').classList.add('on');
+}
+
+function vf(label,val,mono=false){return`<div class="vf"><div class="vf-l">${label}</div><div class="vf-v ${mono?'mono':''}">${val}</div></div>`;}
+function closeView(){document.getElementById('view-ov').classList.remove('on');}
+
+function editDoc(id){
+  const d=docs.find(x=>x.id===id);if(!d)return;
+  editId=id;
+  selType=TYPES.find(t=>t.id===d.type)||{id:'custom',l:d.type,c:d.category||'Other',f:[]};
+  document.getElementById('add-t').textContent='Edit Document';
+  document.getElementById('s1').style.display='none';
+  document.getElementById('s2').style.display='block';
+  document.getElementById('next-btn').textContent='Save Changes';
+  document.getElementById('back-btn').style.display='none';
+  step=2;buildExtra();
+  setTimeout(()=>{
+    document.getElementById('f-name').value=d.name||'';
+    document.getElementById('f-num').value=d.number||'';
+    document.getElementById('f-holder').value=d.holder||'';
+    document.getElementById('f-issue').value=d.issue||'';
+    document.getElementById('f-exp').value=d.expiry||'';
+    document.getElementById('f-link').value=d.link||'';
+    document.getElementById('f-notes').value=d.notes||'';
+    (selType?.f||[]).forEach(f=>{const el=document.getElementById(`ef-${f}`);if(el&&d.extra?.[f])el.value=d.extra[f];});
+  },30);
+  document.getElementById('add-ov').classList.add('on');
+  closeView();
+}
+
+function delDoc(id){
+  if(!confirm('Delete this document permanently?'))return;
+  docs=docs.filter(d=>d.id!==id);save();toast('Deleted');closeView();renderDash();renderAll();renderHolders();
+}
+
+// ── Add / Edit ─────────────────────────────────────────────────────
+function openAdd(){
+  editId=null;step=1;selType=null;
+  document.getElementById('add-t').textContent='Add Document';
+  resetSteps();renderTypeList();
+  document.getElementById('add-ov').classList.add('on');
+}
+
+function resetSteps(){
+  document.getElementById('s1').style.display='block';
+  document.getElementById('s2').style.display='none';
+  document.getElementById('next-btn').textContent='Next →';
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('ctype').value='';
+  clearF();
+}
+
+function renderTypeList(){
+  const cats=[...new Set(TYPES.map(t=>t.c))];
+  document.getElementById('type-list').innerHTML=cats.map(cat=>{
+    const items=TYPES.filter(t=>t.c===cat);
+    return`<div class="tc-h">${cat}</div><div class="tc-opts">${items.map(ty=>`<div class="to ${selType?.id===ty.id?'on':''}" onclick="pickType('${ty.id}')"><div class="to-l">${ty.l}</div></div>`).join('')}</div>`;
+  }).join('');
+}
+
+function pickType(id){
+  selType=TYPES.find(t=>t.id===id);
+  document.querySelectorAll('.to').forEach(el=>el.classList.remove('on'));
+  event.currentTarget.classList.add('on');
+  document.getElementById('ctype').value='';
+}
+
+function stepNext(){
+  if(step===1){
+    const custom=document.getElementById('ctype').value.trim();
+    if(custom)selType={id:'custom',l:custom,c:'Other',f:[]};
+    if(!selType){toast('Select a document type');return;}
+    step=2;
+    document.getElementById('s1').style.display='none';
+    document.getElementById('s2').style.display='block';
+    document.getElementById('next-btn').textContent=editId?'Save Changes':'Save';
+    document.getElementById('back-btn').style.display='inline-flex';
+    buildExtra();
+  }else{saveDoc();}
+}
+
+function stepBack(){
+  step=1;
+  document.getElementById('s1').style.display='block';
+  document.getElementById('s2').style.display='none';
+  document.getElementById('next-btn').textContent='Next →';
+  document.getElementById('back-btn').style.display='none';
+  renderTypeList();
+}
+
+function buildExtra(){
+  const fields=selType?.f||[];
+  const sec=document.getElementById('extra-sec');
+  const con=document.getElementById('extra-fields');
+  if(!fields.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  const rows=[];for(let i=0;i<fields.length;i+=2)rows.push(fields.slice(i,i+2));
+  con.innerHTML=rows.map(pair=>`
+    <div class="fr" style="margin-bottom:9px">
+      ${pair.map(f=>{
+        const def=FD[f]||{l:f,t:'text'};
+        let inp='';
+        if(def.t==='textarea')inp=`<textarea class="fta" id="ef-${f}" placeholder="${def.l}…" style="min-height:56px"></textarea>`;
+        else if(def.t==='sel')inp=`<select class="fsel" id="ef-${f}"><option value="">—</option>${(def.o||[]).map(o=>`<option>${o}</option>`).join('')}</select>`;
+        else inp=`<input class="fi" type="${def.t||'text'}" id="ef-${f}" placeholder="${def.l}">`;
+        return`<div class="ff"><label class="fl">${def.l} <span class="opt">optional</span></label>${inp}</div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+function saveDoc(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){toast('Name is required');return;}
+  const extra={};
+  (selType?.f||[]).forEach(f=>{const el=document.getElementById(`ef-${f}`);if(el?.value)extra[f]=el.value;});
+  const doc={
+    id:editId||uid(),type:selType.id,category:selType.c,name,
+    number:document.getElementById('f-num').value.trim(),
+    holder:document.getElementById('f-holder').value.trim(),
+    issue:document.getElementById('f-issue').value,
+    expiry:document.getElementById('f-exp').value,
+    link:document.getElementById('f-link').value.trim(),
+    notes:document.getElementById('f-notes').value.trim(),
+    extra,
+    addedOn:editId?(docs.find(d=>d.id===editId)?.addedOn||today()):today(),
+  };
+  if(editId){docs[docs.findIndex(d=>d.id===editId)]=doc;toast('Updated ✓');}
+  else{docs.push(doc);toast('Saved ✓');}
+  save();closeAdd();renderDash();renderAll();renderHolders();
+}
+
+function clearF(){['f-name','f-num','f-holder','f-issue','f-exp','f-link','f-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
+function closeAdd(){document.getElementById('add-ov').classList.remove('on');clearF();}
+
+// ── Overlay close on backdrop ──────────────────────────────────────
+['add-ov','view-ov'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{
+    if(e.target===e.currentTarget){id==='add-ov'?closeAdd():closeView();}
+  });
+});
+
+// ── Export / Import Backup ─────────────────────────────────────────
+const save = ()=>localStorage.setItem('dv3b_docs', JSON.stringify(docs));
+
+function exportBackup(){
+  localStorage.setItem('dv_last_export', new Date().toISOString());
+  const data = JSON.stringify({ version:4, exported: new Date().toISOString(), docs }, null, 2);
+  const blob = new Blob([data], { type:'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `docvault-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  updateSyncBtn();
+  toast(`Exported ${docs.length} documents ✓`);
+  closeSyncSheet();
+}
+
+function triggerImport(){
+  document.getElementById('import-file').value = '';
+  document.getElementById('import-file').click();
+}
+
+function handleImport(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if(!data.docs || !Array.isArray(data.docs)) throw new Error('Invalid file');
+      const count = data.docs.length;
+      if(!confirm(`This will replace your ${docs.length} current document${docs.length!==1?'s':''} with ${count} from the backup.\n\nContinue?`)) return;
+      docs = data.docs;
+      save();
+      renderDash(); renderAll();
+      closeSyncSheet();
+      toast(`Restored ${count} document${count!==1?'s':''} ✓`);
+    } catch(err){
+      toast('Invalid backup file');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Backup Sheet UI ────────────────────────────────────────────────
+function openSyncSheet(){
+  const lastExport = localStorage.getItem('dv_last_export');
+  document.getElementById('sync-sheet-body').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:4px">
+
+      <div style="background:var(--surface2);border-radius:var(--rlg);padding:18px 18px 14px;border:1px solid var(--line)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:36px;height:36px;background:var(--ink);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--ink)">Export Backup</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:1px">Download all your documents as a file</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--ink3);line-height:1.7;margin-bottom:12px">
+          Downloads <code style="font-family:var(--fm);font-size:11px;background:var(--surface);padding:2px 5px;border-radius:4px">docvault-backup.json</code> to your device. Save it to Google Drive, WhatsApp Saved Messages, or email it to yourself — then you can restore from any device.
+        </div>
+        ${lastExport ? `<div style="font-size:11px;color:var(--ink3);margin-bottom:10px">Last exported: ${new Date(lastExport).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>` : ''}
+        <button class="btn btn-dk btn-sm" style="width:100%;justify-content:center" onclick="exportBackup()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export ${docs.length} Document${docs.length!==1?'s':''}
+        </button>
+      </div>
+
+      <div style="background:var(--surface2);border-radius:var(--rlg);padding:18px 18px 14px;border:1px solid var(--line)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:36px;height:36px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--ink)">Restore from Backup</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:1px">Import a previously exported file</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--ink3);line-height:1.7;margin-bottom:12px">
+          Pick your backup file from wherever you saved it. This will replace your current data with the backup — make sure to export first if you have new documents.
+        </div>
+        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;background:var(--surface);border-color:var(--line2)" onclick="triggerImport()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Choose Backup File
+        </button>
+      </div>
+
+      <div style="background:var(--amber-bg);border-radius:var(--r);padding:11px 13px;font-size:12px;color:var(--amber);line-height:1.7">
+        💡 <strong>Tip:</strong> Export after every session and save to Google Drive or WhatsApp Saved Messages. That way your backup is always one tap away on any device.
+      </div>
+
+    </div>`;
+  document.getElementById('sync-sheet-footer').innerHTML=`
+    <button class="btn btn-gh btn-sm" onclick="closeSyncSheet()">Close</button>`;
+  document.getElementById('sync-ov').classList.add('on');
+}
+
+function closeSyncSheet(){ document.getElementById('sync-ov').classList.remove('on'); }
+
+document.getElementById('sync-ov').addEventListener('click', e=>{
+  if(e.target===e.currentTarget) closeSyncSheet();
+});
+
+// ── Update backup button appearance ───────────────────────────────
+function updateSyncBtn(){
+  const btn = document.getElementById('gsync-btn');
+  if(!btn) return;
+  const last = localStorage.getItem('dv_last_export');
+  if(last){
+    const diffDays = Math.floor((Date.now()-new Date(last))/86400000);
+    if(diffDays > 7){
+      btn.className='gsync-btn';
+      btn.style.cssText='border-color:var(--amber-line);background:var(--amber-bg);color:var(--amber)';
+      btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Backup!</span>`;
+    } else {
+      btn.className='gsync-btn signed-in';
+      btn.style.cssText='';
+      btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Backed up</span>`;
+    }
+  }
+}
+updateSyncBtn();
+
+
+
+// ── Welcome screen (first-time only) ──────────────────────────────
+function showWelcome(){
+  const ov=document.createElement('div');
+  ov.id='welcome-ov';
+  ov.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center';
+  ov.innerHTML=`
+    <div style="width:64px;height:64px;background:var(--ink);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;flex-shrink:0">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div style="font-size:26px;font-weight:600;letter-spacing:-.04em;color:var(--ink);margin-bottom:10px">Welcome to DocVault</div>
+    <div style="font-size:15px;color:var(--ink3);line-height:1.7;max-width:300px;margin-bottom:10px">
+      Your personal document manager — all your IDs, cards, insurance, and more in one private place.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;margin:24px 0 0">
+      <div style="display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;text-align:left">
+        <div style="width:32px;height:32px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--ink)">All docs in one place</div><div style="font-size:12px;color:var(--ink3);margin-top:2px">Passports, Aadhaar, cards, insurance, vehicle, and more</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;text-align:left">
+        <div style="width:32px;height:32px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--ink)">Expiry alerts</div><div style="font-size:12px;color:var(--ink3);margin-top:2px">Never miss a renewal — see what's expiring at a glance</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;text-align:left">
+        <div style="width:32px;height:32px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--ink)">Stays on your device</div><div style="font-size:12px;color:var(--ink3);margin-top:2px">Data is stored only in your browser — private by default</div></div>
+      </div>
+    </div>
+    <button onclick="dismissWelcome()" style="margin-top:28px;width:100%;max-width:320px;padding:14px;background:var(--ink);color:white;border:none;border-radius:var(--rsm);font-family:var(--f);font-size:15px;font-weight:600;cursor:pointer;letter-spacing:-.01em">
+      Get Started →
+    </button>
+  `;
+  document.body.appendChild(ov);
+}
+
+function dismissWelcome(){
+  localStorage.setItem('dv3b_welcomed','1');
+  const ov=document.getElementById('welcome-ov');
+  if(ov){ov.style.transition='opacity .3s';ov.style.opacity='0';setTimeout(()=>ov.remove(),300);}
+}
+
+// ── Init ───────────────────────────────────────────────────────────
+// Clear any old seed data from previous versions
+['dv2_docs','dv3_docs','dv2_gd_key','dv2_gd_folder'].forEach(k=>localStorage.removeItem(k));
+renderDash();renderAll();
+if(!localStorage.getItem('dv3b_welcomed'))showWelcome();
+// PWA manifest
+const mf={name:'DocVault',short_name:'DocVault',start_url:'.',display:'standalone',background_color:'#f5f5f3',theme_color:'#0a0a0a',icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a0a0a' rx='18'/%3E%3Cpath d='M30 22h26l14 14v42a4 4 0 01-4 4H30a4 4 0 01-4-4V26a4 4 0 014-4z' fill='white'/%3E%3Cpath d='M56 22v14h14' fill='none' stroke='%230a0a0a' stroke-width='2'/%3E%3C/svg%3E",sizes:'192x192',type:'image/svg+xml'}]};
+const bl=new Blob([JSON.stringify(mf)],{type:'application/json'});
+const ml=document.createElement('link');ml.rel='manifest';ml.href=URL.createObjectURL(bl);
+document.head.appendChild(ml);
+
+// ── Theme ────────────────────────────────────────────────────
+const THEME_KEY = 'abode_theme';
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = t === 'dark' ? '#0f0f0e' : '#0a0a0a';
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+(function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  applyTheme(saved || sys);
+})();
+</script>
+</body>
+</html>

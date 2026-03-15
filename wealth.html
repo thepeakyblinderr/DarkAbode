@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Wealth Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #f5f5f3;
+  --surface: #ffffff;
+  --surface2:#f0f0ee;
+  --ink:     #0a0a0a;
+  --ink2:    #3a3a34;
+  --ink3:    #6a6a60;
+  --ink4:    #9a9a8e;
+  --line:    #e4e4e0;
+  --line2:   #c8c8be;
+  --purple:       #7B2FBE;
+  --purple-light: #9B4DE0;
+  --purple-dark:  #5a1f96;
+  --green:  #047857;
+  --red:    #c0392b;
+  --yellow: #b45309;
+  --blue:   #1a56db;
+  --card:   var(--surface);
+  --card2:  var(--surface2);
+  --border: var(--line);
+  --text:   var(--ink);
+  --muted:  var(--ink3);
+  --nav-h: 62px;
+  --sans: 'Syne', system-ui, sans-serif;
+  --body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+html[data-theme="dark"] {
+  --bg:      #0f0f0e;
+  --surface: #1a1a18;
+  --surface2:#242422;
+  --ink:     #f0f0ec;
+  --ink2:    #c8c8c0;
+  --ink3:    #8a8a80;
+  --ink4:    #5a5a54;
+  --line:    #2a2a28;
+  --line2:   #3a3a36;
+  --purple:       #a06cd5;
+  --purple-light: #b87de8;
+  --purple-dark:  #8a50c0;
+  --green:  #2ea878;
+  --red:    #e05a4e;
+  --yellow: #d4900a;
+  --blue:   #4d80e6;
+  --card:   var(--surface);
+  --card2:  var(--surface2);
+  --border: var(--line);
+  --text:   var(--ink);
+  --muted:  var(--ink3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: var(--body);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { display:none; }
+
+/* ── SCREENS ── */
+.screen { display:none; flex-direction:column; height:100vh; overflow:hidden; }
+.screen.active { display:flex; }
+
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(var(--nav-h) + 20px);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px 16px;
+  position: relative;
+  flex-shrink: 0;
+}
+.header::before { display:none; }
+.header::after  { display:none; }
+.header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.header-title { font-family:var(--sans); font-size:11px; font-weight:700; color:var(--ink4); letter-spacing:.1em; text-transform:uppercase; }
+.header-sync  { font-size:10px; color:var(--ink4); font-family:var(--mono); }
+.portfolio-total { font-family:var(--sans); font-size:34px; font-weight:800; color:var(--ink); letter-spacing:-1.5px; }
+.portfolio-sub { font-size:12px; color:var(--ink3); margin-top:3px; margin-bottom:14px; font-family:var(--body); }
+
+.health-row { display:flex; align-items:center; gap:10px; }
+.health-label { font-size:11px; color:var(--ink3); width:75px; font-family:var(--body); }
+.health-bar-bg { flex:1; height:4px; background:var(--line); border-radius:10px; overflow:hidden; }
+.health-bar-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,var(--green),#10b981); transition:width 0.8s ease; }
+.health-pct { font-family:var(--mono); font-size:11px; color:var(--green); }
+
+/* ── SIMPLE HEADER ── */
+.simple-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px 14px;
+  flex-shrink: 0;
+}
+.simple-header h1 { font-family:var(--sans); font-size:20px; font-weight:800; color:var(--ink); }
+.simple-header p  { font-size:12px; color:var(--ink3); margin-top:3px; font-family:var(--body); }
+
+/* ── CONTENT ── */
+.content { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+
+/* ── ACTION CARD ── */
+.action-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px; padding:16px;
+  display:flex; justify-content:space-between; align-items:center;
+  animation: fadeUp 0.4s ease both;
+}
+.action-tag  { font-size:10px; font-weight:600; color:var(--green); letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; font-family:var(--mono); }
+.action-text { font-family:var(--sans); font-size:16px; font-weight:700; color:var(--ink); }
+.action-sub  { font-size:11px; color:var(--ink3); margin-top:2px; font-family:var(--body); }
+.action-amount { font-family:var(--mono); font-size:22px; color:var(--purple); font-weight:500; }
+
+/* ── STAT GRID ── */
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.stat-card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:14px; position:relative; overflow:hidden;
+  animation: fadeUp 0.4s ease both;
+}
+.stat-card::after { content:''; position:absolute; top:0;left:0;right:0; height:2.5px; border-radius:14px 14px 0 0; }
+.stat-card.c-red::after    { background:var(--red); }
+.stat-card.c-yellow::after { background:var(--yellow); }
+.stat-card.c-green::after  { background:var(--green); }
+.stat-card.c-purple::after { background:var(--purple); }
+.stat-label { font-size:10px; color:var(--ink4); letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; font-family:var(--mono); }
+.stat-value { font-family:var(--mono); font-size:17px; font-weight:500; color:var(--ink); }
+.stat-value.red    { color:var(--red); }
+.stat-value.green  { color:var(--green); }
+.stat-value.yellow { color:var(--yellow); }
+.stat-sub2 { font-size:10px; color:var(--ink4); margin-top:3px; font-family:var(--body); }
+
+/* ── DONUT CARD ── */
+.donut-card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; animation: fadeUp 0.5s ease both; }
+.section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.section-title { font-family:var(--sans); font-size:13px; font-weight:700; color:var(--ink); }
+.section-link  { font-size:11px; color:var(--purple); cursor:pointer; font-family:var(--body); }
+.donut-row { display:flex; align-items:center; gap:14px; }
+.legend-item { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+.legend-dot  { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.legend-name { font-size:11px; color:var(--ink3); flex:1; font-family:var(--body); }
+.legend-pct  { font-family:var(--mono); font-size:11px; color:var(--ink); }
+.legend-dev  { font-family:var(--mono); font-size:10px; margin-left:3px; }
+.legend-dev.neg { color:var(--red); }
+.legend-dev.pos { color:var(--green); }
+
+/* ── ALERTS ── */
+.alerts-wrap { display:flex; flex-direction:column; gap:6px; }
+.alert-row {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:12px; padding:12px 14px;
+  display:flex; align-items:center; gap:12px;
+  animation: fadeUp 0.5s ease both;
+}
+.alert-dot   { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.alert-name  { font-size:13px; font-weight:500; flex:1; color:var(--ink); font-family:var(--body); }
+.alert-badge { font-family:var(--mono); font-size:11px; padding:3px 9px; border-radius:20px; }
+.alert-badge.bad { background:#fdf2f2; color:var(--red); }
+.alert-badge.ok  { background:#ecfdf5; color:var(--green); }
+
+/* ── COUNTDOWN ── */
+.countdown-card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:14px 16px;
+  display:flex; justify-content:space-between; align-items:center;
+  animation: fadeUp 0.6s ease both;
+}
+.countdown-label { font-size:11px; color:var(--ink3); margin-bottom:4px; font-family:var(--body); }
+.countdown-date  { font-family:var(--sans); font-size:15px; font-weight:700; color:var(--ink); }
+.countdown-num   { font-family:var(--mono); font-size:30px; color:var(--purple); }
+.countdown-unit  { font-size:11px; color:var(--ink3); text-align:right; font-family:var(--body); }
+
+/* ── FUND LIST ── */
+.fund-list { display:flex; flex-direction:column; gap:6px; }
+.fund-row {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  cursor:pointer; transition:border-color 0.15s, background 0.15s;
+  animation: fadeUp 0.35s ease both;
+}
+.fund-row:hover  { border-color:var(--line2); background:var(--surface2); }
+.fund-row:active { background:var(--surface2); }
+.fund-dot  { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.fund-info { flex:1; }
+.fund-name { font-size:13px; font-weight:600; margin-bottom:3px; color:var(--ink); font-family:var(--body); }
+.fund-val  { font-size:11px; color:var(--ink3); font-family:var(--body); }
+.fund-right  { text-align:right; }
+.fund-pct    { font-family:var(--mono); font-size:13px; color:var(--ink); }
+.fund-action { font-size:11px; color:var(--ink3); margin-top:2px; font-family:var(--body); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.4); z-index:100;
+  align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open { display:flex; }
+.modal-sheet {
+  background:var(--surface);
+  border-radius:24px 24px 0 0;
+  width:100%; max-width:480px;
+  padding:0 20px 40px;
+  animation: slideUp 0.3s ease;
+  border-top: 1px solid var(--line);
+}
+.modal-handle { width:40px; height:4px; background:var(--line2); border-radius:4px; margin:14px auto 20px; }
+.modal-title  { font-family:var(--sans); font-size:18px; font-weight:800; margin-bottom:6px; color:var(--ink); }
+.modal-sub    { font-size:12px; color:var(--ink3); margin-bottom:20px; font-family:var(--body); }
+.field-group  { margin-bottom:16px; }
+.field-label  { font-size:11px; color:var(--ink4); letter-spacing:.06em; text-transform:uppercase; margin-bottom:7px; font-family:var(--mono); }
+.field-input {
+  width:100%; background:var(--surface2); border:1px solid var(--line);
+  border-radius:12px; padding:13px 16px;
+  font-family:var(--mono); font-size:16px; color:var(--ink);
+  outline:none; transition:border-color 0.2s;
+}
+.field-input:focus { border-color:var(--purple); }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.btn-save {
+  width:100%; background:var(--ink);
+  border:none; border-radius:14px;
+  padding:16px; font-family:var(--sans);
+  font-size:15px; font-weight:700; color:#fff;
+  cursor:pointer; margin-top:8px;
+  transition:background 0.15s, transform 0.1s;
+}
+.btn-save:active { background:var(--ink2); transform:scale(0.98); }
+.btn-cancel {
+  width:100%; background:transparent;
+  border:1px solid var(--line); border-radius:14px;
+  padding:14px; font-size:14px; color:var(--ink3);
+  cursor:pointer; margin-top:8px; font-family:var(--body);
+}
+
+/* ── SETTINGS ── */
+.settings-section { margin-bottom:8px; }
+.settings-label { font-size:10px; color:var(--ink4); letter-spacing:.08em; text-transform:uppercase; padding:0 4px; margin-bottom:8px; font-family:var(--mono); }
+.settings-card { background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+.settings-row {
+  display:flex; align-items:center; padding:14px 16px;
+  border-bottom:1px solid var(--line); cursor:pointer;
+  transition:background 0.12s;
+}
+.settings-row:last-child { border-bottom:none; }
+.settings-row:active { background:var(--surface2); }
+.settings-icon    { width:32px; height:32px; border-radius:8px; background:#f3eeff; display:flex; align-items:center; justify-content:center; font-size:15px; margin-right:12px; }
+.settings-text    { flex:1; }
+.settings-name    { font-size:14px; font-weight:600; color:var(--ink); font-family:var(--body); }
+.settings-desc    { font-size:11px; color:var(--ink3); margin-top:2px; font-family:var(--body); }
+.settings-chevron { font-size:12px; color:var(--ink4); }
+.settings-value   { font-family:var(--mono); font-size:13px; color:var(--purple); margin-right:8px; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0;
+  height:calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  background:rgba(255,255,255,.96);
+  border-top:1px solid var(--line);
+  display:flex; justify-content:space-around; align-items:flex-start;
+  padding-top:0;
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  z-index:50;
+}
+.nav-btn {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:10px 8px 6px; border-radius:12px; cursor:pointer;
+  flex:1; background:none; border:none; color:var(--ink4);
+  font-family:var(--body); transition:color .12s;
+}
+.nav-btn.active { color:var(--ink); }
+.nav-btn.active .nav-pip { background:var(--purple); }
+.nav-icon-wrap { font-size:20px; line-height:1; }
+.nav-label { font-size:9px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+.nav-pip { width:4px; height:4px; border-radius:50%; background:transparent; margin-top:2px; }
+
+/* ── FAB ── */
+.fab {
+  position:fixed; bottom:calc(var(--nav-h) + 16px); right:20px;
+  width:50px; height:50px; border-radius:14px;
+  background:var(--ink); border:none;
+  font-size:22px; color:#fff; cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.18);
+  z-index:49; transition:transform 0.15s, box-shadow 0.15s;
+  display:flex; align-items:center; justify-content:center;
+}
+.fab:active { transform:scale(0.93); }
+
+/* ── TIMESTAMP ── */
+.timestamp { text-align:center; font-family:var(--mono); font-size:10px; color:var(--ink4); padding:4px 0 8px; }
+
+/* ── CHART OVERRIDES for light bg ── */
+.donut-card canvas { filter: none; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes slideUp {
+  from { transform:translateY(100%); }
+  to   { transform:translateY(0); }
+}
+
+.delay-1 { animation-delay:0.05s; }
+.delay-2 { animation-delay:0.10s; }
+.delay-3 { animation-delay:0.15s; }
+.delay-4 { animation-delay:0.20s; }
+.delay-5 { animation-delay:0.25s; }
+
+
+/* Header title in dark */
+html[data-theme="dark"] .header-title{color:var(--ink);}
+
+/* ════ DARK MODE — Wealth ════ */
+html[data-theme="dark"] body{background:var(--bg);}
+/* Bottom nav */
+html[data-theme="dark"] .bottom-nav{background:rgba(15,15,14,.97);border-top-color:var(--line);}
+html[data-theme="dark"] .nav-btn{color:var(--ink4);}
+html[data-theme="dark"] .nav-btn.active{color:var(--ink);}
+/* Header */
+html[data-theme="dark"] .header{background:var(--surface);}
+html[data-theme="dark"] .simple-header{background:var(--bg);}
+/* Cards */
+html[data-theme="dark"] .card,html[data-theme="dark"] .fund-card,
+html[data-theme="dark"] .stat-card{background:var(--surface);border-color:var(--line);}
+html[data-theme="dark"] .section{background:var(--surface);border-color:var(--line);}
+html[data-theme="dark"] .settings-row{border-bottom-color:var(--line);}
+html[data-theme="dark"] .settings-icon{background:rgba(160,108,213,.2);}
+/* Screens */
+html[data-theme="dark"] .screen{background:var(--bg);}
+html[data-theme="dark"] .scroll-area{background:var(--bg);}
+/* Modal/Sheet overlays */
+html[data-theme="dark"] .modal-overlay,.overlay-bg,.shade{background:rgba(0,0,0,.7);}
+html[data-theme="dark"] .modal,html[data-theme="dark"] .sheet,
+html[data-theme="dark"] .add-form,html[data-theme="dark"] .form-panel,
+html[data-theme="dark"] .edit-sheet{background:var(--surface);}
+/* Inputs */
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{
+  background:var(--surface2);color:var(--ink);border-color:var(--line2);color-scheme:dark;}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:var(--ink4);}
+html[data-theme="dark"] input:focus,html[data-theme="dark"] select:focus,html[data-theme="dark"] textarea:focus{
+  border-color:var(--purple);box-shadow:0 0 0 3px rgba(160,108,213,.15);}
+/* Chips / tags */
+html[data-theme="dark"] .chip,html[data-theme="dark"] .tag,html[data-theme="dark"] .badge{
+  background:var(--surface2);color:var(--ink2);}
+html[data-theme="dark"] .chip.positive,html[data-theme="dark"] .gain{color:var(--green);}
+html[data-theme="dark"] .chip.negative,html[data-theme="dark"] .loss{color:var(--red);}
+/* Progress bars */
+html[data-theme="dark"] .progress-bar-bg,html[data-theme="dark"] .bar-bg{background:var(--line);}
+/* Fund type icons */
+html[data-theme="dark"] .fund-icon{background:rgba(160,108,213,.18);}
+/* Dividers */
+html[data-theme="dark"] .divider,html[data-theme="dark"] hr{border-color:var(--line);}
+/* Health score ring */
+html[data-theme="dark"] .health-track{stroke:var(--line);}
+/* Theme toggle */
+.theme-btn{
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--line2);background:var(--surface2);
+  color:var(--ink3);cursor:pointer;display:grid;place-items:center;
+  font-size:15px;transition:background .15s;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.theme-btn:hover{background:var(--line);}
+.theme-btn:active{opacity:.7;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ DASHBOARD SCREEN ══════════════ -->
+<div class="screen active" id="screen-dashboard">
+  <div class="scroll-area">
+    <div class="header">
+      <div class="header-top">
+        <div class="header-title">Wealth Manager</div>
+        <div style="display:flex;align-items:center;gap:8px"><button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button><div class="header-sync" id="sync-time">Tap ↻ to sync</div></div>
+      </div>
+      <div class="portfolio-total" id="d-total">₹4,75,237</div>
+      <div class="portfolio-sub">Core Portfolio + Dividend Bucket</div>
+      <div class="health-row">
+        <div class="health-label">Portfolio Health</div>
+        <div class="health-bar-bg"><div class="health-bar-fill" id="health-bar" style="width:87%"></div></div>
+        <div class="health-pct" id="health-pct">87%</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Action Card -->
+      <div class="action-card">
+        <div>
+          <div class="action-tag">This Month</div>
+          <div class="action-text">Invest your SIP</div>
+          <div class="action-sub" id="d-mode-label">Balanced mode · 7 funds</div>
+        </div>
+        <div class="action-amount" id="d-sip">₹30,000</div>
+      </div>
+
+      <!-- Stat Grid -->
+      <div class="stat-grid">
+        <div class="stat-card c-red">
+          <div class="stat-label">Underweight</div>
+          <div class="stat-value red" id="d-underweight">-₹12,768</div>
+          <div class="stat-sub2" id="d-alert-count">2 funds need attention</div>
+        </div>
+        <div class="stat-card c-yellow">
+          <div class="stat-label">Dividend Bucket</div>
+          <div class="stat-value yellow" id="d-dividend">₹16,598</div>
+          <div class="stat-sub2">Stocks portfolio</div>
+        </div>
+        <div class="stat-card c-green">
+          <div class="stat-label">Core Portfolio</div>
+          <div class="stat-value green" id="d-core">₹4,58,639</div>
+          <div class="stat-sub2">Mutual funds</div>
+        </div>
+        <div class="stat-card c-purple">
+          <div class="stat-label">Cash Available</div>
+          <div class="stat-value" id="d-cash">₹0</div>
+          <div class="stat-sub2">Ready to deploy</div>
+        </div>
+      </div>
+
+      <!-- Donut Chart -->
+      <div class="donut-card">
+        <div class="section-header">
+          <div class="section-title">Allocation</div>
+          <div class="section-link" onclick="switchTab('decision')">View Decision →</div>
+        </div>
+        <div class="donut-row">
+          <svg width="108" height="108" viewBox="0 0 108 108" style="flex-shrink:0" id="donut-svg">
+            <circle cx="54" cy="54" r="40" fill="none" stroke="#e4e4e0" stroke-width="17"/>
+            <text x="54" y="49" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="Syne" font-weight="700" id="donut-center-val">100%</text>
+            <text x="54" y="63" text-anchor="middle" fill="#9a9a8e" font-size="9" font-family="Plus Jakarta Sans">allocated</text>
+          </svg>
+          <div class="donut-legend" id="donut-legend"></div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div>
+        <div class="section-header">
+          <div class="section-title">Fund Alerts</div>
+          <div class="section-link" onclick="switchTab('decision')">See Decision →</div>
+        </div>
+        <div class="alerts-wrap" id="alerts-wrap"></div>
+      </div>
+
+      <!-- Countdown -->
+      <div class="countdown-card">
+        <div>
+          <div class="countdown-label">Next Review</div>
+          <div class="countdown-date" id="d-review-date">1 Mar 2027</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="d-mode-badge">Balanced Mode</div>
+        </div>
+        <div style="text-align:right">
+          <div class="countdown-num" id="d-days">361</div>
+          <div class="countdown-unit">days away</div>
+        </div>
+      </div>
+
+      <div class="timestamp" id="d-timestamp">Last updated · —</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ DECISION SCREEN ══════════════ -->
+<div class="screen" id="screen-decision">
+  <div class="simple-header">
+    <h1>Decision</h1>
+    <p>Current values & rebalance actions</p>
+  </div>
+  <div class="scroll-area">
+    <div class="content">
+      <div class="fund-list" id="decision-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SIP SCREEN ══════════════ -->
+<div class="screen" id="screen-sip">
+  <div class="simple-header">
+    <h1>SIP</h1>
+    <p>Monthly investment breakdown</p>
+  </div>
+  <div class="scroll-area">
+    <div class="content">
+      <div class="fund-list" id="sip-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ LUMPSUM SCREEN ══════════════ -->
+<div class="screen" id="screen-lumpsum">
+  <div class="simple-header">
+    <h1>Lumpsum</h1>
+    <p>One-time correction amounts</p>
+  </div>
+  <div class="scroll-area">
+    <div class="content">
+      <div class="fund-list" id="lumpsum-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ STOCKS SCREEN ══════════════ -->
+<div class="screen" id="screen-stocks">
+  <div class="simple-header">
+    <h1>Dividend Stocks</h1>
+    <p>Ranked by most underweight · tap to edit</p>
+  </div>
+  <div class="scroll-area">
+    <div class="content">
+      <!-- Stock summary card -->
+      <div class="action-card" style="background:var(--surface);border-color:var(--line)">
+        <div>
+          <div class="action-tag" style="color:var(--yellow)">Dividend Bucket</div>
+          <div class="action-text">Buy by Rank</div>
+          <div class="action-sub">Rank 1 = most underweight</div>
+        </div>
+        <div class="action-amount" style="color:var(--yellow)" id="s-div-total">₹16,594</div>
+      </div>
+      <div class="fund-list" id="stocks-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SETTINGS SCREEN ══════════════ -->
+<div class="screen" id="screen-settings">
+  <div class="simple-header">
+    <h1>Manage</h1>
+    <p>Add, edit, or remove funds & stocks</p>
+  </div>
+  <div class="scroll-area">
+    <div class="content">
+
+      <!-- Portfolio Config -->
+      <div class="settings-section">
+        <div class="settings-label">Portfolio Config</div>
+        <div class="settings-card">
+          <div class="settings-row" onclick="openPortfolioEdit()">
+            <div class="settings-icon">📅</div>
+            <div class="settings-text"><div class="settings-name">Monthly SIP</div><div class="settings-desc">Total monthly investment</div></div>
+            <div class="settings-value" id="s-sip">₹30,000</div>
+            <div class="settings-chevron">›</div>
+          </div>
+          <div class="settings-row" onclick="openCashEdit()">
+            <div class="settings-icon">💰</div>
+            <div class="settings-text"><div class="settings-name">Cash Available</div><div class="settings-desc">For lumpsum deployment</div></div>
+            <div class="settings-value" id="s-cash">₹0</div>
+            <div class="settings-chevron">›</div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-icon">⚙️</div>
+            <div class="settings-text"><div class="settings-name">Mode</div><div class="settings-desc">Auto-detected from deviations</div></div>
+            <div class="settings-value" id="s-mode">Balanced</div>
+          </div>
+          <div class="settings-row" onclick="openReviewEdit()">
+            <div class="settings-icon">📆</div>
+            <div class="settings-text"><div class="settings-name">Next Review Date</div><div class="settings-desc">Portfolio rebalance reminder</div></div>
+            <div class="settings-value" id="s-review">Mar 2027</div>
+            <div class="settings-chevron">›</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mutual Funds -->
+      <div class="settings-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="settings-label" style="margin-bottom:0">Mutual Funds</div>
+          <div id="funds-target-warning" style="font-size:10px;color:var(--red);display:none">⚠ Targets ≠ 100%</div>
+        </div>
+        <div class="settings-card" id="fund-settings-list"></div>
+        <button onclick="openAddFund()" style="width:100%;margin-top:8px;background:rgba(123,47,190,0.12);border:1px dashed var(--purple);border-radius:12px;padding:13px;font-size:13px;color:var(--purple-light);cursor:pointer;font-family:'DM Sans',sans-serif">＋ Add Mutual Fund</button>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:0 4px" id="funds-total-pct"></div>
+      </div>
+
+      <!-- Dividend Stocks -->
+      <div class="settings-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="settings-label" style="margin-bottom:0">Dividend Stocks</div>
+          <div id="stocks-target-warning" style="font-size:10px;color:var(--red);display:none">⚠ Targets ≠ 100%</div>
+        </div>
+        <div class="settings-card" id="stock-settings-list"></div>
+        <button onclick="openAddStock()" style="width:100%;margin-top:8px;background:var(--surface2);border:1px dashed var(--line2);border-radius:12px;padding:13px;font-size:13px;color:var(--purple);cursor:pointer;font-family:var(--body)">＋ Add Stock</button>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:0 4px" id="stocks-total-pct"></div>
+      </div>
+
+      <!-- Google Sheets Sync -->
+      <div class="settings-section">
+        <div class="settings-label">Google Sheets Sync</div>
+        <div class="settings-card">
+          <div class="settings-row" onclick="openSyncSetup()">
+            <div class="settings-icon">🔗</div>
+            <div class="settings-text">
+              <div class="settings-name">Script URL</div>
+              <div class="settings-desc" id="sync-url-desc">Not connected</div>
+            </div>
+            <div class="settings-chevron">›</div>
+          </div>
+          <div class="settings-row" onclick="syncFromSheet()">
+            <div class="settings-icon">⬇️</div>
+            <div class="settings-text">
+              <div class="settings-name">Pull from Sheet</div>
+              <div class="settings-desc">Overwrite app data with Sheet values</div>
+            </div>
+            <div class="settings-chevron" id="pull-status">›</div>
+          </div>
+          <div class="settings-row" onclick="syncToSheet()">
+            <div class="settings-icon">⬆️</div>
+            <div class="settings-text">
+              <div class="settings-name">Push to Sheet</div>
+              <div class="settings-desc">Save app data back to Google Sheet</div>
+            </div>
+            <div class="settings-chevron" id="push-status">›</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="settings-section">
+        <div class="settings-label">Danger Zone</div>
+        <div class="settings-card">
+          <div class="settings-row" onclick="confirmReset()">
+            <div class="settings-icon">🗑️</div>
+            <div class="settings-text"><div class="settings-name" style="color:var(--red)">Reset All Data</div><div class="settings-desc">Clears all saved data permanently</div></div>
+            <div class="settings-chevron">›</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ BOTTOM NAV ══════════════ -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-dashboard" onclick="switchTab('dashboard')">
+    <div class="nav-icon-wrap">📊</div>
+    <div class="nav-label">Dashboard</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" id="nav-decision" onclick="switchTab('decision')">
+    <div class="nav-icon-wrap">🌱</div>
+    <div class="nav-label">Decision</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" id="nav-sip" onclick="switchTab('sip')">
+    <div class="nav-icon-wrap">🪙</div>
+    <div class="nav-label">SIP</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" id="nav-lumpsum" onclick="switchTab('lumpsum')">
+    <div class="nav-icon-wrap">💰</div>
+    <div class="nav-label">Lumpsum</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" id="nav-stocks" onclick="switchTab('stocks')">
+    <div class="nav-icon-wrap">📈</div>
+    <div class="nav-label">Stocks</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="switchTab('settings')">
+    <div class="nav-icon-wrap">⚙️</div>
+    <div class="nav-label">More</div>
+    <div class="nav-pip"></div>
+  </button>
+</nav>
+
+<!-- FAB -->
+<button class="fab" id="main-fab" onclick="handleFAB()">＋</button>
+
+<!-- ══════════════ MODALS ══════════════ -->
+<!-- Fund Edit Modal -->
+<div class="modal-overlay" id="modal-fund">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-fund-title">Edit Fund</div>
+    <div class="modal-sub">Update current investment value</div>
+    <div class="field-group">
+      <div class="field-label">Current Value (₹)</div>
+      <input class="field-input" id="input-fund-value" type="number" inputmode="decimal" placeholder="0">
+    </div>
+    <button class="btn-save" onclick="saveFundEdit()">Save Changes</button>
+    <button class="btn-cancel" onclick="closeModal('modal-fund')">Cancel</button>
+  </div>
+</div>
+
+<!-- Portfolio Edit Modal -->
+<div class="modal-overlay" id="modal-portfolio">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Portfolio Settings</div>
+    <div class="modal-sub">Update your portfolio configuration</div>
+    <div class="field-group">
+      <div class="field-label">Monthly SIP (₹)</div>
+      <input class="field-input" id="input-sip" type="number" inputmode="decimal">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Cash Available (₹)</div>
+      <input class="field-input" id="input-cash" type="number" inputmode="decimal">
+    </div>
+    <button class="btn-save" onclick="savePortfolioEdit()">Save Changes</button>
+    <button class="btn-cancel" onclick="closeModal('modal-portfolio')">Cancel</button>
+  </div>
+</div>
+
+<!-- Mode Modal -->
+<div class="modal-overlay" id="modal-mode">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Rebalance Mode</div>
+    <div class="modal-sub">Choose how to distribute your SIP</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <div onclick="selectMode('Balanced')" id="mode-balanced" style="background:var(--card);border:2px solid var(--purple);border-radius:14px;padding:16px;cursor:pointer">
+        <div style="font-family:Syne,sans-serif;font-weight:700;margin-bottom:4px">⚖️ Balanced</div>
+        <div style="font-size:12px;color:var(--muted)">Distribute SIP proportionally across all funds</div>
+      </div>
+      <div onclick="selectMode('Correction')" id="mode-correction" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer">
+        <div style="font-family:Syne,sans-serif;font-weight:700;margin-bottom:4px">🎯 Correction</div>
+        <div style="font-size:12px;color:var(--muted)">Focus SIP on underweight funds only</div>
+      </div>
+    </div>
+    <button class="btn-cancel" onclick="closeModal('modal-mode')">Close</button>
+  </div>
+</div>
+
+<!-- Stock Edit Modal -->
+<div class="modal-overlay" id="modal-stock">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-stock-title">Edit Stock</div>
+    <div class="modal-sub">Update current investment value</div>
+    <div class="field-group">
+      <div class="field-label">Current Value (₹)</div>
+      <input class="field-input" id="input-stock-value" type="number" inputmode="decimal" placeholder="0">
+    </div>
+    <button class="btn-save" onclick="saveStockEdit()">Save Changes</button>
+    <button class="btn-cancel" onclick="closeModal('modal-stock')">Cancel</button>
+  </div>
+</div>
+
+<!-- Add/Edit Fund Modal -->
+<div class="modal-overlay" id="modal-manage-fund">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-manage-fund-title">Add Fund</div>
+    <div class="modal-sub" id="modal-manage-fund-sub">New mutual fund</div>
+    <div class="field-group">
+      <div class="field-label">Fund Name</div>
+      <input class="field-input" id="input-mf-name" type="text" placeholder="e.g. Parag Parikh Flexi Cap">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Target % (0–1)</div>
+        <input class="field-input" id="input-mf-target" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.10">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Current Value (₹)</div>
+        <input class="field-input" id="input-mf-current" type="number" inputmode="decimal" placeholder="0">
+      </div>
+    </div>
+    <div id="mf-target-hint" style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:0 2px"></div>
+    <button class="btn-save" onclick="saveManageFund()">Save Fund</button>
+    <button class="btn-cancel" id="btn-delete-fund" onclick="deleteFund()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">🗑 Remove This Fund</button>
+    <button class="btn-cancel" onclick="closeModal('modal-manage-fund')">Cancel</button>
+  </div>
+</div>
+
+<!-- Add/Edit Stock Modal -->
+<div class="modal-overlay" id="modal-manage-stock">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-manage-stock-title">Add Stock</div>
+    <div class="modal-sub" id="modal-manage-stock-sub">New dividend stock</div>
+    <div class="field-group">
+      <div class="field-label">Stock Name</div>
+      <input class="field-input" id="input-st-name" type="text" placeholder="e.g. HDFC Bank">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Target % (0–1)</div>
+        <input class="field-input" id="input-st-target" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.08">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Current Value (₹)</div>
+        <input class="field-input" id="input-st-current" type="number" inputmode="decimal" placeholder="0">
+      </div>
+    </div>
+    <div id="st-target-hint" style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:0 2px"></div>
+    <button class="btn-save" onclick="saveManageStock()">Save Stock</button>
+    <button class="btn-cancel" id="btn-delete-stock" onclick="deleteStock()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">🗑 Remove This Stock</button>
+    <button class="btn-cancel" onclick="closeModal('modal-manage-stock')">Cancel</button>
+  </div>
+</div>
+
+<!-- Confirm Reset Modal -->
+<div class="modal-overlay" id="modal-reset">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="color:var(--red)">Reset All Data?</div>
+    <div class="modal-sub">This will permanently delete all your funds, stocks and settings. Cannot be undone.</div>
+    <button class="btn-save" onclick="doReset()" style="background:var(--red)">Yes, Reset Everything</button>
+    <button class="btn-cancel" onclick="closeModal('modal-reset')">Cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-review">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Next Review Date</div>
+    <div class="modal-sub">When will you rebalance next?</div>
+    <div class="field-group">
+      <div class="field-label">Review Date</div>
+      <input class="field-input" id="input-review" type="date">
+    </div>
+    <button class="btn-save" onclick="saveReviewDate()">Save</button>
+    <button class="btn-cancel" onclick="closeModal('modal-review')">Cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-sync">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Connect Google Sheet</div>
+    <div class="modal-sub">Paste your Apps Script Web App URL below</div>
+    <div class="field-group">
+      <div class="field-label">Script URL</div>
+      <input class="field-input" id="input-sync-url" type="url" placeholder="https://script.google.com/macros/s/...">
+    </div>
+    <div style="background:rgba(123,47,190,0.08);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.8">
+      <div style="color:var(--text);font-weight:600;margin-bottom:6px">How to get the URL:</div>
+      1. Open your Google Sheet<br>
+      2. Extensions → Apps Script<br>
+      3. Paste the GoogleAppsScript.js code<br>
+      4. Deploy → New Deployment → Web App<br>
+      5. Set access to <span style="color:var(--yellow);font-weight:600">"Anyone"</span><br>
+      6. Copy the URL and paste above
+    </div>
+    <button class="btn-save" onclick="saveSyncUrl()">Save & Connect</button>
+    <button class="btn-cancel" onclick="closeModal('modal-sync')">Cancel</button>
+  </div>
+</div>
+
+<script>
+const CIRC = 2 * Math.PI * 40; // 251.2
+
+const COLORS = ['#7B2FBE','#047857','#c0392b','#b45309','#1a56db','#9B4DE0','#F77F00','#E040FB','#00BCD4','#FF6B6B','#059669','#d97706','#3b82f6','#ec4899','#10b981','#8b5cf6','#06b6d4','#84cc16'];
+// Always returns a color even if funds exceed array length
+function getColor(i) {
+  if (i < COLORS.length) return COLORS[i];
+  // Generate HSL color for any index beyond array
+  const hue = (i * 137.5) % 360; // golden angle for distinct colors
+  return `hsl(${hue}, 70%, 60%)`;
+}
+
+let state = JSON.parse(localStorage.getItem('wm_state') || 'null') || {
+  funds: [
+    { name:'UTI Nifty 50',       target:0.33, current:151250 },
+    { name:'JuniorBess Next 50', target:0.17, current:88246  },
+    { name:'Motilal Midcap',     target:0.15, current:67470  },
+    { name:'Quant Small Cap',    target:0.12, current:57583  },
+    { name:'MON100 US Market',   target:0.10, current:48888  },
+    { name:'Gold',               target:0.07, current:37159  },
+    { name:'Debt',               target:0.06, current:29721  },
+  ],
+  stocks: [
+    { name:'IOCL',         target:0.07, current:514    },
+    { name:'ONGC',         target:0.08, current:846    },
+    { name:'Power Grid',   target:0.08, current:870    },
+    { name:'NTPC',         target:0.07, current:1100   },
+    { name:'Coal India',   target:0.08, current:861    },
+    { name:'HDFC Bank',    target:0.06, current:879.4  },
+    { name:'ICICI Bank',   target:0.06, current:1374   },
+    { name:'REC',          target:0.06, current:666    },
+    { name:'ITC',          target:0.10, current:1250   },
+    { name:'Infosys',      target:0.10, current:1288.9 },
+    { name:'Sun Pharma',   target:0.08, current:1752.5 },
+    { name:'L&T',          target:0.08, current:4066.7 },
+    { name:'Tata Consumer',target:0.08, current:1125.2 },
+  ],
+  sip: 30000,
+  cash: 10000,
+  dividend: 16593.7,
+  reviewDate: '2027-03-01',
+  lastUpdated: null
+};
+
+let editingFundIndex = null;
+
+function save() {
+  state.lastUpdated = new Date().toISOString();
+  localStorage.setItem('wm_state', JSON.stringify(state));
+}
+
+// ══ COMPUTED ══
+function getTotal() { return state.funds.reduce((s,f)=>s+f.current,0); }
+function getDividendTotal() { return state.stocks.reduce((s,x)=>s+x.current,0); }
+function getTotalWithDividend() { return getTotal() + getDividendTotal(); }
+
+function getDeviation(f) {
+  const total = getTotal();
+  return total > 0 ? (f.current / total) - f.target : 0;
+}
+
+// Matches Excel: =IF(ABS(dev)<=0.03,"Do Nothing",IF(ABS(dev)<=0.05,"Adjust SIP",IF(dev>0.05,"Trim","Increase Allocation")))
+function getAction(f) {
+  const dev = getDeviation(f);
+  if (Math.abs(dev) <= 0.03) return 'Do Nothing';
+  if (Math.abs(dev) <= 0.05) return 'Adjust SIP';
+  if (dev > 0.05) return 'Trim';
+  return 'Increase Allocation';
+}
+
+// Mode = Balanced if 4 or more funds are "Do Nothing", else Correction
+// Matches Excel: =IF(COUNTIF(Action range,"Do Nothing")>=4,"Balanced","Correction")
+function getMode() {
+  const doNothingCount = state.funds.filter(f => getAction(f) === 'Do Nothing').length;
+  return doNothingCount >= 4 ? 'Balanced' : 'Correction';
+}
+
+// Balanced SIP: every fund gets target% × total SIP
+function getBalancedSIP(f) {
+  return state.sip * f.target;
+}
+
+// Correction SIP: underweight funds only, weighted by their shortfall amount
+// Formula: SIP × (shortfall_i / total_shortfall)
+function getCorrectionSIP(f) {
+  const total = getTotal();
+  const dev = getDeviation(f);
+  if (dev >= 0) return 0; // overweight = Skip
+  const shortfall = total * f.target - f.current;
+  const totalShortfall = state.funds.reduce((s, x) => {
+    const d = getDeviation(x);
+    return d < 0 ? s + (getTotal() * x.target - x.current) : s;
+  }, 0);
+  return totalShortfall > 0 ? state.sip * (shortfall / totalShortfall) : 0;
+}
+
+// Balanced Lumpsum: ALL funds get target% × cash (including overweight)
+function getBalancedLumpsum(f) {
+  return state.cash * f.target;
+}
+
+// Correction Lumpsum: =IF(deviation < -0.03, (difference / total_underweight) * cash, "Skip")
+// Excel Difference = Current - Target (negative when underweight, matching Excel H column)
+// Dashboard Underweight = sum of negative differences only
+function getCorrectionLumpsum(f) {
+  const dev = getDeviation(f);
+  if (dev >= -0.03) return 0; // Skip if deviation not worse than -3%
+  const total = getTotal();
+  const difference = f.current - total * f.target; // negative when underweight (matches Excel H col)
+  const totalUnderweight = state.funds.reduce((s, x) => {
+    const diff = x.current - total * x.target; // negative when underweight
+    return diff < 0 ? s + diff : s;
+  }, 0); // sum of negatives = negative number (matches Excel Dashboard B2)
+  return totalUnderweight !== 0 ? (difference / totalUnderweight) * state.cash : 0;
+}
+
+// Active SIP: auto mode based on deviations
+function getActiveSIP(f) {
+  return getMode() === 'Balanced' ? getBalancedSIP(f) : getCorrectionSIP(f);
+}
+
+// Active Lumpsum: Balanced mode shows Balanced Lumpsum, Correction shows Correction
+function getActiveLumpsum(f) {
+  return getMode() === 'Balanced' ? getBalancedLumpsum(f) : getCorrectionLumpsum(f);
+}
+
+function getHealthScore() {
+  const total = getTotal();
+  if (!total) return 100;
+  const avgDev = state.funds.reduce((s, f) => s + Math.abs(getDeviation(f)), 0) / state.funds.length;
+  return Math.max(0, Math.min(100, Math.round((1 - avgDev / 0.05) * 100)));
+}
+
+// Stock rank logic: sort by Gap% descending (most underweight first)
+function getStockRank(stock) {
+  const total = state.stocks.reduce((s, x) => s + x.current, 0);
+  const currentPct = total > 0 ? stock.current / total : 0;
+  return stock.target - currentPct; // positive = underweight
+}
+function getRankedStocks() {
+  return [...state.stocks].sort((a, b) => getStockRank(b) - getStockRank(a));
+}
+
+function getDaysToReview() {
+  const review = new Date(state.reviewDate);
+  const now = new Date();
+  return Math.max(0, Math.round((review - now) / 86400000));
+}
+
+function fmt(n) {
+  if (n === 0) return '₹0';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+function fmtPct(n) { return (n*100).toFixed(1)+'%'; }
+
+// ══ RENDER ══
+function renderStocks() {
+  const total = state.stocks.reduce((s, x) => s + x.current, 0);
+  document.getElementById('s-div-total').textContent = fmt(total);
+  const ranked = getRankedStocks();
+  let html = '';
+  ranked.forEach((stock, rankIdx) => {
+    const currentPct = total > 0 ? stock.current / total : 0;
+    const targetAmt = total * stock.target;
+    const gap = stock.target - currentPct;
+    const gapColor = gap > 0.01 ? 'var(--green)' : (gap < -0.01 ? 'var(--red)' : 'var(--muted)');
+    const origIdx = state.stocks.indexOf(stock);
+    html += `<div class="fund-row" onclick="openStockEdit(${origIdx})" style="animation-delay:${rankIdx*0.04}s">
+      <div style="width:22px;height:22px;border-radius:8px;background:#fff8ed;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--yellow);flex-shrink:0">${rankIdx+1}</div>
+      <div class="fund-info">
+        <div class="fund-name">${stock.name}</div>
+        <div class="fund-val">${fmt(stock.current)} · Target ${fmtPct(stock.target)}</div>
+      </div>
+      <div class="fund-right">
+        <div class="fund-pct" style="color:${gapColor}">${gap > 0 ? '+' : ''}${fmtPct(gap)}</div>
+        <div class="fund-action">${gap > 0.005 ? 'Buy' : (gap < -0.005 ? 'Overweight' : 'On track')}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('stocks-list').innerHTML = html;
+}
+
+function renderAll() {
+  renderDashboard();
+  renderDecision();
+  renderSIP();
+  renderLumpsum();
+  renderStocks();
+  renderSettings();
+}
+
+function renderDashboard() {
+  const total = getTotal();
+  const totalWithDiv = getTotalWithDividend();
+  const health = getHealthScore();
+  // Always show actual underweight amount — sum of negative differences, matches Excel Dashboard B2
+  const actionFunds = state.funds.filter(f => getAction(f) !== 'Do Nothing');
+  const underweightAmt = state.funds.reduce((s, f) => {
+    const diff = f.current - total * f.target; // negative when underweight
+    return diff < 0 ? s + diff : s;
+  }, 0);
+
+  document.getElementById('d-total').textContent = fmt(totalWithDiv);
+  document.getElementById('d-sip').textContent = fmt(state.sip);
+  const mode = getMode();
+  document.getElementById('d-mode-label').textContent = mode + ' mode · ' + state.funds.length + ' funds';
+  document.getElementById('d-underweight').textContent = fmt(underweightAmt);
+  document.getElementById('d-alert-count').textContent = actionFunds.length > 0
+    ? actionFunds.length + ' fund' + (actionFunds.length!==1?'s':'') + ' need attention'
+    : 'All funds on track';
+  document.getElementById('d-dividend').textContent = fmt(getDividendTotal());
+  document.getElementById('d-core').textContent = fmt(total);
+  document.getElementById('d-cash').textContent = fmt(state.cash);
+  document.getElementById('health-bar').style.width = health + '%';
+  document.getElementById('health-pct').textContent = health + '%';
+  document.getElementById('d-days').textContent = getDaysToReview();
+  document.getElementById('d-mode-badge').textContent = mode + ' Mode (Auto)';
+  document.getElementById('d-review-date').textContent = new Date(state.reviewDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+
+  // Timestamp
+  if (state.lastUpdated) {
+    const d = new Date(state.lastUpdated);
+    document.getElementById('d-timestamp').textContent = 'Last updated · ' + d.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  }
+
+  // Donut — fully dynamic, rebuilds arcs based on current fund count
+  const svg = document.getElementById('donut-svg');
+  // Remove old arcs
+  svg.querySelectorAll('.donut-arc').forEach(el => el.remove());
+  // Insert background circle after first child
+  const bgCircle = svg.querySelector('circle');
+
+  let offset = 0;
+  let legendHTML = '';
+  state.funds.forEach((f, i) => {
+    const pct = total > 0 ? f.current / total : 0;
+    const arcLen = pct * CIRC;
+    // Create arc element dynamically
+    const arc = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    arc.classList.add('donut-arc');
+    arc.setAttribute('cx', '54');
+    arc.setAttribute('cy', '54');
+    arc.setAttribute('r', '40');
+    arc.setAttribute('fill', 'none');
+    arc.setAttribute('stroke', getColor(i));
+    arc.setAttribute('stroke-width', '17');
+    arc.setAttribute('stroke-dasharray', `${arcLen} ${CIRC}`);
+    arc.setAttribute('stroke-dashoffset', -offset);
+    arc.setAttribute('transform', 'rotate(-90 54 54)');
+    arc.style.transition = `stroke-dasharray 0.8s ease ${i*0.1}s`;
+    // Insert before text elements
+    svg.insertBefore(arc, svg.querySelectorAll('text')[0]);
+    offset += arcLen;
+
+    const dev = getDeviation(f);
+    const devStr = (dev >= 0 ? '+' : '') + fmtPct(dev);
+    const action = getAction(f);
+    const devClass = action === 'Increase Allocation' ? 'neg' : action === 'Trim' ? 'pos' : '';
+    legendHTML += `<div class="legend-item">
+      <div class="legend-dot" style="background:${getColor(i)}"></div>
+      <div class="legend-name">${f.name.split(' ').slice(0,2).join(' ')}</div>
+      <div class="legend-pct">${fmtPct(pct)}</div>
+      <div class="legend-dev ${devClass}">${devStr}</div>
+    </div>`;
+  });
+  document.getElementById('donut-legend').innerHTML = legendHTML;
+
+  // Alerts — use getAction() so thresholds match Decision tab exactly
+  let alertsHTML = '';
+  actionFunds.forEach(f => {
+    const action = getAction(f);
+    const dotColor = action === 'Adjust SIP' ? 'var(--yellow)' : action === 'Trim' ? 'var(--blue)' : 'var(--red)';
+    const dev = getDeviation(f);
+    const diff = dev * total;
+    alertsHTML += `<div class="alert-row">
+      <div class="alert-dot" style="background:${dotColor}"></div>
+      <div class="alert-name">${f.name}</div>
+      <div class="alert-badge bad" style="color:${dotColor};background:${dotColor}18">${action} · ${fmt(diff)}</div>
+    </div>`;
+  });
+  const okCount = state.funds.length - actionFunds.length;
+  if (okCount > 0) {
+    alertsHTML += `<div class="alert-row">
+      <div class="alert-dot" style="background:var(--green)"></div>
+      <div class="alert-name">${okCount} fund${okCount!==1?'s':''} on track</div>
+      <div class="alert-badge ok">Do Nothing ✓</div>
+    </div>`;
+  }
+  document.getElementById('alerts-wrap').innerHTML = alertsHTML;
+}
+
+function renderDecision() {
+  const total = getTotal();
+  let html = '';
+  state.funds.forEach((f, i) => {
+    const dev = getDeviation(f);
+    const devStr = (dev >= 0 ? '+' : '') + fmtPct(dev);
+    const action = getAction(f);
+    const dotColor = action === 'Do Nothing' ? 'var(--muted)' : action === 'Adjust SIP' ? 'var(--yellow)' : action === 'Trim' ? 'var(--blue)' : 'var(--red)';
+    html += `<div class="fund-row" onclick="openFundEdit(${i})" style="animation-delay:${i*0.05}s">
+      <div class="fund-dot" style="background:${dotColor}"></div>
+      <div class="fund-info">
+        <div class="fund-name">${f.name}</div>
+        <div class="fund-val">${fmt(f.current)} · Target ${fmtPct(f.target)}</div>
+      </div>
+      <div class="fund-right">
+        <div class="fund-pct" style="color:${dotColor}">${devStr}</div>
+        <div class="fund-action">${action}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('decision-list').innerHTML = html;
+}
+
+function renderSIP() {
+  const mode = getMode();
+  let html = `<div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:11px;color:var(--muted)">Mode: <span style="color:${mode==='Balanced'?'var(--green)':'var(--yellow)'};font-weight:600">${mode} (Auto)</span></div>
+    <div style="font-size:10px;color:var(--muted)">Left = Balanced · Right = Correction</div>
+  </div>`;
+  state.funds.forEach((f, i) => {
+    const balSIP = getBalancedSIP(f);
+    const corrSIP = getCorrectionSIP(f);
+    const corrDisplay = corrSIP > 0 ? fmt(corrSIP) : 'Skip';
+    const corrColor = corrSIP > 0 ? 'var(--green)' : 'var(--muted)';
+    const dev = getDeviation(f);
+    const dotColor = dev < -0.005 ? 'var(--red)' : (dev > 0.005 ? 'var(--green)' : 'var(--muted)');
+    html += `<div class="fund-row" onclick="openFundEdit(${i})" style="animation-delay:${i*0.05}s">
+      <div class="fund-dot" style="background:${dotColor}"></div>
+      <div class="fund-info">
+        <div class="fund-name">${f.name}</div>
+        <div class="fund-val" style="color:var(--blue)">${fmt(balSIP)}</div>
+      </div>
+      <div class="fund-right">
+        <div class="fund-pct" style="color:${corrColor}">${corrDisplay}</div>
+        <div class="fund-action" style="font-size:10px">Correction SIP</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('sip-list').innerHTML = html;
+}
+
+function renderLumpsum() {
+  const mode = getMode();
+  let html = `<div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:11px;color:var(--muted)">Mode: <span style="color:${mode==='Balanced'?'var(--green)':'var(--yellow)'};font-weight:600">${mode} (Auto)</span></div>
+    <div style="font-size:10px;color:var(--muted)">Left = Balanced · Right = Correction</div>
+  </div>`;
+  state.funds.forEach((f, i) => {
+    const balLump = getBalancedLumpsum(f);
+    const corrLump = getCorrectionLumpsum(f);
+    const balDisplay = fmt(balLump); // always shows for all funds in balanced
+    const corrDisplay = corrLump > 1 ? fmt(corrLump) : 'Skip';
+    const corrColor = corrLump > 1 ? 'var(--green)' : 'var(--muted)';
+    const dev = getDeviation(f);
+    const dotColor = dev < -0.005 ? 'var(--red)' : (dev > 0.005 ? 'var(--green)' : 'var(--muted)');
+    html += `<div class="fund-row" onclick="openFundEdit(${i})" style="animation-delay:${i*0.05}s">
+      <div class="fund-dot" style="background:${dotColor}"></div>
+      <div class="fund-info">
+        <div class="fund-name">${f.name}</div>
+        <div class="fund-val" style="color:var(--blue)">${balDisplay}</div>
+      </div>
+      <div class="fund-right">
+        <div class="fund-pct" style="color:${corrColor}">${corrDisplay}</div>
+        <div class="fund-action" style="font-size:10px">Correction</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('lumpsum-list').innerHTML = html;
+}
+
+function renderSettings() {
+  document.getElementById('s-sip').textContent = fmt(state.sip);
+  document.getElementById('s-cash').textContent = fmt(state.cash);
+  document.getElementById('s-mode').textContent = getMode() + ' (Auto)';
+  document.getElementById('s-review').textContent = new Date(state.reviewDate).toLocaleDateString('en-IN',{month:'short',year:'numeric'});
+
+  // Funds list with edit + target total
+  const fundTotal = state.funds.reduce((s,f) => s+f.target, 0);
+  const fundsOk = Math.abs(fundTotal - 1) < 0.001;
+  document.getElementById('funds-target-warning').style.display = fundsOk ? 'none' : 'block';
+  document.getElementById('funds-total-pct').textContent = `Total target: ${fmtPct(fundTotal)} ${fundsOk ? '✓' : '← should be 100%'}`;
+  document.getElementById('funds-total-pct').style.color = fundsOk ? 'var(--green)' : 'var(--yellow)';
+
+  let fundHTML = '';
+  state.funds.forEach((f, i) => {
+    fundHTML += `<div class="settings-row" onclick="openEditFund(${i})">
+      <div class="settings-icon" style="font-size:11px;color:${getColor(i)}">●</div>
+      <div class="settings-text">
+        <div class="settings-name">${f.name}</div>
+        <div class="settings-desc">Target: ${fmtPct(f.target)} · Current: ${fmt(f.current)}</div>
+      </div>
+      <div class="settings-chevron" style="color:var(--purple-light)">Edit ›</div>
+    </div>`;
+  });
+  document.getElementById('fund-settings-list').innerHTML = fundHTML;
+
+  // Stocks list with edit + target total
+  const stockTotal = state.stocks.reduce((s,x) => s+x.target, 0);
+  const stocksOk = Math.abs(stockTotal - 1) < 0.001;
+  document.getElementById('stocks-target-warning').style.display = stocksOk ? 'none' : 'block';
+  document.getElementById('stocks-total-pct').textContent = `Total target: ${fmtPct(stockTotal)} ${stocksOk ? '✓' : '← should be 100%'}`;
+  document.getElementById('stocks-total-pct').style.color = stocksOk ? 'var(--green)' : 'var(--yellow)';
+
+  let stockHTML = '';
+  state.stocks.forEach((s, i) => {
+    stockHTML += `<div class="settings-row" onclick="openEditStock(${i})">
+      <div class="settings-icon" style="font-size:11px;color:var(--yellow)">●</div>
+      <div class="settings-text">
+        <div class="settings-name">${s.name}</div>
+        <div class="settings-desc">Target: ${fmtPct(s.target)} · Current: ${fmt(s.current)}</div>
+      </div>
+      <div class="settings-chevron" style="color:var(--yellow)">Edit ›</div>
+    </div>`;
+  });
+  document.getElementById('stock-settings-list').innerHTML = stockHTML;
+}
+
+// ══ NAVIGATION ══
+let currentTab = 'dashboard';
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+  document.getElementById('nav-' + tab).classList.add('active');
+  currentTab = tab;
+  // Update FAB
+  const fab = document.getElementById('main-fab');
+  fab.style.display = (tab === 'dashboard') ? 'flex' : 'none';
+}
+
+function handleFAB() {
+  if (currentTab === 'dashboard') openPortfolioEdit();
+  else openFundEdit(0);
+}
+
+// ══ MODALS ══
+function openFundEdit(i) {
+  editingFundIndex = i;
+  const f = state.funds[i];
+  document.getElementById('modal-fund-title').textContent = f.name;
+  document.getElementById('input-fund-value').value = f.current;
+  openModal('modal-fund');
+  setTimeout(() => document.getElementById('input-fund-value').focus(), 300);
+}
+
+function saveFundEdit() {
+  if (editingFundIndex === null) return;
+  const val = parseFloat(document.getElementById('input-fund-value').value);
+  if (!isNaN(val) && val >= 0) {
+    state.funds[editingFundIndex].current = val;
+    save();
+    renderAll();
+  }
+  closeModal('modal-fund');
+}
+
+function openPortfolioEdit() {
+  document.getElementById('input-sip').value = state.sip;
+  document.getElementById('input-cash').value = state.cash;
+  openModal('modal-portfolio');
+}
+
+function openSIPEdit() { openPortfolioEdit(); }
+function openCashEdit() { openPortfolioEdit(); }
+
+function savePortfolioEdit() {
+  const sip = parseFloat(document.getElementById('input-sip').value);
+  const cash = parseFloat(document.getElementById('input-cash').value);
+  if (!isNaN(sip)) state.sip = sip;
+  if (!isNaN(cash)) state.cash = cash;
+  save(); renderAll();
+  closeModal('modal-portfolio');
+}
+
+function openModeEdit() {
+  document.getElementById('mode-balanced').style.borderWidth = state.mode === 'Balanced' ? '2px' : '1px';
+  document.getElementById('mode-balanced').style.borderColor = state.mode === 'Balanced' ? 'var(--purple-light)' : 'var(--border)';
+  document.getElementById('mode-correction').style.borderWidth = state.mode === 'Correction' ? '2px' : '1px';
+  document.getElementById('mode-correction').style.borderColor = state.mode === 'Correction' ? 'var(--purple-light)' : 'var(--border)';
+  openModal('modal-mode');
+}
+
+function selectMode(m) {
+  state.mode = m;
+  save(); renderAll();
+  closeModal('modal-mode');
+}
+
+function openReviewEdit() {
+  document.getElementById('input-review').value = state.reviewDate;
+  openModal('modal-review');
+}
+
+function saveReviewDate() {
+  const v = document.getElementById('input-review').value;
+  if (v) { state.reviewDate = v; save(); renderAll(); }
+  closeModal('modal-review');
+}
+
+let editingStockIndex = null;
+
+function openStockEdit(i) {
+  editingStockIndex = i;
+  document.getElementById('modal-stock-title').textContent = state.stocks[i].name;
+  document.getElementById('input-stock-value').value = state.stocks[i].current;
+  openModal('modal-stock');
+  setTimeout(() => document.getElementById('input-stock-value').focus(), 300);
+}
+
+function saveStockEdit() {
+  if (editingStockIndex === null) return;
+  const val = parseFloat(document.getElementById('input-stock-value').value);
+  if (!isNaN(val) && val >= 0) {
+    state.stocks[editingStockIndex].current = val;
+    save(); renderAll();
+  }
+  closeModal('modal-stock');
+}
+
+// ══ CRUD: FUNDS ══
+let managingFundIndex = null;
+
+function openAddFund() {
+  managingFundIndex = null;
+  document.getElementById('modal-manage-fund-title').textContent = 'Add Fund';
+  document.getElementById('modal-manage-fund-sub').textContent = 'New mutual fund';
+  document.getElementById('input-mf-name').value = '';
+  document.getElementById('input-mf-target').value = '';
+  document.getElementById('input-mf-current').value = '';
+  document.getElementById('btn-delete-fund').style.display = 'none';
+  updateMFTargetHint();
+  openModal('modal-manage-fund');
+}
+
+function openEditFund(i) {
+  managingFundIndex = i;
+  const f = state.funds[i];
+  document.getElementById('modal-manage-fund-title').textContent = 'Edit Fund';
+  document.getElementById('modal-manage-fund-sub').textContent = f.name;
+  document.getElementById('input-mf-name').value = f.name;
+  document.getElementById('input-mf-target').value = f.target;
+  document.getElementById('input-mf-current').value = f.current;
+  document.getElementById('btn-delete-fund').style.display = 'block';
+  updateMFTargetHint();
+  openModal('modal-manage-fund');
+}
+
+function updateMFTargetHint() {
+  const currentTotal = state.funds.reduce((s, f, i) => {
+    if (i === managingFundIndex) return s; // exclude the one being edited
+    return s + f.target;
+  }, 0);
+  const inputVal = parseFloat(document.getElementById('input-mf-target').value) || 0;
+  const newTotal = currentTotal + inputVal;
+  const remaining = (1 - currentTotal).toFixed(2);
+  const hint = document.getElementById('mf-target-hint');
+  hint.textContent = `Other funds use ${fmtPct(currentTotal)} · Remaining: ${fmtPct(1-currentTotal)} · New total: ${fmtPct(newTotal)}`;
+  hint.style.color = Math.abs(newTotal - 1) < 0.001 ? 'var(--green)' : 'var(--yellow)';
+}
+
+function saveManageFund() {
+  const name = document.getElementById('input-mf-name').value.trim();
+  const target = parseFloat(document.getElementById('input-mf-target').value);
+  const current = parseFloat(document.getElementById('input-mf-current').value) || 0;
+  if (!name || isNaN(target) || target <= 0 || target > 1) {
+    alert('Please enter a valid name and target % between 0 and 1');
+    return;
+  }
+  if (managingFundIndex === null) {
+    state.funds.push({ name, target, current });
+  } else {
+    state.funds[managingFundIndex] = { name, target, current };
+  }
+  save(); renderAll();
+  closeModal('modal-manage-fund');
+}
+
+function deleteFund() {
+  if (managingFundIndex === null) return;
+  state.funds.splice(managingFundIndex, 1);
+  managingFundIndex = null;
+  save(); renderAll();
+  closeModal('modal-manage-fund');
+  showToast('🗑 Fund removed');
+}
+
+// ══ CRUD: STOCKS ══
+let managingStockIndex = null;
+
+function openAddStock() {
+  managingStockIndex = null;
+  document.getElementById('modal-manage-stock-title').textContent = 'Add Stock';
+  document.getElementById('modal-manage-stock-sub').textContent = 'New dividend stock';
+  document.getElementById('input-st-name').value = '';
+  document.getElementById('input-st-target').value = '';
+  document.getElementById('input-st-current').value = '';
+  document.getElementById('btn-delete-stock').style.display = 'none';
+  updateSTTargetHint();
+  openModal('modal-manage-stock');
+}
+
+function openEditStock(i) {
+  managingStockIndex = i;
+  const s = state.stocks[i];
+  document.getElementById('modal-manage-stock-title').textContent = 'Edit Stock';
+  document.getElementById('modal-manage-stock-sub').textContent = s.name;
+  document.getElementById('input-st-name').value = s.name;
+  document.getElementById('input-st-target').value = s.target;
+  document.getElementById('input-st-current').value = s.current;
+  document.getElementById('btn-delete-stock').style.display = 'block';
+  updateSTTargetHint();
+  openModal('modal-manage-stock');
+}
+
+function updateSTTargetHint() {
+  const currentTotal = state.stocks.reduce((s, x, i) => {
+    if (i === managingStockIndex) return s;
+    return s + x.target;
+  }, 0);
+  const inputVal = parseFloat(document.getElementById('input-st-target').value) || 0;
+  const newTotal = currentTotal + inputVal;
+  const hint = document.getElementById('st-target-hint');
+  hint.textContent = `Other stocks use ${fmtPct(currentTotal)} · Remaining: ${fmtPct(1-currentTotal)} · New total: ${fmtPct(newTotal)}`;
+  hint.style.color = Math.abs(newTotal - 1) < 0.001 ? 'var(--green)' : 'var(--yellow)';
+}
+
+function saveManageStock() {
+  const name = document.getElementById('input-st-name').value.trim();
+  const target = parseFloat(document.getElementById('input-st-target').value);
+  const current = parseFloat(document.getElementById('input-st-current').value) || 0;
+  if (!name || isNaN(target) || target <= 0 || target > 1) {
+    alert('Please enter a valid name and target % between 0 and 1');
+    return;
+  }
+  if (managingStockIndex === null) {
+    state.stocks.push({ name, target, current });
+  } else {
+    state.stocks[managingStockIndex] = { name, target, current };
+  }
+  save(); renderAll();
+  closeModal('modal-manage-stock');
+}
+
+function deleteStock() {
+  if (managingStockIndex === null) return;
+  state.stocks.splice(managingStockIndex, 1);
+  managingStockIndex = null;
+  save(); renderAll();
+  closeModal('modal-manage-stock');
+  showToast('🗑 Stock removed');
+}
+
+// ══ RESET ══
+function confirmReset() { openModal('modal-reset'); }
+function doReset() {
+  localStorage.removeItem('wm_state');
+  location.reload();
+}
+
+// Hook up live target hints
+document.getElementById('input-mf-target').addEventListener('input', updateMFTargetHint);
+document.getElementById('input-st-target').addEventListener('input', updateSTTargetHint);
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ══ GOOGLE SHEETS SYNC ══
+function getSyncUrl() {
+  return localStorage.getItem('wm_sync_url') || '';
+}
+
+function openSyncSetup() {
+  document.getElementById('input-sync-url').value = getSyncUrl();
+  openModal('modal-sync');
+}
+
+function saveSyncUrl() {
+  const url = document.getElementById('input-sync-url').value.trim();
+  localStorage.setItem('wm_sync_url', url);
+  updateSyncStatus();
+  closeModal('modal-sync');
+  if (url) showToast('✅ Connected! Try Pull from Sheet.');
+}
+
+function updateSyncStatus() {
+  const url = getSyncUrl();
+  const desc = document.getElementById('sync-url-desc');
+  if (desc) desc.textContent = url ? '✅ Connected' : 'Not connected';
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);border:1px solid var(--line2);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.15)';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.style.opacity = '0', 3000);
+}
+
+async function syncFromSheet() {
+  const url = getSyncUrl();
+  if (!url) { showToast('⚠️ No Sheet connected. Go to Settings.'); return; }
+  const el = document.getElementById('pull-status');
+  el.textContent = '⏳';
+  try {
+    const res = await fetch(url + '?action=read');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    // Full replace — adds/removes/renames funds and stocks to match Sheet exactly
+    if (data.funds && data.funds.length > 0) {
+      state.funds = data.funds.map(f => ({
+        name:    f.name,
+        target:  f.target,
+        current: f.current
+      }));
+    }
+    if (data.stocks && data.stocks.length > 0) {
+      state.stocks = data.stocks.map(s => ({
+        name:    s.name,
+        target:  s.target,
+        current: s.current
+      }));
+    }
+
+    if (data.sip !== undefined)      state.sip        = data.sip;
+    if (data.cash !== undefined)     state.cash       = data.cash;
+    if (data.dividend !== undefined) state.dividend   = data.dividend;
+    if (data.reviewDate)             state.reviewDate = data.reviewDate;
+
+    save();
+    renderAll();
+    el.textContent = '›';
+    const fundCount = state.funds.length;
+    const stockCount = state.stocks.length;
+    showToast(`✅ Synced — ${fundCount} funds, ${stockCount} stocks`);
+  } catch (err) {
+    el.textContent = '›';
+    showToast('❌ Pull failed: ' + err.message);
+  }
+}
+
+async function syncToSheet() {
+  const url = getSyncUrl();
+  if (!url) { showToast('⚠️ No Sheet connected. Go to Settings.'); return; }
+  const el = document.getElementById('push-status');
+  el.textContent = '⏳';
+  try {
+    const payload = {
+      action: 'write',
+      funds: state.funds,   // full array — name, target, current
+      stocks: state.stocks, // full array — name, target, current
+      sip: state.sip,
+      cash: state.cash,
+      reviewDate: state.reviewDate
+    };
+    const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    el.textContent = '›';
+    showToast(`✅ Pushed — ${state.funds.length} funds, ${state.stocks.length} stocks`);
+  } catch (err) {
+    el.textContent = '›';
+    showToast('❌ Push failed: ' + err.message);
+  }
+}
+
+// ══ INIT ══
+renderAll();
+updateSyncStatus();
+
+// ── Theme ────────────────────────────────────────────────────
+const THEME_KEY = 'abode_theme';
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = t === 'dark' ? '#0f0f0e' : '#ffffff';
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+(function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  applyTheme(saved || sys);
+})();
+</script>
+</body>
+</html>

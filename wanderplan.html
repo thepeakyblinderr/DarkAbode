@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="WanderPlan — precision trip planning">
+<link rel="manifest" href="manifest.json">
+<title>WanderPlan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Epilogue:wght@400;500;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --white: #ffffff;
+  --black: #0a0a0a;
+  --gray-50: #f7f7f7;
+  --gray-100: #efefef;
+  --gray-200: #e0e0e0;
+  --gray-400: #a0a0a0;
+  --gray-600: #666666;
+  --gray-800: #222222;
+  --accent: #0066ff;
+  --accent-dim: rgba(0,102,255,0.08);
+  --accent-mid: rgba(0,102,255,0.15);
+  --green: #00b87a;
+  --green-dim: rgba(0,184,122,0.08);
+  --red: #e53e3e;
+  --red-dim: rgba(229,62,62,0.08);
+  --amber: #d97706;
+  --amber-dim: rgba(217,119,6,0.08);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 16px;
+  --border: 1px solid var(--gray-200);
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --font-display: 'Epilogue', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --nav-h: 56px;
+  --bottom-h: 60px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html[data-theme="dark"] {
+  --white: #1a1a18;
+  --black: #f0f0ec;
+  --gray-50: #0f0f0e;
+  --gray-100: #1a1a18;
+  --gray-200: #2a2a28;
+  --gray-400: #5a5a54;
+  --gray-600: #8a8a80;
+  --gray-800: #c8c8c0;
+  --accent: #4d80e6;
+  --accent-dim: rgba(77,128,230,0.12);
+  --accent-mid: rgba(77,128,230,0.20);
+  --green: #2ea878;
+  --green-dim: rgba(46,168,120,0.12);
+  --red: #e05a4e;
+  --red-dim: rgba(224,90,78,0.12);
+  --amber: #d4900a;
+  --amber-dim: rgba(212,144,10,0.12);
+  --border: 1px solid #2a2a28;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.25);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
+body { font-family: var(--font-body); background: var(--white); color: var(--black); min-height: 100vh; min-height: -webkit-fill-available; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
+
+/* ── LAYOUT ── */
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--white); border-bottom: var(--border); position: sticky; top: 0; z-index: 100; }
+.logo { font-family: var(--font-display); font-size: 17px; font-weight: 900; letter-spacing: -0.5px; color: var(--black); }
+.logo sup { font-size: 9px; font-weight: 500; color: var(--accent); vertical-align: super; letter-spacing: 0; font-family: var(--font-mono); }
+.main-content { flex: 1; padding: 20px 16px calc(var(--bottom-h) + var(--safe-bottom) + 20px); max-width: 680px; margin: 0 auto; width: 100%; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--bottom-h) + var(--safe-bottom)); background: var(--white); border-top: var(--border); display: flex; align-items: flex-start; padding-top: 8px; padding-bottom: var(--safe-bottom); z-index: 100; }
+.bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; border: none; background: none; color: var(--gray-400); font-family: var(--font-body); transition: color 0.15s; }
+.bnav-item.active { color: var(--accent); }
+.bnav-icon { font-size: 20px; line-height: 1; }
+.bnav-label { font-size: 10px; font-weight: 500; letter-spacing: 0.2px; }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── TYPOGRAPHY ── */
+.page-title { font-family: var(--font-display); font-size: 26px; font-weight: 900; letter-spacing: -0.8px; color: var(--black); line-height: 1.1; }
+.page-subtitle { font-size: 13px; color: var(--gray-600); margin-top: 4px; }
+.section-label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+
+/* ── BUTTONS ── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-family: var(--font-body); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap; text-decoration: none; }
+.btn-primary { background: var(--black); color: var(--white); }
+.btn-primary:hover { background: var(--gray-800); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-secondary { background: var(--gray-50); color: var(--black); border: var(--border); }
+.btn-secondary:hover { background: var(--gray-100); }
+.btn-accent { background: var(--accent); color: var(--white); }
+.btn-accent:hover { opacity: 0.9; }
+.btn-ghost { background: transparent; color: var(--gray-600); border: var(--border); }
+.btn-ghost:hover { background: var(--gray-50); color: var(--black); }
+.btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(229,62,62,0.2); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-xs { padding: 4px 9px; font-size: 11px; border-radius: 4px; }
+.btn-icon { padding: 8px; border-radius: var(--radius-sm); width: 34px; height: 34px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+
+/* ── CARDS ── */
+.card { background: var(--white); border: var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.card-body { padding: 16px; }
+.card + .card { margin-top: 10px; }
+
+/* ── TRIP CARD ── */
+.trip-card { background: var(--white); border: var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 10px; cursor: pointer; transition: all 0.15s; position: relative; }
+.trip-card:active { transform: scale(0.99); }
+.trip-card:hover { border-color: var(--gray-400); box-shadow: var(--shadow); }
+.tc-eyebrow { font-family: var(--font-mono); font-size: 10px; color: var(--gray-400); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.tc-name { font-family: var(--font-display); font-size: 20px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1; }
+.tc-divider { height: 1px; background: var(--gray-100); margin: 12px 0; }
+.tc-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { display: inline-flex; align-items: center; gap: 4px; background: var(--gray-50); border: var(--border); border-radius: 4px; padding: 3px 8px; font-size: 11px; color: var(--gray-600); font-family: var(--font-mono); }
+.tag.blue { background: var(--accent-dim); border-color: var(--accent-mid); color: var(--accent); }
+.tag.green { background: var(--green-dim); border-color: rgba(0,184,122,0.2); color: var(--green); }
+.tc-actions { position: absolute; top: 14px; right: 14px; display: flex; gap: 4px; }
+
+/* ── EMPTY STATE ── */
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; text-align: center; }
+.empty-icon { width: 48px; height: 48px; background: var(--gray-50); border: var(--border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+.empty h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.empty p { font-size: 13px; color: var(--gray-600); margin-bottom: 20px; }
+
+/* ── FORMS ── */
+.form-block { background: var(--white); border: var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; }
+.form-block-title { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media(max-width:400px){ .form-grid { grid-template-columns: 1fr; } }
+.form-group { margin-bottom: 12px; }
+.form-group:last-child { margin-bottom: 0; }
+label { display: block; font-size: 11px; font-weight: 500; color: var(--gray-600); margin-bottom: 5px; letter-spacing: 0.2px; }
+input[type=text], input[type=date], input[type=time], input[type=datetime-local], input[type=number], input[type=email], textarea, select {
+  width: 100%; background: var(--gray-50); border: var(--border); border-radius: var(--radius-sm);
+  color: var(--black); font-family: var(--font-body); font-size: 16px; padding: 9px 11px;
+  transition: border-color 0.15s, box-shadow 0.15s; outline: none; appearance: none; -webkit-appearance: none;
+}
+input:focus, textarea:focus, select:focus { background: var(--white); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+select option { background: white; }
+
+/* ── DESTINATION BLOCK ── */
+.dest-block { border: var(--border); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px; background: var(--gray-50); }
+.dest-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.dest-num { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--accent); }
+
+/* ── DETAIL TABS ── */
+.tab-bar { display: flex; gap: 2px; background: var(--gray-50); border: var(--border); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; }
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn { flex: 1; min-width: max-content; padding: 7px 12px; border: none; background: transparent; color: var(--gray-600); font-size: 12px; font-weight: 500; font-family: var(--font-body); border-radius: 5px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.tab-btn.active { background: var(--white); color: var(--black); box-shadow: var(--shadow); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── OVERVIEW DEST CARD ── */
+.dest-view-card { border: var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 12px; }
+.dest-view-head { padding: 14px 16px; background: var(--black); color: var(--white); }
+.dest-view-name { font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: -0.4px; }
+.dest-view-dates { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px; font-family: var(--font-mono); }
+.dest-view-body { padding: 14px 16px; }
+.map-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-dim); border: 1px solid var(--accent-mid); color: var(--accent); border-radius: var(--radius-sm); padding: 6px 12px; font-size: 12px; font-weight: 500; text-decoration: none; margin-bottom: 10px; }
+
+/* ── ITINERARY ── */
+.day-group { margin-bottom: 20px; }
+.day-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.day-pill { background: var(--black); color: var(--white); font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.5px; white-space: nowrap; }
+.day-line { flex: 1; height: 1px; background: var(--gray-200); }
+.activity-row { display: flex; gap: 10px; padding: 10px 12px; background: var(--white); border: var(--border); border-radius: var(--radius-sm); margin-bottom: 6px; align-items: flex-start; }
+.act-time { font-family: var(--font-mono); font-size: 11px; color: var(--gray-400); min-width: 38px; margin-top: 2px; }
+.act-body { flex: 1; min-width: 0; }
+.act-name { font-size: 13px; font-weight: 500; }
+.act-note { font-size: 12px; color: var(--gray-600); margin-top: 2px; line-height: 1.4; }
+.act-cat { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 2px 7px; border-radius: 3px; margin-top: 5px; font-family: var(--font-mono); }
+.cat-sight { background: var(--accent-dim); color: var(--accent); }
+.cat-food { background: var(--green-dim); color: var(--green); }
+.cat-transport { background: var(--amber-dim); color: var(--amber); }
+.cat-hotel { background: rgba(147,51,234,0.07); color: #7c3aed; }
+.cat-other { background: var(--gray-50); color: var(--gray-600); }
+.act-del { background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 14px; padding: 2px; flex-shrink: 0; }
+.act-del:hover { color: var(--red); }
+
+/* ── DOCUMENTS ── */
+.doc-filter-row { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.doc-filter-row::-webkit-scrollbar { display: none; }
+.filter-chip { flex-shrink: 0; padding: 5px 12px; border: var(--border); border-radius: 20px; font-size: 12px; background: var(--white); color: var(--gray-600); cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
+.filter-chip.active { background: var(--black); color: var(--white); border-color: var(--black); }
+.upload-zone { border: 2px dashed var(--gray-200); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; cursor: pointer; transition: border-color 0.15s; margin-bottom: 14px; }
+.upload-zone:hover { border-color: var(--accent); }
+.upload-zone p { font-size: 13px; color: var(--gray-600); margin-top: 8px; }
+.doc-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--white); border: var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; }
+.doc-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; background: var(--gray-100); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; overflow: hidden; }
+.doc-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.doc-info { flex: 1; min-width: 0; }
+.doc-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-meta { font-size: 11px; color: var(--gray-400); font-family: var(--font-mono); margin-top: 2px; }
+.doc-traveller { font-size: 11px; color: var(--accent); margin-top: 2px; }
+.doc-actions { display: flex; gap: 4px; }
+
+/* ── DOC VIEWER ── */
+#doc-viewer { display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.95); z-index: 300; flex-direction: column; }
+#doc-viewer.open { display: flex; }
+.viewer-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.viewer-title { color: white; font-size: 14px; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.viewer-body img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+.viewer-body iframe { width: 100%; height: 100%; border: none; border-radius: 6px; background: white; }
+.viewer-close { background: rgba(255,255,255,0.1); border: none; color: white; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+
+/* ── PACKING ── */
+.pack-traveller-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.ptab { padding: 5px 12px; border-radius: 20px; border: var(--border); font-size: 12px; cursor: pointer; background: var(--white); color: var(--gray-600); transition: all 0.15s; }
+.ptab.active { background: var(--black); color: var(--white); border-color: var(--black); }
+.pack-category { margin-bottom: 16px; }
+.pack-cat-title { font-family: var(--font-mono); font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+.pack-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--gray-100); }
+.pack-item:last-child { border-bottom: none; }
+.pack-check { width: 18px; height: 18px; border: 1.5px solid var(--gray-200); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; background: white; }
+.pack-check.checked { background: var(--black); border-color: var(--black); }
+.pack-check.checked::after { content: '✓'; color: white; font-size: 11px; line-height: 1; }
+.pack-label { font-size: 13px; flex: 1; }
+.pack-label.checked { color: var(--gray-400); text-decoration: line-through; }
+.pack-del { background: none; border: none; color: var(--gray-300); cursor: pointer; font-size: 14px; padding: 2px 4px; }
+.pack-del:hover { color: var(--red); }
+.pack-progress { height: 3px; background: var(--gray-100); border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+.pack-progress-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.3s ease; }
+
+/* ── WEATHER ── */
+.weather-card { background: var(--black); color: white; border-radius: var(--radius-lg); padding: 20px; margin-bottom: 12px; }
+.weather-dest { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.weather-main { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 12px; }
+.weather-temp { font-family: var(--font-display); font-size: 48px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+.weather-info { padding-bottom: 4px; }
+.weather-desc { font-size: 14px; color: rgba(255,255,255,0.8); text-transform: capitalize; }
+.weather-feels { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; font-family: var(--font-mono); }
+.weather-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; }
+.w-stat { text-align: center; }
+.w-stat-val { font-family: var(--font-mono); font-size: 14px; font-weight: 500; }
+.w-stat-label { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── SHARE ── */
+.share-option { display: flex; align-items: center; gap: 14px; padding: 14px; border: var(--border); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+.share-option:hover { border-color: var(--accent); background: var(--accent-dim); }
+.share-icon { width: 40px; height: 40px; background: var(--gray-50); border: var(--border); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.share-info h4 { font-size: 14px; font-weight: 500; }
+.share-info p { font-size: 12px; color: var(--gray-600); margin-top: 2px; }
+
+/* ── SUGGESTIONS ── */
+.suggestion-card { border: var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+.sug-top { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 6px; }
+.sug-icon { font-size: 18px; flex-shrink: 0; }
+.sug-title { font-size: 14px; font-weight: 600; font-family: var(--font-display); }
+.sug-text { font-size: 13px; color: var(--gray-600); line-height: 1.55; }
+.ai-label { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-dim); border: 1px solid var(--accent-mid); color: var(--accent); padding: 2px 8px; border-radius: 3px; font-size: 10px; font-family: var(--font-mono); letter-spacing: 0.5px; }
+
+/* ── TRAVELLERS ── */
+.traveller-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--gray-50); border: var(--border); border-radius: 20px; padding: 5px 10px; font-size: 12px; margin-right: 6px; margin-bottom: 6px; }
+.traveller-avatar { width: 20px; height: 20px; background: var(--black); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+.traveller-del { background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 13px; padding: 0; line-height: 1; }
+
+/* ── BUDGET ── */
+.budget-bar { height: 6px; background: var(--gray-100); border-radius: 6px; overflow: hidden; margin: 8px 0; }
+.budget-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; }
+.expense-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+.expense-row:last-child { border-bottom: none; }
+.expense-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.expense-name { flex: 1; font-size: 13px; }
+.expense-amount { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+
+/* ── MODAL ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--white); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 20px 16px; padding-bottom: calc(20px + var(--safe-bottom)); width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; animation: slideup 0.22s cubic-bezier(0.16,1,0.3,1); }
+@keyframes slideup { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-handle { width: 36px; height: 4px; background: var(--gray-200); border-radius: 4px; margin: 0 auto 18px; }
+.modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: -0.4px; margin-bottom: 16px; }
+
+/* ── TOAST ── */
+#toast { position: fixed; bottom: calc(var(--bottom-h) + var(--safe-bottom) + 12px); left: 50%; transform: translateX(-50%); background: var(--black); color: var(--white); padding: 9px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; box-shadow: var(--shadow-md); }
+#toast.show { opacity: 1; }
+
+/* ── LOADER ── */
+.loader { display: flex; align-items: center; gap: 8px; color: var(--gray-400); font-size: 13px; padding: 16px 0; }
+.dots { display: flex; gap: 4px; }
+.dots span { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; animation: blink 1.2s infinite; }
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.2;transform:scale(0.7)} 40%{opacity:1;transform:scale(1)} }
+
+/* ── BACK BTN ── */
+.back-btn { display: inline-flex; align-items: center; gap: 5px; color: var(--gray-600); font-size: 13px; cursor: pointer; background: none; border: none; font-family: var(--font-body); padding: 0; margin-bottom: 16px; }
+.back-btn:hover { color: var(--black); }
+
+/* ── DETAIL HEADER ── */
+.detail-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: var(--border); }
+.detail-eyebrow { font-family: var(--font-mono); font-size: 10px; color: var(--gray-400); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.detail-name { font-family: var(--font-display); font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
+.detail-dates { font-size: 13px; color: var(--gray-600); font-family: var(--font-mono); }
+.detail-actions { display: flex; gap: 6px; margin-top: 12px; }
+
+input[type=file] { display: none; }
+
+/* ── STAT ROW ── */
+.stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
+.stat-cell { background: var(--gray-50); border: var(--border); border-radius: var(--radius-sm); padding: 12px 10px; text-align: center; }
+.stat-val { font-family: var(--font-mono); font-size: 18px; font-weight: 500; color: var(--black); }
+.stat-key { font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* ════ DARK MODE — WanderPlan ════ */
+html[data-theme="dark"] body{background:var(--gray-50);color:var(--black);}
+/* Topbar */
+html[data-theme="dark"] .topbar{background:var(--gray-100);border-bottom:1px solid var(--gray-200);}
+html[data-theme="dark"] .logo{color:var(--black);}
+/* Buttons */
+html[data-theme="dark"] .btn-primary{background:var(--black);color:var(--gray-50);}
+html[data-theme="dark"] .btn-primary:hover{background:var(--gray-800);}
+html[data-theme="dark"] .btn-secondary{background:var(--gray-100);color:var(--black);border-color:var(--gray-200);}
+html[data-theme="dark"] .btn-secondary:hover{background:var(--gray-200);}
+html[data-theme="dark"] .btn-ghost{background:transparent;color:var(--gray-600);border-color:var(--gray-200);}
+html[data-theme="dark"] .btn-ghost:hover{background:var(--gray-100);color:var(--black);}
+html[data-theme="dark"] .btn-danger{background:var(--red-dim);color:var(--red);}
+html[data-theme="dark"] .btn-accent{background:var(--accent);color:#fff;}
+/* Trip cards & generic cards */
+html[data-theme="dark"] .trip-card{background:var(--gray-100);border-color:var(--gray-200);}
+html[data-theme="dark"] .trip-card:hover{border-color:var(--gray-400);}
+html[data-theme="dark"] .card{background:var(--gray-100);border-color:var(--gray-200);}
+/* Detail screen */
+html[data-theme="dark"] #app{background:var(--gray-50);}
+html[data-theme="dark"] .main-content{background:var(--gray-50);}
+html[data-theme="dark"] .detail-main{background:var(--gray-50);}
+/* Tab bar */
+html[data-theme="dark"] .tab-bar{background:var(--gray-100);border-color:var(--gray-200);}
+html[data-theme="dark"] .tab-btn{background:transparent;color:var(--gray-600);}
+html[data-theme="dark"] .tab-btn.active{background:var(--gray-50);color:var(--black);}
+/* Forms & inputs */
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{
+  background:var(--gray-100);color:var(--black);border-color:var(--gray-200);color-scheme:dark;}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:var(--gray-400);}
+html[data-theme="dark"] input:focus,html[data-theme="dark"] textarea:focus,html[data-theme="dark"] select:focus{
+  background:var(--gray-100);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
+html[data-theme="dark"] select option{background:#1a1a18;color:var(--black);}
+html[data-theme="dark"] .form-label{color:var(--gray-600);}
+html[data-theme="dark"] .form-hint{color:var(--gray-400);}
+/* Destination blocks */
+html[data-theme="dark"] .dest-block{background:var(--gray-100);border-color:var(--gray-200);}
+html[data-theme="dark"] .dest-header{border-bottom-color:var(--gray-200);}
+/* Section cards — detail tabs content */
+html[data-theme="dark"] .section-card{background:var(--gray-100);border-color:var(--gray-200);}
+html[data-theme="dark"] .item-row{background:var(--gray-100);border-color:var(--gray-200);}
+html[data-theme="dark"] .item-row:hover{background:var(--gray-200);}
+html[data-theme="dark"] .detail-section{border-bottom-color:var(--gray-200);}
+/* Modals / drawers */
+html[data-theme="dark"] .modal-overlay,.overlay,.backdrop{background:rgba(0,0,0,.72);}
+html[data-theme="dark"] .modal,html[data-theme="dark"] .drawer,
+html[data-theme="dark"] .bottom-sheet,html[data-theme="dark"] .panel{background:var(--gray-100);}
+html[data-theme="dark"] .modal-header{border-bottom-color:var(--gray-200);}
+html[data-theme="dark"] .modal-footer{border-top-color:var(--gray-200);}
+html[data-theme="dark"] .modal-close{background:var(--gray-200);color:var(--black);}
+/* Badges & chips */
+html[data-theme="dark"] .badge{background:var(--gray-200);color:var(--gray-800);}
+html[data-theme="dark"] .status-badge{background:var(--accent-dim);color:var(--accent);}
+html[data-theme="dark"] .chip{background:var(--gray-200);color:var(--black);}
+/* Packing list */
+html[data-theme="dark"] .pack-item{border-bottom-color:var(--gray-200);}
+html[data-theme="dark"] .pack-item.checked{opacity:.55;}
+/* Budget rows */
+html[data-theme="dark"] .budget-row{border-bottom-color:var(--gray-200);}
+html[data-theme="dark"] .budget-bar-bg{background:var(--gray-200);}
+/* Destination view card */
+html[data-theme="dark"] .dest-view-card{border-color:var(--gray-200);}
+html[data-theme="dark"] .dest-view-head{background:var(--gray-800);color:var(--gray-50);}
+html[data-theme="dark"] .dest-view-body{background:var(--gray-100);}
+/* Share modal & viewer */
+html[data-theme="dark"] .viewer-bar{border-bottom-color:rgba(255,255,255,0.1);}
+html[data-theme="dark"] .viewer-close{background:rgba(255,255,255,0.15);}
+/* Empty states */
+html[data-theme="dark"] .empty-state{color:var(--gray-600);}
+/* Weather card — keeps dark-on-dark look, just adjust */
+html[data-theme="dark"] .weather-card{background:var(--gray-800);color:var(--gray-50);}
+/* dividers */
+html[data-theme="dark"] hr{border-color:var(--gray-200);}
+/* Theme toggle */
+.theme-btn{
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--gray-200);background:var(--gray-100);
+  color:var(--gray-600);cursor:pointer;display:grid;place-items:center;
+  font-size:15px;transition:background .15s;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.theme-btn:hover{background:var(--gray-200);}
+.theme-btn:active{opacity:.7;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="logo">Wander<span style="color:var(--accent)">Plan</span></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <button class="btn btn-primary btn-sm" onclick="nav2add()">+ Trip</button>
+    </div>
+  </header>
+
+  <!-- TRIPS LIST -->
+  <div id="screen-list" class="screen active main-content">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div class="page-title">My Trips</div>
+        <div class="page-subtitle" id="trip-count-label">Loading…</div>
+      </div>
+    </div>
+    <div id="trips-list"></div>
+  </div>
+
+  <!-- ADD / EDIT TRIP -->
+  <div id="screen-add" class="screen main-content">
+    <button class="back-btn" onclick="nav('list')">← Back</button>
+    <div class="page-title" id="form-heading" style="margin-bottom:20px">New Trip</div>
+
+    <div class="form-block">
+      <div class="form-block-title">Trip</div>
+      <div class="form-group"><label>Trip Name</label><input type="text" id="f-name" placeholder="e.g. Europe Summer 2025"></div>
+      <div class="form-grid">
+        <div class="form-group"><label>Start Date</label><input type="date" id="f-start"></div>
+        <div class="form-group"><label>End Date</label><input type="date" id="f-end"></div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-title">
+        Travellers
+        <button class="btn btn-ghost btn-xs" onclick="openTravellerModal()">+ Add</button>
+      </div>
+      <div id="travellers-display"></div>
+      <div id="no-travellers" style="font-size:13px;color:var(--gray-400)">No travellers added yet — documents can be tagged per person.</div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-title">
+        Destinations
+        <button class="btn btn-ghost btn-xs" onclick="addDest()">+ Add</button>
+      </div>
+      <div id="dests-container"></div>
+    </div>
+
+    <div class="form-block">
+      <div class="form-block-title">Budget (Optional)</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Total Budget</label><input type="number" id="f-budget" placeholder="0"></div>
+        <div class="form-group"><label>Currency</label>
+          <select id="f-currency">
+            <option value="INR">INR ₹</option>
+            <option value="USD">USD $</option>
+            <option value="EUR">EUR €</option>
+            <option value="GBP">GBP £</option>
+            <option value="AED">AED د.إ</option>
+            <option value="SGD">SGD S$</option>
+            <option value="JPY">JPY ¥</option>
+            <option value="THB">THB ฿</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveTrip()">Save Trip</button>
+      <button class="btn btn-secondary" onclick="nav('list')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- TRIP DETAIL -->
+  <div id="screen-detail" class="screen main-content">
+    <button class="back-btn" onclick="nav('list')">← My Trips</button>
+    <div class="detail-header">
+      <div class="detail-eyebrow" id="d-eyebrow"></div>
+      <div class="detail-name" id="d-name"></div>
+      <div class="detail-dates" id="d-dates"></div>
+      <div class="detail-actions">
+        <button class="btn btn-secondary btn-sm" onclick="editTrip(state.cur)">Edit</button>
+        <button class="btn btn-secondary btn-sm" onclick="openShareModal()">Share</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTrip(state.cur)">Delete</button>
+      </div>
+    </div>
+
+    <div id="d-stats" class="stat-row"></div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+      <button class="tab-btn" onclick="switchTab('itinerary')">Itinerary</button>
+      <button class="tab-btn" onclick="switchTab('packing')">Packing</button>
+      <button class="tab-btn" onclick="switchTab('documents')">Documents</button>
+      <button class="tab-btn" onclick="switchTab('budget')">Budget</button>
+      <button class="tab-btn" onclick="switchTab('weather')">Weather</button>
+      <button class="tab-btn" onclick="switchTab('tips')">Tips</button>
+    </div>
+
+    <div id="tab-overview" class="tab-pane active"></div>
+    <div id="tab-itinerary" class="tab-pane">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="section-label">Activities</div>
+        <button class="btn btn-secondary btn-sm" onclick="openActivityModal()">+ Activity</button>
+      </div>
+      <div id="itinerary-content"></div>
+    </div>
+    <div id="tab-packing" class="tab-pane">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="section-label">Packing List</div>
+        <button class="btn btn-secondary btn-sm" onclick="openPackModal()">+ Item</button>
+      </div>
+      <div id="packing-content"></div>
+    </div>
+    <div id="tab-documents" class="tab-pane">
+      <div class="doc-filter-row" id="doc-filters"></div>
+      <div class="upload-zone" onclick="document.getElementById('doc-input').click()">
+        <div style="font-size:28px">📎</div>
+        <p>Tap to upload · Tickets, Visas, Boarding Passes, Hotel Bookings</p>
+        <p style="font-size:11px;color:var(--gray-400);margin-top:4px">PDF, JPG, PNG · Stored securely on device</p>
+      </div>
+      <input type="file" id="doc-input" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" multiple onchange="handleDocs(event)">
+      <div id="doc-content"></div>
+    </div>
+    <div id="tab-budget" class="tab-pane">
+      <div id="budget-content"></div>
+    </div>
+    <div id="tab-weather" class="tab-pane">
+      <div id="weather-content"></div>
+    </div>
+    <div id="tab-tips" class="tab-pane">
+      <div id="tips-content"></div>
+    </div>
+  </div>
+
+  <!-- BACKUP SCREEN -->
+  <div id="screen-backup" class="screen main-content">
+    <div class="page-title" style="margin-bottom:4px">Backup</div>
+    <div class="page-subtitle" style="margin-bottom:24px">Export your trips as JSON — documents not included</div>
+
+    <div id="backup-status-card" style="background:var(--gray-50);border:var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
+      <div style="font-size:28px" id="backup-status-icon">⚠️</div>
+      <div>
+        <div style="font-size:13px;font-weight:500" id="backup-last-label">No backup yet</div>
+        <div style="font-size:11px;color:var(--gray-400);font-family:var(--font-mono);margin-top:2px" id="backup-last-time">Tap below to create your first backup</div>
+      </div>
+    </div>
+
+    <div style="background:var(--black);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px">
+      <div style="font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Backup All Trips</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:16px;line-height:1.5">All trips, itineraries, packing lists, expenses and travellers in one file. No documents.</div>
+      <button class="btn" style="background:white;color:black;width:100%;font-weight:600;font-size:15px;padding:13px" onclick="backupAll()">⬇ Download Backup</button>
+    </div>
+
+    <div style="border:var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Backup Single Trip</div>
+      <div id="backup-trip-list"></div>
+    </div>
+
+    <div style="border:var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Restore from Backup</div>
+      <div style="font-size:13px;color:var(--gray-600);margin-bottom:12px;line-height:1.5">Import a previously exported file. Only new trips are added — existing trips won't be overwritten.</div>
+      <button class="btn btn-secondary" style="width:100%" onclick="document.getElementById('restore-input').click()">⬆ Import Backup File</button>
+      <input type="file" id="restore-input" accept=".json" onchange="restoreBackup(event)">
+    </div>
+
+    <div style="border:var(--border);border-radius:var(--radius-sm);padding:14px;background:var(--gray-50)">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Tip</div>
+      <div style="font-size:12px;color:var(--gray-600);line-height:1.8">
+        1. Tap <strong style="color:var(--black)">Download Backup</strong> before your trip<br>
+        2. Save to <strong style="color:var(--black)">Google Drive, iCloud, or WhatsApp yourself</strong><br>
+        3. Lost your data? Tap <strong style="color:var(--black)">Import Backup File</strong> to restore<br>
+        4. Works across devices — backup on phone, restore on laptop
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="bnav-item active" onclick="nav('list')" id="bnav-list">
+      <span class="bnav-icon">🏠</span><span class="bnav-label">Trips</span>
+    </button>
+    <button class="bnav-item" onclick="nav2add()" id="bnav-add">
+      <span class="bnav-icon">＋</span><span class="bnav-label">New</span>
+    </button>
+    <button class="bnav-item" onclick="nav('backup')" id="bnav-backup">
+      <span class="bnav-icon">💾</span><span class="bnav-label">Backup</span>
+    </button>
+    <button class="bnav-item" id="bnav-detail" style="display:none" onclick="nav('detail')">
+      <span class="bnav-icon">📍</span><span class="bnav-label" id="bnav-detail-label" style="max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Trip</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ACTIVITY MODAL -->
+<div class="modal-overlay" id="modal-activity">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="activity-modal-title">Add Activity</div>
+    <div class="form-group"><label>Name</label><input type="text" id="a-name" placeholder="e.g. Visit Colosseum"></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input type="date" id="a-date"></div>
+      <div class="form-group"><label>Time</label><input type="time" id="a-time"></div>
+    </div>
+    <div class="form-group"><label>Category</label>
+      <select id="a-cat">
+        <option value="sight">Sightseeing</option>
+        <option value="food">Food & Dining</option>
+        <option value="transport">Transport</option>
+        <option value="hotel">Accommodation</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="a-notes" placeholder="Address, booking ref, tips…"></textarea></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveActivity()">Save</button><button class="btn btn-secondary" onclick="closeModal('modal-activity')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- PACKING MODAL -->
+<div class="modal-overlay" id="modal-pack">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Packing Item</div>
+    <div class="form-group"><label>Item Name</label><input type="text" id="p-name" placeholder="e.g. Passport"></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Category</label>
+        <select id="p-cat">
+          <option value="Essentials">Essentials</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Toiletries">Toiletries</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Documents">Documents</option>
+          <option value="Medications">Medications</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>For (Traveller)</label><select id="p-traveller"><option value="All">All</option></select></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="savePackItem()">Add Item</button><button class="btn btn-secondary" onclick="closeModal('modal-pack')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- DOC TYPE MODAL -->
+<div class="modal-overlay" id="modal-doctype">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Document Details</div>
+    <div style="font-size:13px;color:var(--gray-600);margin-bottom:14px">File: <strong id="pending-fname" style="color:var(--black)"></strong></div>
+    <div class="form-group"><label>Document Type</label>
+      <select id="pending-dtype">
+        <option value="ticket">✈️ Flight Ticket</option>
+        <option value="visa">📄 Visa</option>
+        <option value="boarding">🎫 Boarding Pass</option>
+        <option value="train">🚆 Train Ticket</option>
+        <option value="hotel">🏨 Hotel Booking</option>
+        <option value="insurance">🛡️ Travel Insurance</option>
+        <option value="other">📎 Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>For (Traveller)</label><select id="pending-dtraveller"><option value="All">All Travellers</option></select></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="confirmDoc()">Save Document</button><button class="btn btn-secondary" onclick="closeModal('modal-doctype')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- EXPENSE MODAL -->
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="expense-modal-title">Add Expense</div>
+    <div class="form-group"><label>Description</label><input type="text" id="e-name" placeholder="e.g. Hotel booking"></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Amount</label><input type="number" id="e-amount" placeholder="0"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="e-cat">
+          <option value="Accommodation">Accommodation</option>
+          <option value="Food">Food & Dining</option>
+          <option value="Transport">Transport</option>
+          <option value="Activities">Activities</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Paid by</label>
+      <select id="e-paidby"><option value="__shared">Shared / Unknown</option></select>
+    </div>
+    <div class="form-group">
+      <label>Split between</label>
+      <div id="e-split-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveExpense()">Add</button><button class="btn btn-secondary" onclick="closeModal('modal-expense')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- TRAVELLER MODAL -->
+<div class="modal-overlay" id="modal-traveller">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Traveller</div>
+    <div class="form-group"><label>Full Name</label><input type="text" id="t-name" placeholder="e.g. Rahul Sharma"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveTraveller()">Add</button><button class="btn btn-secondary" onclick="closeModal('modal-traveller')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- DEFAULTS PICKER MODAL -->
+<div class="modal-overlay" id="modal-defaults">
+  <div class="modal" style="max-height:88vh">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title" style="margin-bottom:0">Choose Items to Pack</div>
+      <button class="btn btn-ghost btn-xs" onclick="closeModal('modal-defaults')">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px">Select what's relevant for your trip</div>
+    <div id="defaults-picker-body" style="max-height:55vh;overflow-y:auto;margin:0 -16px;padding:0 16px"></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:var(--border)">
+      <button class="btn btn-primary" id="defaults-add-btn" style="width:100%" onclick="confirmDefaults()">Add Selected Items</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Share Trip</div>
+    <div class="share-option" onclick="shareAsText()">
+      <div class="share-icon">📋</div>
+      <div class="share-info"><h4>Copy Summary</h4><p>Copy trip details as text to share via WhatsApp, Messages, etc.</p></div>
+    </div>
+    <div class="share-option" onclick="shareJSON()">
+      <div class="share-icon">💾</div>
+      <div class="share-info"><h4>Export as JSON</h4><p>Download trip data to backup or import on another device.</p></div>
+    </div>
+    <div class="share-option" onclick="document.getElementById('import-input').click()">
+      <div class="share-icon">📥</div>
+      <div class="share-info"><h4>Import Trip JSON</h4><p>Import a trip exported from WanderPlan.</p></div>
+    </div>
+    <input type="file" id="import-input" accept=".json" onchange="importTrip(event)">
+    <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="closeModal('modal-share')">Close</button>
+  </div>
+</div>
+
+<!-- DOC VIEWER -->
+<div id="doc-viewer">
+  <div class="viewer-bar">
+    <div class="viewer-title" id="viewer-title"></div>
+    <button class="viewer-close" onclick="closeViewer()">✕</button>
+  </div>
+  <div class="viewer-body" id="viewer-body"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── STATE & DB ──
+const DB_NAME = 'wanderplan_db', DB_VER = 2;
+let db, state = { trips: [], cur: null };
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('trips')) d.createObjectStore('trips', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('docs')) d.createObjectStore('docs', { keyPath: 'id' });
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbGet(store, key) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = key ? tx.objectStore(store).get(key) : tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbPut(store, val) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).put(val);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+function dbDel(store, key) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).delete(key);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+async function loadAll() {
+  state.trips = (await dbGet('trips')) || [];
+}
+async function saveTrip_db(trip) {
+  await dbPut('trips', trip);
+  const idx = state.trips.findIndex(t => t.id === trip.id);
+  if (idx >= 0) state.trips[idx] = trip; else state.trips.push(trip);
+}
+async function saveDoc(doc) { await dbPut('docs', doc); }
+async function getDoc(id) { return await dbGet('docs', id); }
+async function delDoc(id) { await dbDel('docs', id); }
+
+// ── HELPERS ──
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const toast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); };
+const $ = id => document.getElementById(id);
+function fmtDate(d) { if (!d) return ''; try { return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return d; } }
+function fmtDT(d) { if (!d) return ''; try { return new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch { return d; } }
+function fmtRange(s, e) { if (!s && !e) return 'Dates TBD'; if (!e) return fmtDate(s) + ' →'; if (!s) return '→ ' + fmtDate(e); return fmtDate(s) + ' – ' + fmtDate(e); }
+function daysBetween(s, e) { if (!s || !e) return 0; return Math.max(0, Math.round((new Date(e) - new Date(s)) / 86400000)); }
+function initials(name) { return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2); }
+function docIcon(t) { return { ticket: '✈️', visa: '📄', boarding: '🎫', train: '🚆', hotel: '🏨', insurance: '🛡️', other: '📎' }[t] || '📎'; }
+function docLabel(t) { return { ticket: 'Flight Ticket', visa: 'Visa', boarding: 'Boarding Pass', train: 'Train Ticket', hotel: 'Hotel Booking', insurance: 'Insurance', other: 'Other' }[t] || t; }
+function catColors(c) { return { sight: 'cat-sight', food: 'cat-food', transport: 'cat-transport', hotel: 'cat-hotel', other: 'cat-other' }[c] || 'cat-other'; }
+function catLabel(c) { return { sight: 'Sightseeing', food: 'Food', transport: 'Transport', hotel: 'Stay', other: 'Other' }[c] || c; }
+function currencySymbol(c) { return { INR: '₹', USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$', JPY: '¥', THB: '฿' }[c] || c; }
+function expCatColor(c) { return { Accommodation: '#7c3aed', Food: '#00b87a', Transport: '#d97706', Activities: '#0066ff', Shopping: '#e53e3e', Other: '#666' }[c] || '#666'; }
+
+// ── NAVIGATION ──
+function nav(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(`screen-${screen}`)?.classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  if (screen === 'list') { $('bnav-list').classList.add('active'); renderList(); }
+  else if (screen === 'add') { $('bnav-add').classList.add('active'); }
+  else if (screen === 'backup') { $('bnav-backup').classList.add('active'); renderBackupScreen(); }
+  else if (screen === 'detail') { $('bnav-detail').classList.add('active'); }
+  window.scrollTo(0, 0);
+}
+
+// ── TRIPS LIST ──
+async function renderList() {
+  await loadAll();
+  const c = $('trips-list');
+  const n = state.trips.length;
+  $('trip-count-label').textContent = n === 0 ? 'No trips yet' : `${n} trip${n > 1 ? 's' : ''} planned`;
+  if (!n) {
+    c.innerHTML = `<div class="empty"><div class="empty-icon">🌍</div><h3>No trips yet</h3><p>Plan your first adventure</p><button class="btn btn-primary" onclick="nav2add()">Create Trip</button></div>`;
+    return;
+  }
+  c.innerHTML = state.trips.slice().reverse().map(t => `
+    <div class="trip-card" onclick="openTrip('${t.id}')">
+      <div class="tc-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-xs" onclick="editTrip('${t.id}')">Edit</button>
+      </div>
+      <div class="tc-eyebrow">${fmtRange(t.start, t.end)}</div>
+      <div class="tc-name">${t.name}</div>
+      <div class="tc-divider"></div>
+      <div class="tc-meta">
+        ${(t.destinations || []).map(d => `<span class="tag blue">📍 ${d.name}</span>`).join('')}
+        ${(t.travellers || []).map(tr => `<span class="tag">👤 ${tr.split(' ')[0]}</span>`).join('')}
+        ${daysBetween(t.start, t.end) > 0 ? `<span class="tag">${daysBetween(t.start, t.end)}d</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── TRIP FORM ──
+let editingTripId = null;
+let pendingDocs = [];
+
+function setupAddForm(tripId = null) {
+  editingTripId = tripId;
+  $('form-heading').textContent = tripId ? 'Edit Trip' : 'New Trip';
+  const t = tripId ? state.trips.find(x => x.id === tripId) : null;
+  $('f-name').value = t?.name || '';
+  $('f-start').value = t?.start || '';
+  $('f-end').value = t?.end || '';
+  $('f-budget').value = t?.budget || '';
+  $('f-currency').value = t?.currency || 'INR';
+  renderTravellersForm(t?.travellers || []);
+  const dc = $('dests-container');
+  dc.innerHTML = '';
+  (t?.destinations?.length ? t.destinations : [{}]).forEach((d, i) => addDest(d));
+}
+
+function nav2add(tripId = null) {
+  setupAddForm(tripId);
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('screen-add').classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  $('bnav-add').classList.add('active');
+  window.scrollTo(0, 0);
+}
+function editTrip(id) { nav2add(id); }
+
+window.travellersList = [];
+function renderTravellersForm(list) {
+  window.travellersList = list || [];
+  const d = $('travellers-display');
+  const nd = $('no-travellers');
+  if (!list.length) { d.innerHTML = ''; nd.style.display = 'block'; return; }
+  nd.style.display = 'none';
+  d.innerHTML = list.map((tr, i) => `
+    <span class="traveller-chip">
+      <span class="traveller-avatar">${initials(tr)}</span>
+      ${tr}
+      <button class="traveller-del" onclick="removeTraveller(${i})">×</button>
+    </span>
+  `).join('');
+}
+function openTravellerModal() { $('t-name').value = ''; $('modal-traveller').classList.add('open'); setTimeout(() => $('t-name').focus(), 100); }
+function saveTraveller() {
+  const n = $('t-name').value.trim();
+  if (!n) return;
+  window.travellersList.push(n);
+  renderTravellersForm(window.travellersList);
+  closeModal('modal-traveller');
+}
+function removeTraveller(i) { window.travellersList.splice(i, 1); renderTravellersForm(window.travellersList); }
+
+function addDest(data = {}) {
+  const c = $('dests-container');
+  const idx = c.children.length;
+  const div = document.createElement('div');
+  div.className = 'dest-block';
+  div.innerHTML = `
+    <div class="dest-header">
+      <span class="dest-num">DEST ${idx + 1}</span>
+      ${idx > 0 ? `<button class="btn btn-danger btn-xs" onclick="this.closest('.dest-block').remove();reindexDests()">Remove</button>` : ''}
+    </div>
+    <div class="form-group"><label>Place Name</label><input type="text" class="d-name" placeholder="e.g. Paris, France" value="${data.name || ''}"></div>
+    <div class="form-group"><label>Google Maps URL / Location</label><input type="text" class="d-loc" placeholder="https://maps.google.com/... or city name" value="${data.location || ''}"></div>
+    <div class="form-group"><label>Arrival Date &amp; Time</label>
+      <div class="form-grid" style="margin-bottom:0">
+        <input type="date" class="d-arr-date" value="${data.arrDate || (data.arrival ? data.arrival.split('T')[0] : '')}">
+        <input type="time" class="d-arr-time" value="${data.arrTime || (data.arrival ? data.arrival.split('T')[1]?.slice(0,5) : '')}">
+      </div>
+    </div>
+    <div class="form-group"><label>Departure Date &amp; Time</label>
+      <div class="form-grid" style="margin-bottom:0">
+        <input type="date" class="d-dep-date" value="${data.depDate || (data.departure ? data.departure.split('T')[0] : '')}">
+        <input type="time" class="d-dep-time" value="${data.depTime || (data.departure ? data.departure.split('T')[1]?.slice(0,5) : '')}">
+      </div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea class="d-notes" placeholder="Stay, things to do, contacts…">${data.notes || ''}</textarea></div>
+  `;
+  c.appendChild(div);
+}
+function reindexDests() {
+  document.querySelectorAll('.dest-block .dest-num').forEach((el, i) => el.textContent = `DEST ${i + 1}`);
+}
+function collectDests() {
+  return Array.from(document.querySelectorAll('.dest-block')).map(b => {
+    const arrDate = b.querySelector('.d-arr-date').value;
+    const arrTime = b.querySelector('.d-arr-time').value;
+    const depDate = b.querySelector('.d-dep-date').value;
+    const depTime = b.querySelector('.d-dep-time').value;
+    return {
+      name: b.querySelector('.d-name').value.trim(),
+      location: b.querySelector('.d-loc').value.trim(),
+      arrival: arrDate ? `${arrDate}T${arrTime || '00:00'}` : '',
+      departure: depDate ? `${depDate}T${depTime || '00:00'}` : '',
+      notes: b.querySelector('.d-notes').value.trim()
+    };
+  }).filter(d => d.name);
+}
+
+async function saveTrip() {
+  const name = $('f-name').value.trim();
+  if (!name) { toast('Enter a trip name'); return; }
+  const dests = collectDests();
+  if (!dests.length) { toast('Add at least one destination'); return; }
+  const trip = editingTripId ? state.trips.find(t => t.id === editingTripId) : { id: uid(), activities: [], documents: [], packingList: [], expenses: [] };
+  trip.name = name;
+  trip.start = $('f-start').value;
+  trip.end = $('f-end').value;
+  trip.destinations = dests;
+  trip.travellers = [...window.travellersList];
+  trip.budget = parseFloat($('f-budget').value) || 0;
+  trip.currency = $('f-currency').value;
+  await saveTrip_db(trip);
+  toast(editingTripId ? 'Trip updated!' : 'Trip created!');
+  nav('list');
+}
+
+// ── OPEN TRIP DETAIL ──
+function openTrip(id) {
+  state.cur = id;
+  const tripName = state.trips.find(t => t.id === id)?.name || 'Trip';
+  $('bnav-detail').style.display = 'flex';
+  $('bnav-detail-label').textContent = tripName.length > 10 ? tripName.slice(0, 10) + '…' : tripName;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('screen-detail').classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  $('bnav-detail').classList.add('active');
+  window.scrollTo(0, 0);
+  renderDetail();
+  switchTab('overview');
+}
+
+function getTrip() { return state.trips.find(t => t.id === state.cur); }
+
+function renderDetail() {
+  const t = getTrip();
+  if (!t) return;
+  $('d-eyebrow').textContent = fmtRange(t.start, t.end);
+  $('d-name').textContent = t.name;
+  $('d-dates').textContent = `${(t.destinations || []).map(d => d.name).join(' → ')}`;
+  // Stats
+  const days = daysBetween(t.start, t.end);
+  const spent = (t.expenses || []).reduce((s, e) => s + e.amount, 0);
+  const packed = (t.packingList || []).filter(p => p.checked).length;
+  const total = (t.packingList || []).length;
+  $('d-stats').innerHTML = `
+    <div class="stat-cell"><div class="stat-val">${days || '–'}</div><div class="stat-key">Days</div></div>
+    <div class="stat-cell"><div class="stat-val">${(t.destinations || []).length}</div><div class="stat-key">Stops</div></div>
+    <div class="stat-cell"><div class="stat-val">${total ? Math.round(packed / total * 100) + '%' : '–'}</div><div class="stat-key">Packed</div></div>
+  `;
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick') === `switchTab('${name}')`);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const pane = $(`tab-${name}`);
+  if (pane) pane.classList.add('active');
+  const renderers = { overview: renderOverview, itinerary: renderItinerary, packing: renderPacking, documents: renderDocuments, budget: renderBudget, weather: renderWeather, tips: renderTips };
+  renderers[name]?.();
+}
+
+// ── OVERVIEW ──
+function renderOverview() {
+  const t = getTrip();
+  $('tab-overview').innerHTML = (t.destinations || []).map((d, i) => `
+    <div class="dest-view-card">
+      <div class="dest-view-head">
+        <div class="dest-view-name">${d.name}</div>
+        <div class="dest-view-dates">${d.arrival || d.departure ? `${fmtDT(d.arrival) || '?'} → ${fmtDT(d.departure) || '?'}` : 'Dates not set'}</div>
+      </div>
+      <div class="dest-view-body">
+        ${d.location ? `<a class="map-pill" href="${toMapsUrl(d.location)}" target="_blank">🗺 Open in Google Maps</a>` : ''}
+        ${d.notes ? `<div style="font-size:13px;color:var(--gray-600);line-height:1.6;margin-top:8px;white-space:pre-wrap">${d.notes}</div>` : ''}
+        ${!d.location && !d.notes ? `<div style="font-size:13px;color:var(--gray-400)">No details added.</div>` : ''}
+      </div>
+    </div>
+  `).join('') || '<div style="color:var(--gray-400);font-size:13px">No destinations.</div>';
+}
+function toMapsUrl(loc) { return loc.startsWith('http') ? loc : `https://www.google.com/maps/search/${encodeURIComponent(loc)}`; }
+
+// ── ITINERARY ──
+let editingActivityId = null;
+function openActivityModal() {
+  const t = getTrip();
+  editingActivityId = null;
+  $('activity-modal-title').textContent = 'Add Activity';
+  $('a-name').value = ''; $('a-date').value = t?.start || ''; $('a-time').value = ''; $('a-notes').value = ''; $('a-cat').value = 'sight';
+  $('modal-activity').classList.add('open');
+  setTimeout(() => $('a-name').focus(), 100);
+}
+function editActivity(id) {
+  const t = getTrip();
+  const a = t.activities.find(x => x.id === id);
+  if (!a) return;
+  editingActivityId = id;
+  $('activity-modal-title').textContent = 'Edit Activity';
+  $('a-name').value = a.name;
+  $('a-date').value = a.date || '';
+  $('a-time').value = a.time || '';
+  $('a-cat').value = a.category || 'sight';
+  $('a-notes').value = a.notes || '';
+  $('modal-activity').classList.add('open');
+  setTimeout(() => $('a-name').focus(), 100);
+}
+async function saveActivity() {
+  const name = $('a-name').value.trim();
+  if (!name) { toast('Enter activity name'); return; }
+  const t = getTrip();
+  if (!t.activities) t.activities = [];
+  if (editingActivityId) {
+    const a = t.activities.find(x => x.id === editingActivityId);
+    if (a) { a.name = name; a.date = $('a-date').value; a.time = $('a-time').value; a.category = $('a-cat').value; a.notes = $('a-notes').value.trim(); }
+    toast('Activity updated!');
+  } else {
+    t.activities.push({ id: uid(), name, date: $('a-date').value, time: $('a-time').value, category: $('a-cat').value, notes: $('a-notes').value.trim() });
+    toast('Activity added!');
+  }
+  await saveTrip_db(t);
+  closeModal('modal-activity');
+  editingActivityId = null;
+  renderItinerary();
+  renderDetail();
+}
+async function deleteActivity(id) {
+  const t = getTrip();
+  t.activities = t.activities.filter(a => a.id !== id);
+  await saveTrip_db(t);
+  renderItinerary();
+  renderDetail();
+}
+function renderItinerary() {
+  const t = getTrip();
+  const acts = (t.activities || []).sort((a, b) => ((a.date || '') + (a.time || '')).localeCompare((b.date || '') + (b.time || '')));
+  if (!acts.length) { $('itinerary-content').innerHTML = `<div class="empty"><div class="empty-icon">📅</div><h3>No activities yet</h3><p>Add your day-by-day plan</p></div>`; return; }
+  const groups = {};
+  acts.forEach(a => { const k = a.date || 'unscheduled'; if (!groups[k]) groups[k] = []; groups[k].push(a); });
+  $('itinerary-content').innerHTML = Object.entries(groups).map(([date, items]) => `
+    <div class="day-group">
+      <div class="day-heading"><span class="day-pill">${date === 'unscheduled' ? 'UNSCHEDULED' : fmtDate(date)}</span><div class="day-line"></div></div>
+      ${items.map(a => `
+        <div class="activity-row">
+          <div class="act-time">${a.time || '––'}</div>
+          <div class="act-body">
+            <div class="act-name">${a.name}</div>
+            ${a.notes ? `<div class="act-note">${a.notes}</div>` : ''}
+            <span class="act-cat ${catColors(a.category)}">${catLabel(a.category)}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;margin-left:4px">
+            <button class="act-del" style="font-size:13px;padding:4px 7px;border-radius:6px;background:var(--gray-50);border:var(--border)" onclick="editActivity('${a.id}')">✏️</button>
+            <button class="act-del" style="padding:4px 7px;border-radius:6px;background:var(--red-dim);color:var(--red);border:1px solid rgba(229,62,62,0.2)" onclick="deleteActivity('${a.id}')">✕</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+// ── PACKING ──
+const DEFAULT_PACKING = {
+  Essentials: [
+    'Passport', 'Visa documents', 'Travel insurance certificate', 'Flight tickets (printed)',
+    'Hotel booking confirmations', 'Emergency contact list', 'Travel itinerary printout',
+    'Phone + charging cable', 'Power bank', 'Universal travel adapter', 'Cash (local currency)',
+    'Credit / debit cards', 'Wallet', 'Driving licence / ID card', 'Travel pillow'
+  ],
+  Clothing: [
+    'T-shirts / tops', 'Pants / jeans', 'Shorts', 'Underwear', 'Socks', 'Sleepwear',
+    'Lightweight jacket', 'Warm layer / hoodie', 'Rain jacket / poncho', 'Swimwear',
+    'Formal outfit', 'Belt', 'Comfortable walking shoes', 'Sandals / flip-flops',
+    'Formal shoes', 'Sunglasses', 'Hat / cap'
+  ],
+  Toiletries: [
+    'Toothbrush & toothpaste', 'Shampoo', 'Conditioner', 'Body wash / soap',
+    'Deodorant', 'Face wash', 'Moisturiser', 'Sunscreen SPF 50+', 'Lip balm with SPF',
+    'Razor & shaving cream', 'Comb / hairbrush', 'Hair ties', 'Nail clippers',
+    'Perfume / cologne', 'Cotton buds', 'Feminine hygiene products', 'Wet wipes'
+  ],
+  Electronics: [
+    'Smartphone', 'Laptop / tablet', 'Camera + memory card', 'Camera charger',
+    'Earphones / headphones', 'Portable speaker', 'E-reader / Kindle',
+    'Laptop charger', 'Multi-port USB charger', 'Watch / smartwatch'
+  ],
+  Documents: [
+    'Passport-size photos (spare)', 'Photocopy of passport', 'Travel insurance card',
+    'Medical prescription copies', 'Vaccination certificate', 'International SIM / eSIM',
+    'Emergency cash (hidden)', 'Currency conversion card'
+  ],
+  Medications: [
+    'Prescription medicines (full supply)', 'Pain reliever (paracetamol / ibuprofen)',
+    'Antidiarrheal tablets', 'Oral rehydration salts', 'Antihistamine (allergy)',
+    'Motion sickness tablets', 'Antiseptic cream / gel', 'Band-aids / plasters',
+    'Thermometer', 'Insect repellent', 'Antacid / indigestion tablets',
+    'Vitamin supplements', 'Eye drops', 'Blister patches'
+  ],
+  Comfort: [
+    'Travel neck pillow', 'Eye mask', 'Ear plugs', 'Compression socks',
+    'Reusable water bottle', 'Snacks for journey', 'Small backpack / day bag',
+    'Luggage locks', 'Packing cubes', 'Laundry bag', 'Foldable tote bag',
+    'Travel umbrella', 'Ziplock bags (various sizes)'
+  ],
+};
+
+let activePackTraveller = 'All';
+let defaultSelections = {}; // tracks which defaults are selected in the picker
+
+function renderPacking() {
+  const t = getTrip();
+  if (!t.packingList) t.packingList = [];
+  const travellers = ['All', ...(t.travellers || [])];
+  let html = `<div class="pack-traveller-tabs">${travellers.map(tr => `<button class="ptab${tr === activePackTraveller ? ' active' : ''}" onclick="setPackTraveller('${tr}')">${tr === 'All' ? '👥 All' : tr.split(' ')[0]}</button>`).join('')}</div>`;
+  const filtered = t.packingList.filter(p => activePackTraveller === 'All' || p.traveller === activePackTraveller || p.traveller === 'All');
+  const checked = filtered.filter(p => p.checked).length;
+  const total = filtered.length;
+  if (total) {
+    html += `<div class="pack-progress"><div class="pack-progress-fill" style="width:${Math.round(checked/total*100)}%"></div></div>`;
+    html += `<div style="font-size:11px;color:var(--gray-400);font-family:var(--font-mono);margin-bottom:14px">${checked}/${total} items packed</div>`;
+  }
+  if (!t.packingList.length) {
+    html += `<div class="empty"><div class="empty-icon">🧳</div><h3>Empty packing list</h3><p>Choose from 80+ suggested items or add your own</p><button class="btn btn-primary" onclick="openDefaultsPicker()">Choose Items to Pack</button></div>`;
+  } else {
+    const cats = [...new Set(filtered.map(p => p.category))];
+    cats.forEach(cat => {
+      const items = filtered.filter(p => p.category === cat);
+      html += `<div class="pack-category"><div class="pack-cat-title"><span>${cat}</span><span style="color:var(--gray-600)">${items.filter(p=>p.checked).length}/${items.length}</span></div>`;
+      items.forEach(p => {
+        html += `<div class="pack-item">
+          <div class="pack-check${p.checked ? ' checked' : ''}" onclick="togglePack('${p.id}')"></div>
+          <div class="pack-label${p.checked ? ' checked' : ''}">${p.name}${p.traveller && p.traveller !== 'All' ? ` <span style="font-size:10px;color:var(--accent)">· ${p.traveller.split(' ')[0]}</span>` : ''}</div>
+          <button class="pack-del" onclick="deletePack('${p.id}')">✕</button>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+    html += `<div class="btn-row" style="margin-top:4px"><button class="btn btn-ghost btn-sm" onclick="openDefaultsPicker()">+ Add More Items</button></div>`;
+  }
+  $('packing-content').innerHTML = html;
+}
+function setPackTraveller(tr) { activePackTraveller = tr; renderPacking(); }
+
+function openDefaultsPicker() {
+  const t = getTrip();
+  const existing = new Set((t.packingList || []).map(p => p.name));
+  // pre-select everything not already added
+  defaultSelections = {};
+  Object.entries(DEFAULT_PACKING).forEach(([cat, items]) => {
+    items.forEach(name => { defaultSelections[name] = !existing.has(name); });
+  });
+  renderDefaultsPicker();
+  $('modal-defaults').classList.add('open');
+}
+
+function renderDefaultsPicker() {
+  const t = getTrip();
+  const existing = new Set((t.packingList || []).map(p => p.name));
+  let html = '';
+  Object.entries(DEFAULT_PACKING).forEach(([cat, items]) => {
+    const selCount = items.filter(n => defaultSelections[n]).length;
+    html += `<div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px">${cat}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-xs btn-ghost" onclick="selectAllCat('${cat}',true)">All</button>
+          <button class="btn btn-xs btn-ghost" onclick="selectAllCat('${cat}',false)">None</button>
+        </div>
+      </div>`;
+    items.forEach(name => {
+      const alreadyAdded = existing.has(name);
+      const sel = defaultSelections[name];
+      html += `<div class="pack-item" style="opacity:${alreadyAdded?'0.45':'1'}">
+        <div class="pack-check${sel ? ' checked' : ''}" onclick="${alreadyAdded ? '' : `toggleDefault('${name.replace(/'/g,"\\'")}')` }" style="${alreadyAdded ? 'cursor:default' : ''}"></div>
+        <div class="pack-label">${name}${alreadyAdded ? ' <span style="font-size:10px;color:var(--gray-400)">(added)</span>' : ''}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  $('defaults-picker-body').innerHTML = html;
+  const total = Object.values(defaultSelections).filter(Boolean).length;
+  $('defaults-add-btn').textContent = `Add ${total} Selected Item${total !== 1 ? 's' : ''}`;
+}
+
+function toggleDefault(name) {
+  defaultSelections[name] = !defaultSelections[name];
+  renderDefaultsPicker();
+}
+function selectAllCat(cat, val) {
+  DEFAULT_PACKING[cat].forEach(name => { defaultSelections[name] = val; });
+  renderDefaultsPicker();
+}
+
+async function confirmDefaults() {
+  const t = getTrip();
+  if (!t.packingList) t.packingList = [];
+  const existing = new Set(t.packingList.map(p => p.name));
+  let added = 0;
+  Object.entries(DEFAULT_PACKING).forEach(([cat, items]) => {
+    items.forEach(name => {
+      if (defaultSelections[name] && !existing.has(name)) {
+        t.packingList.push({ id: uid(), name, category: cat, checked: false, traveller: 'All' });
+        added++;
+      }
+    });
+  });
+  await saveTrip_db(t);
+  closeModal('modal-defaults');
+  renderPacking();
+  renderDetail();
+  toast(`${added} item${added !== 1 ? 's' : ''} added!`);
+}
+
+// auto-open defaults picker when a new trip is first opened
+async function autoLoadPackingIfEmpty() {
+  const t = getTrip();
+  if (!t.packingList || !t.packingList.length) {
+    // just pre-select all defaults, user can deselect
+  }
+}
+function openPackModal() {
+  const t = getTrip();
+  $('p-name').value = ''; $('p-cat').value = 'Essentials';
+  const sel = $('p-traveller');
+  sel.innerHTML = '<option value="All">All Travellers</option>' + (t.travellers || []).map(tr => `<option value="${tr}">${tr}</option>`).join('');
+  $('modal-pack').classList.add('open');
+  setTimeout(() => $('p-name').focus(), 100);
+}
+async function savePackItem() {
+  const name = $('p-name').value.trim();
+  if (!name) return;
+  const t = getTrip();
+  if (!t.packingList) t.packingList = [];
+  t.packingList.push({ id: uid(), name, category: $('p-cat').value, checked: false, traveller: $('p-traveller').value });
+  await saveTrip_db(t);
+  closeModal('modal-pack');
+  renderPacking();
+  renderDetail();
+  toast('Item added!');
+}
+async function togglePack(id) {
+  const t = getTrip();
+  const p = t.packingList.find(x => x.id === id);
+  if (p) p.checked = !p.checked;
+  await saveTrip_db(t);
+  renderPacking();
+  renderDetail();
+}
+async function deletePack(id) {
+  const t = getTrip();
+  t.packingList = t.packingList.filter(p => p.id !== id);
+  await saveTrip_db(t);
+  renderPacking();
+  renderDetail();
+}
+
+// ── DOCUMENTS ──
+let activeDocFilter = '';
+let pendingDocQueue = [];
+
+function renderDocFilters() {
+  const t = getTrip();
+  const types = [...new Set((t.documents || []).map(d => d.type))];
+  $('doc-filters').innerHTML = `
+    <button class="filter-chip${activeDocFilter === '' ? ' active' : ''}" onclick="setDocFilter('')">All</button>
+    ${['ticket','visa','boarding','train','hotel','insurance','other'].filter(ty => types.includes(ty)).map(ty => `
+      <button class="filter-chip${activeDocFilter === ty ? ' active' : ''}" onclick="setDocFilter('${ty}')">${docLabel(ty)}</button>
+    `).join('')}
+  `;
+}
+function setDocFilter(f) { activeDocFilter = f; renderDocuments(); }
+
+async function renderDocuments() {
+  const t = getTrip();
+  renderDocFilters();
+  const docs = (t.documents || []).filter(d => !activeDocFilter || d.type === activeDocFilter);
+  if (!docs.length) { $('doc-content').innerHTML = ''; return; }
+  let html = '';
+  for (const doc of docs) {
+    let thumbHtml = `<div style="font-size:20px">${docIcon(doc.type)}</div>`;
+    if (doc.isImage) {
+      const data = await getDoc(doc.id);
+      if (data) thumbHtml = `<img src="${data.data}" alt="${doc.name}">`;
+    }
+    html += `<div class="doc-item">
+      <div class="doc-thumb">${thumbHtml}</div>
+      <div class="doc-info">
+        <div class="doc-name">${doc.name}</div>
+        <div class="doc-meta">${docLabel(doc.type)} · ${fmtSize(doc.size)}</div>
+        ${doc.traveller && doc.traveller !== 'All' ? `<div class="doc-traveller">👤 ${doc.traveller}</div>` : ''}
+      </div>
+      <div class="doc-actions">
+        <button class="btn btn-secondary btn-xs" onclick="viewDoc('${doc.id}','${doc.name}','${doc.mime}','${doc.isImage ? '1' : '0'}')">View</button>
+        <button class="btn btn-danger btn-xs" onclick="removeDoc('${doc.id}')">✕</button>
+      </div>
+    </div>`;
+  }
+  $('doc-content').innerHTML = html;
+}
+
+function handleDocs(event) {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+  pendingDocQueue = files;
+  processNextDoc();
+  event.target.value = '';
+}
+
+function processNextDoc() {
+  if (!pendingDocQueue.length) return;
+  const file = pendingDocQueue[0];
+  $('pending-fname').textContent = file.name;
+  $('pending-dtype').value = guessDocType(file.name);
+  const t = getTrip();
+  const sel = $('pending-dtraveller');
+  sel.innerHTML = '<option value="All">All Travellers</option>' + (t.travellers || []).map(tr => `<option value="${tr}">${tr}</option>`).join('');
+  $('modal-doctype').classList.add('open');
+}
+
+function guessDocType(name) {
+  const n = name.toLowerCase();
+  if (n.includes('visa')) return 'visa';
+  if (n.includes('boarding')) return 'boarding';
+  if (n.includes('train')) return 'train';
+  if (n.includes('hotel') || n.includes('booking')) return 'hotel';
+  if (n.includes('insurance')) return 'insurance';
+  if (n.includes('ticket')) return 'ticket';
+  return 'other';
+}
+
+async function confirmDoc() {
+  const file = pendingDocQueue.shift();
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const t = getTrip();
+    if (!t.documents) t.documents = [];
+    const isImage = file.type.startsWith('image/');
+    const isPDF = file.type === 'application/pdf';
+    const docId = uid();
+    const meta = { id: docId, name: file.name, type: $('pending-dtype').value, traveller: $('pending-dtraveller').value, size: file.size, mime: file.type, isImage, isPDF, added: new Date().toISOString() };
+    await saveDoc({ id: docId, data: e.target.result });
+    t.documents.push(meta);
+    await saveTrip_db(t);
+    closeModal('modal-doctype');
+    if (pendingDocQueue.length) { setTimeout(processNextDoc, 200); }
+    renderDocuments();
+    renderDetail();
+    toast('Document saved!');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function viewDoc(id, name, mime, isImg) {
+  const doc = await getDoc(id);
+  if (!doc) { toast('Document not found'); return; }
+  $('viewer-title').textContent = name;
+  const body = $('viewer-body');
+  if (isImg === '1') {
+    body.innerHTML = `<img src="${doc.data}" alt="${name}">`;
+  } else if (mime === 'application/pdf') {
+    body.innerHTML = `<iframe src="${doc.data}" type="application/pdf" style="width:100%;height:100%;min-height:70vh"></iframe>`;
+  } else {
+    body.innerHTML = `<div style="color:white;text-align:center"><p style="font-size:48px">📄</p><p style="margin-top:12px">${name}</p><a href="${doc.data}" download="${name}" style="display:inline-block;margin-top:16px;background:white;color:black;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px">Download File</a></div>`;
+  }
+  $('doc-viewer').classList.add('open');
+}
+function closeViewer() { $('doc-viewer').classList.remove('open'); $('viewer-body').innerHTML = ''; }
+
+async function removeDoc(id) {
+  if (!confirm('Remove document?')) return;
+  const t = getTrip();
+  t.documents = t.documents.filter(d => d.id !== id);
+  await saveTrip_db(t);
+  await delDoc(id);
+  renderDocuments();
+  renderDetail();
+  toast('Document removed');
+}
+function fmtSize(b) { if (b > 1048576) return (b / 1048576).toFixed(1) + ' MB'; return Math.round(b / 1024) + ' KB'; }
+
+// ── BUDGET ──
+let editingExpenseId = null;
+
+function openExpenseModal() {
+  editingExpenseId = null;
+  $('expense-modal-title').textContent = 'Add Expense';
+  $('e-name').value = ''; $('e-amount').value = ''; $('e-cat').value = 'Accommodation';
+  const t = getTrip();
+  const travellers = t.travellers || [];
+  const pb = $('e-paidby');
+  pb.innerHTML = '<option value="__shared">Shared / Unknown</option>' +
+    travellers.map(tr => `<option value="${tr}">${tr}</option>`).join('');
+  const sl = $('e-split-list');
+  if (!travellers.length) {
+    sl.innerHTML = `<div style="font-size:12px;color:var(--gray-400)">Add travellers to the trip to enable splitting</div>`;
+  } else {
+    sl.innerHTML = travellers.map(tr => `
+      <label style="display:inline-flex;align-items:center;gap:6px;background:var(--gray-50);border:var(--border);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer">
+        <input type="checkbox" value="${tr}" checked style="width:13px;height:13px;accent-color:var(--accent)"> ${tr.split(' ')[0]}
+      </label>
+    `).join('');
+  }
+  $('modal-expense').classList.add('open');
+  setTimeout(() => $('e-name').focus(), 100);
+}
+
+function editExpense(id) {
+  const t = getTrip();
+  const e = t.expenses.find(x => x.id === id);
+  if (!e) return;
+  editingExpenseId = id;
+  $('expense-modal-title').textContent = 'Edit Expense';
+  $('e-name').value = e.name;
+  $('e-amount').value = e.amount;
+  $('e-cat').value = e.category || 'Accommodation';
+  const travellers = t.travellers || [];
+  const pb = $('e-paidby');
+  pb.innerHTML = '<option value="__shared">Shared / Unknown</option>' +
+    travellers.map(tr => `<option value="${tr}">${tr}</option>`).join('');
+  pb.value = e.paidBy || '__shared';
+  const sl = $('e-split-list');
+  if (!travellers.length) {
+    sl.innerHTML = `<div style="font-size:12px;color:var(--gray-400)">No travellers added</div>`;
+  } else {
+    sl.innerHTML = travellers.map(tr => `
+      <label style="display:inline-flex;align-items:center;gap:6px;background:var(--gray-50);border:var(--border);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer">
+        <input type="checkbox" value="${tr}" ${!e.splitBetween || e.splitBetween.includes(tr) ? 'checked' : ''} style="width:13px;height:13px;accent-color:var(--accent)"> ${tr.split(' ')[0]}
+      </label>
+    `).join('');
+  }
+  $('modal-expense').classList.add('open');
+  setTimeout(() => $('e-name').focus(), 100);
+}
+
+async function saveExpense() {
+  const name = $('e-name').value.trim();
+  const amount = parseFloat($('e-amount').value);
+  if (!name || !amount) { toast('Enter name and amount'); return; }
+  const t = getTrip();
+  if (!t.expenses) t.expenses = [];
+  const paidBy = $('e-paidby').value;
+  const splitChecks = $('e-split-list').querySelectorAll('input[type=checkbox]:checked');
+  const splitBetween = splitChecks.length > 0
+    ? Array.from(splitChecks).map(c => c.value)
+    : (t.travellers || []);
+  if (editingExpenseId) {
+    const ex = t.expenses.find(x => x.id === editingExpenseId);
+    if (ex) {
+      ex.name = name; ex.amount = amount; ex.category = $('e-cat').value;
+      ex.paidBy = paidBy === '__shared' ? null : paidBy;
+      ex.splitBetween = splitBetween.length ? splitBetween : null;
+    }
+    toast('Expense updated!');
+  } else {
+    t.expenses.push({
+      id: uid(), name, amount, category: $('e-cat').value,
+      date: new Date().toISOString().split('T')[0],
+      paidBy: paidBy === '__shared' ? null : paidBy,
+      splitBetween: splitBetween.length ? splitBetween : null
+    });
+    toast('Expense added!');
+  }
+  editingExpenseId = null;
+  await saveTrip_db(t);
+  closeModal('modal-expense');
+  renderBudget();
+  renderDetail();
+}
+
+async function deleteExpense(id) {
+  const t = getTrip();
+  t.expenses = t.expenses.filter(e => e.id !== id);
+  await saveTrip_db(t);
+  renderBudget();
+  renderDetail();
+}
+
+function calcSettlements(expenses, travellers) {
+  if (!travellers.length) return [];
+  const balance = {};
+  travellers.forEach(tr => balance[tr] = 0);
+  expenses.forEach(e => {
+    if (!e.paidBy || !e.splitBetween?.length) return;
+    const share = e.amount / e.splitBetween.length;
+    // debit each person their share first
+    e.splitBetween.forEach(tr => { if (balance[tr] !== undefined) balance[tr] -= share; });
+    // then credit the payer the full amount — net effect: payer owes share, others owe share
+    if (balance[e.paidBy] !== undefined) balance[e.paidBy] += e.amount;
+  });
+  const settlements = [];
+  const debtors = travellers.filter(t => balance[t] < -0.01).map(t => ({ name: t, amt: -balance[t] }));
+  const creditors = travellers.filter(t => balance[t] > 0.01).map(t => ({ name: t, amt: balance[t] }));
+  let i = 0, j = 0;
+  while (i < debtors.length && j < creditors.length) {
+    const pay = Math.min(debtors[i].amt, creditors[j].amt);
+    settlements.push({ from: debtors[i].name, to: creditors[j].name, amount: Math.round(pay) });
+    debtors[i].amt -= pay; creditors[j].amt -= pay;
+    if (debtors[i].amt < 0.01) i++;
+    if (creditors[j].amt < 0.01) j++;
+  }
+  return settlements;
+}
+
+function renderBudget() {
+  const t = getTrip();
+  const sym = currencySymbol(t.currency || 'INR');
+  const budget = t.budget || 0;
+  const expenses = t.expenses || [];
+  const travellers = t.travellers || [];
+  const spent = expenses.reduce((s, e) => s + e.amount, 0);
+  const pct = budget > 0 ? Math.min(100, Math.round(spent / budget * 100)) : 0;
+  const barColor = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--amber)' : 'var(--green)';
+  const catColors2 = { Accommodation: '#7c3aed', Food: '#00b87a', Transport: '#d97706', Activities: '#0066ff', Shopping: '#e53e3e', Other: '#666' };
+  let catTotals = {};
+  expenses.forEach(e => { catTotals[e.category] = (catTotals[e.category] || 0) + e.amount; });
+
+  // Per-person totals
+  const personPaid = {}, personOwes = {};
+  travellers.forEach(tr => { personPaid[tr] = 0; personOwes[tr] = 0; });
+  expenses.forEach(e => {
+    if (e.paidBy && personPaid[e.paidBy] !== undefined) personPaid[e.paidBy] += e.amount;
+    if (e.splitBetween?.length) {
+      const share = e.amount / e.splitBetween.length;
+      e.splitBetween.forEach(tr => { if (personOwes[tr] !== undefined) personOwes[tr] += share; });
+    }
+  });
+
+  const settlements = calcSettlements(expenses, travellers);
+
+  $('budget-content').innerHTML = `
+    <div class="form-block" style="margin-bottom:12px">
+      <div class="form-block-title">Overview</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);margin-bottom:2px">TOTAL SPENT</div>
+          <div style="font-family:var(--font-display);font-size:28px;font-weight:900;letter-spacing:-1px">${sym}${spent.toLocaleString('en-IN')}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);margin-bottom:2px">BUDGET</div>
+          <div style="font-size:16px;color:var(--gray-600);font-family:var(--font-mono)">${budget > 0 ? sym + budget.toLocaleString('en-IN') : '—'}</div>
+        </div>
+      </div>
+      ${budget > 0 ? `<div class="budget-bar"><div class="budget-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div style="font-size:11px;font-family:var(--font-mono);color:var(--gray-400);margin-top:4px">${pct}% used · ${sym}${(budget - spent).toLocaleString('en-IN')} remaining</div>` : ''}
+    </div>
+
+    ${travellers.length > 1 ? `
+    <div class="form-block" style="margin-bottom:12px">
+      <div class="form-block-title">Who Paid</div>
+      ${travellers.map(tr => {
+        const paid = personPaid[tr] || 0;
+        const owes = personOwes[tr] || 0;
+        const net = paid - owes;
+        return `<div class="expense-row">
+          <div style="width:30px;height:30px;background:var(--black);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${initials(tr)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:500">${tr}</div>
+            <div style="font-size:11px;color:var(--gray-400);font-family:var(--font-mono)">Paid ${sym}${Math.round(paid).toLocaleString('en-IN')} · Share ${sym}${Math.round(owes).toLocaleString('en-IN')}</div>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:500;color:${net >= 0 ? 'var(--green)' : 'var(--red)'}">
+            ${net >= 0 ? '+' : ''}${sym}${Math.round(net).toLocaleString('en-IN')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    ${settlements.length ? `
+    <div class="form-block" style="margin-bottom:12px;border-color:var(--accent-mid);background:var(--accent-dim)">
+      <div class="form-block-title" style="color:var(--accent)">Settlements · Who Owes Who</div>
+      ${settlements.map(s => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(0,102,255,0.1)">
+          <div style="width:28px;height:28px;background:var(--red-dim);border:1px solid rgba(229,62,62,0.2);color:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${initials(s.from)}</div>
+          <div style="flex:1;font-size:13px"><strong>${s.from.split(' ')[0]}</strong> owes <strong>${s.to.split(' ')[0]}</strong></div>
+          <div style="font-family:var(--font-mono);font-size:14px;font-weight:500;color:var(--accent)">${sym}${s.amount.toLocaleString('en-IN')}</div>
+        </div>
+      `).join('')}
+      <div style="font-size:11px;color:var(--accent);margin-top:10px;font-family:var(--font-mono)">${settlements.length} payment${settlements.length > 1 ? 's' : ''} to settle up</div>
+    </div>` : expenses.some(e => e.paidBy) ? `
+    <div style="text-align:center;padding:12px;font-size:13px;color:var(--green);font-weight:500">✓ All settled up!</div>` : ''}
+    ` : ''}
+
+    ${Object.entries(catTotals).length ? `
+    <div class="form-block" style="margin-bottom:12px">
+      <div class="form-block-title">By Category</div>
+      ${Object.entries(catTotals).map(([cat, amt]) => `
+        <div class="expense-row">
+          <div class="expense-dot" style="background:${catColors2[cat] || '#666'}"></div>
+          <div class="expense-name">${cat}</div>
+          <div class="expense-amount">${sym}${amt.toLocaleString('en-IN')}</div>
+        </div>
+      `).join('')}
+    </div>` : ''}
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="section-label">All Expenses</div>
+      <button class="btn btn-secondary btn-sm" onclick="openExpenseModal()">+ Add Expense</button>
+    </div>
+
+    ${expenses.length ? expenses.slice().reverse().map(e => `
+      <div class="activity-row">
+        <div class="act-time" style="min-width:42px">${e.date ? e.date.slice(5) : '–'}</div>
+        <div class="act-body">
+          <div class="act-name">${e.name}</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">
+            <span class="act-cat cat-other">${e.category}</span>
+            ${e.paidBy ? `<span class="act-cat" style="background:var(--green-dim);color:var(--green)">💳 ${e.paidBy.split(' ')[0]}</span>` : ''}
+            ${e.splitBetween?.length ? `<span class="act-cat cat-sight">÷ ${e.splitBetween.map(tr => tr.split(' ')[0]).join(', ')}</span>` : ''}
+          </div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:13px;font-weight:500;margin-right:6px;white-space:nowrap">${sym}${e.amount.toLocaleString('en-IN')}</div>
+        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:4px">
+          <button class="act-del" style="font-size:13px;padding:4px 7px;border-radius:6px;background:var(--gray-50);border:var(--border)" onclick="editExpense('${e.id}')">✏️</button>
+          <button class="act-del" style="padding:4px 7px;border-radius:6px;background:var(--red-dim);color:var(--red);border:1px solid rgba(229,62,62,0.2)" onclick="deleteExpense('${e.id}')">✕</button>
+        </div>
+      </div>
+    `).join('') : `<div class="empty"><div class="empty-icon">💰</div><h3>No expenses yet</h3><p>Track what everyone spends</p><button class="btn btn-primary btn-sm" onclick="openExpenseModal()">Add First Expense</button></div>`}
+  `;
+}
+
+// ── WEATHER ──
+async function fetchWeatherForCity(name) {
+  const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=5&language=en`);
+  const gd = await geo.json();
+  if (!gd.results?.length) return { notFound: true, query: name };
+  const best = gd.results[0];
+  const matched = best.name.toLowerCase() === name.trim().toLowerCase() ||
+                  best.name.toLowerCase().includes(name.trim().toLowerCase()) ||
+                  name.trim().toLowerCase().includes(best.name.toLowerCase());
+  const { latitude: lat, longitude: lon, timezone, name: foundName, country, admin1 } = best;
+  const wr = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weathercode,windspeed_10m,relativehumidity_2m,precipitation&timezone=${timezone}&forecast_days=1`);
+  const wd = await wr.json();
+  return { cur: wd.current, foundName, country, admin1, matched, suggestions: gd.results.slice(1, 4), query: name };
+}
+
+async function renderWeather() {
+  const t = getTrip();
+  const c = $('weather-content');
+  c.innerHTML = `<div class="loader"><div class="dots"><span></span><span></span><span></span></div> Fetching live weather…</div>`;
+  const dests = (t.destinations || []).filter(d => d.name);
+  if (!dests.length) {
+    c.innerHTML = `<div style="text-align:center;padding:32px 16px">
+      <div style="font-size:40px;margin-bottom:12px">🌍</div>
+      <div style="font-size:14px;font-weight:600;color:var(--black);margin-bottom:6px">No destinations yet</div>
+      <div style="font-size:13px;color:var(--gray-600)">Add destinations to your trip to see live weather.</div>
+    </div>`;
+    return;
+  }
+  let html = '';
+  for (const dest of dests) {
+    try {
+      const result = await fetchWeatherForCity(dest.name);
+      if (result.notFound) {
+        html += `<div class="card" style="margin-bottom:12px;padding:16px;border-color:var(--amber)">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="font-size:20px">⚠️</div>
+            <div>
+              <div style="font-size:13px;font-weight:500;margin-bottom:4px">Couldn't find "<strong>${dest.name}</strong>"</div>
+              <div style="font-size:12px;color:var(--gray-600);margin-bottom:10px">Try a more specific name, e.g. "Da Nang, Vietnam" or "Mumbai, India"</div>
+              <input type="text" id="weather-retry-${dest.name.replace(/\W/g,'_')}" placeholder="Try a different spelling…" value="${dest.name}" style="font-size:13px;margin-bottom:8px">
+              <button class="btn btn-secondary btn-sm" onclick="retryWeather('${dest.name.replace(/'/g,"\\'")}')">Retry</button>
+            </div>
+          </div>
+        </div>`;
+        continue;
+      }
+      const { cur, foundName, country, admin1, matched, suggestions, query } = result;
+      const desc = wmoDesc(cur.weathercode);
+      const locationLabel = [foundName, admin1, country].filter(Boolean).join(', ');
+      html += `<div class="weather-card">
+        <div class="weather-dest">${query.toUpperCase()}</div>
+        ${!matched ? `<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:8px;font-family:var(--font-mono)">Showing: ${locationLabel}
+          ${suggestions.length ? `· <span style="text-decoration:underline;cursor:pointer" onclick="showWeatherSuggestions('${query.replace(/'/g,"\\'")}','${locationLabel.replace(/'/g,"\\'")}')">wrong city?</span>` : ''}</div>` : ''}
+        <div class="weather-main">
+          <div class="weather-temp">${Math.round(cur.temperature_2m)}°</div>
+          <div class="weather-info">
+            <div class="weather-desc">${desc.label}</div>
+            <div class="weather-feels">Feels ${Math.round(cur.apparent_temperature)}°C</div>
+          </div>
+          <div style="font-size:36px;margin-left:auto">${desc.icon}</div>
+        </div>
+        <div class="weather-stats">
+          <div class="w-stat"><div class="w-stat-val">${cur.relativehumidity_2m}%</div><div class="w-stat-label">Humidity</div></div>
+          <div class="w-stat"><div class="w-stat-val">${Math.round(cur.windspeed_10m)}</div><div class="w-stat-label">Wind km/h</div></div>
+          <div class="w-stat"><div class="w-stat-val">${cur.precipitation}mm</div><div class="w-stat-label">Rain</div></div>
+        </div>
+      </div>`;
+    } catch (err) {
+      console.error('Weather fetch failed for', dest.name, err);
+      html += `<div style="padding:14px;border:var(--border);border-radius:var(--radius);margin-bottom:12px;font-size:13px;background:var(--amber-dim);border-color:var(--amber);border-radius:10px">
+        <div style="font-weight:600;color:var(--black);margin-bottom:4px">⚠️ ${dest.name}</div>
+        <div style="color:var(--gray-600);margin-bottom:10px">Could not load weather — check your internet connection.</div>
+        <button class="btn btn-ghost btn-xs" onclick="renderWeather()">↺ Retry all</button>
+      </div>`;
+    }
+  }
+  c.innerHTML = html + `<div style="font-size:11px;color:var(--gray-400);margin-top:8px;font-family:var(--font-mono)">Live data · Open-Meteo</div>`;
+}
+
+async function retryWeather(origName) {
+  const input = document.getElementById(`weather-retry-${origName.replace(/\W/g,'_')}`);
+  const newName = input?.value?.trim();
+  if (!newName) return;
+  const t = getTrip();
+  const dest = t.destinations.find(d => d.name === origName);
+  if (dest) { dest.name = newName; await saveTrip_db(t); }
+  renderWeather();
+}
+
+function showWeatherSuggestions(query, current) {
+  toast(`Edit destination name to be more specific, e.g. add country`);
+}
+function wmoDesc(code) {
+  const map = { 0: { label: 'Clear sky', icon: '☀️' }, 1: { label: 'Mainly clear', icon: '🌤️' }, 2: { label: 'Partly cloudy', icon: '⛅' }, 3: { label: 'Overcast', icon: '☁️' }, 45: { label: 'Foggy', icon: '🌫️' }, 48: { label: 'Icy fog', icon: '🌫️' }, 51: { label: 'Light drizzle', icon: '🌦️' }, 61: { label: 'Light rain', icon: '🌧️' }, 63: { label: 'Moderate rain', icon: '🌧️' }, 65: { label: 'Heavy rain', icon: '🌧️' }, 71: { label: 'Light snow', icon: '🌨️' }, 80: { label: 'Rain showers', icon: '🌦️' }, 95: { label: 'Thunderstorm', icon: '⛈️' } };
+  return map[code] || { label: 'See forecast', icon: '🌡️' };
+}
+
+// ── AI TIPS ──
+// ── TIPS (offline, curated) ──
+const TIPS_DB = {
+  // ── UNIVERSAL (always shown) ──
+  universal: [
+    { icon: '📋', title: 'Scan all documents', text: 'Before leaving, photograph your passport, visa, insurance, and booking confirmations. Store copies in Google Drive or email them to yourself so you can access them even if your phone is lost.' },
+    { icon: '💳', title: 'Notify your bank', text: 'Tell your bank and card provider your travel dates before you go. Many banks auto-block foreign transactions as fraud — a quick call or app notification prevents your card from being declined abroad.' },
+    { icon: '📶', title: 'Get a local SIM or eSIM', text: 'Buy a local SIM at the airport or activate an eSIM before travel (Airalo, Holafly). Local data is far cheaper than roaming and keeps you connected for maps and translation the moment you land.' },
+    { icon: '🔌', title: 'Carry a power bank', text: 'A 10,000–20,000 mAh power bank is essential. Long transit days, flights, and sightseeing will drain your phone. Airports and cafes often have limited outlets.' },
+    { icon: '💵', title: 'Always carry small cash', text: 'Markets, street food, tuk-tuks, tips, and rural areas almost always require cash. Withdraw from ATMs inside banks or malls to avoid skimming devices on standalone street ATMs.' },
+    { icon: '🗺️', title: 'Download offline maps', text: 'Download Google Maps or Maps.me for your destinations before you leave home. Offline maps work without data and are a lifesaver when you land with no SIM or in areas with poor signal.' },
+    { icon: '🧳', title: 'Use packing cubes', text: 'Packing cubes compress clothes, keep your bag organised, and make airport security easier. Separate clean and worn clothes into different cubes so you never have to dig through everything.' },
+    { icon: '🔐', title: 'Use a VPN on public WiFi', text: 'Hotel, airport, and cafe WiFi is often unsecured. Use a VPN (ProtonVPN has a free tier) when accessing banking, email, or anything sensitive on public networks.' },
+  ],
+
+  // ── REGIONS ──
+  southeast_asia: [
+    { icon: '🛺', title: 'Negotiate before you ride', text: 'Always agree on the price with tuk-tuks, motorbike taxis, and non-metered taxis before getting in. Use Grab (the region\'s Uber) for fair, fixed prices in cities like Bangkok, KL, Ho Chi Minh City, and Jakarta.' },
+    { icon: '🙏', title: 'Dress for temples', text: 'Temples and religious sites require covered shoulders and knees. Keep a lightweight sarong or scarf in your bag — many temples loan them but it\'s cleaner to carry your own.' },
+    { icon: '🌶️', title: 'Street food is the best food', text: 'The most authentic and affordable meals are always at street stalls and local markets. Look for stalls with a queue of locals — high turnover means fresh ingredients. Carry hand sanitiser.' },
+    { icon: '💊', title: 'Pack stomach medication', text: 'Traveller\'s diarrhoea is common when adjusting to local food and water. Bring oral rehydration salts, loperamide, and probiotics. Avoid ice in drinks at smaller establishments.' },
+    { icon: '☀️', title: 'Heat and humidity are real', text: 'Temperatures regularly hit 33–38°C with high humidity. Drink water constantly, use SPF 50+ sunscreen, and plan outdoor sightseeing for early morning (7–10am) or late afternoon to avoid peak heat.' },
+    { icon: '🦟', title: 'Use mosquito repellent', text: 'Dengue fever is present across Southeast Asia. Use DEET-based repellent, especially at dawn and dusk. Consider long sleeves in the evenings and bring a mosquito coil for guesthouses without screens.' },
+  ],
+  south_asia: [
+    { icon: '🚗', title: 'Hire a driver for the day', text: 'Day-hire drivers (₹1500–3000 in India) are much more practical than taxis for visiting multiple sites. Your hotel can arrange reliable options, or use OlaCabs / Ola Outstation for transparent pricing.' },
+    { icon: '🍽️', title: 'Stick to cooked food', text: 'Avoid raw salads, unpeeled fruit, and tap water. Eat at busy, well-lit restaurants. Thalis at local dhabas are cheap, fresh, and filling — the food is cooked to order and constantly replenished.' },
+    { icon: '🛕', title: 'Remove shoes at religious sites', text: 'Temples, mosques, and gurudwaras require shoe removal. Wear easy slip-on footwear. Some sites also require head covering — carry a dupatta or small cloth in your bag.' },
+    { icon: '🚂', title: 'Book trains in advance', text: 'Indian Railways (IRCTC) trains fill up weeks ahead. Book Tatkal tickets (released 1 day before) if you miss the window. Rajdhani and Shatabdi express trains are the most reliable options.' },
+    { icon: '📱', title: 'Use UPI and digital payments', text: 'India\'s UPI system (GPay, PhonePe, Paytm) is accepted almost everywhere — shops, autos, restaurants. Set it up if you have an Indian number. Reduces need to carry large amounts of cash.' },
+    { icon: '🌡️', title: 'Check seasonal conditions', text: 'Monsoon (Jun–Sep) brings heavy rains and flooding in many regions. Rajasthan and deserts are extremely hot (45°C+) in summer. North India is cold in December–January. Time your visit to each region accordingly.' },
+  ],
+  europe: [
+    { icon: '🚆', title: 'Book trains early for discounts', text: 'European rail tickets (Eurail, Trenitalia, SNCF, DB) are significantly cheaper when booked 30–60 days ahead. Flexipass rail passes are worth it only if you\'re doing 5+ long-distance journeys.' },
+    { icon: '🏛️', title: 'Pre-book popular attractions', text: 'The Colosseum, Eiffel Tower, Sagrada Família, Uffizi Gallery, and Anne Frank House all require timed entry tickets booked days or weeks ahead. Walk-up queues can be 3–4 hours.' },
+    { icon: '🧾', title: 'Validate your train ticket', text: 'In Italy, France, and Spain, you must stamp/validate your ticket at the platform machine before boarding. Failure to do so can result in a fine even with a valid ticket.' },
+    { icon: '💶', title: 'Carry some Euros always', text: 'Many European markets, small restaurants, and rural areas are cash-only. Withdraw from bank ATMs (Euronet charges high fees). Revolut and Wise cards offer excellent exchange rates with no fees.' },
+    { icon: '🚶', title: 'Most cities are walkable', text: 'Historic city centres in Rome, Prague, Amsterdam, and Lisbon are compact and best explored on foot. Buy a day transit pass for outlying areas — most cities offer 24/48/72hr tourist passes.' },
+    { icon: '🌤️', title: 'Weather varies significantly', text: 'Northern Europe (UK, Scandinavia) is cool and rainy year-round — always pack a waterproof layer. Southern Europe (Greece, Spain, Italy) is hot and sunny Jun–Sep but mild in shoulder season.' },
+  ],
+  middle_east: [
+    { icon: '👗', title: 'Dress modestly outside resorts', text: 'In UAE, Saudi Arabia, and Jordan, cover shoulders and knees in public spaces, souks, and mosques. In Dubai, swimwear is fine at beaches and pools, but cover up when moving through malls or streets.' },
+    { icon: '🕌', title: 'Respect prayer times', text: 'During the 5 daily prayer times (especially Friday prayers), some shops close for 20–30 minutes. During Ramadan, eating, drinking, or smoking in public during daylight hours is prohibited and illegal.' },
+    { icon: '🌡️', title: 'Extreme summer heat', text: 'May–September temperatures reach 40–48°C in the Gulf. Most activities move indoors. Plan outdoor sightseeing early morning or after sunset. Stay hydrated aggressively — carry water everywhere.' },
+    { icon: '🚕', title: 'Use Careem or Uber', text: 'Careem (regional) and Uber operate reliably across the UAE, Jordan, and Egypt. Avoid unmarked taxis which overcharge tourists significantly. Always agree on price or ensure meter is running.' },
+    { icon: '💰', title: 'Bargaining is expected in souks', text: 'In traditional markets (souks), the first price is always inflated 2–3x. Counter-offer at 40–50% of asking price. Walk away slowly if no agreement — you\'ll often be called back. Never bargain aggressively.' },
+  ],
+  east_asia: [
+    { icon: '🥢', title: 'Learn basic local etiquette', text: 'In Japan, never stick chopsticks upright in rice (funeral symbolism) and avoid eating while walking. In China, pouring tea for others before yourself is polite. Small gestures are noticed and appreciated.' },
+    { icon: '📱', title: 'Download local apps', text: 'WeChat Pay and Alipay are essential for China (many places are cashless). In Japan, Suica card covers all transit. In Korea, T-money card works on all buses and subways. Set these up before arrival.' },
+    { icon: '🗾', title: 'Transit cards save time', text: 'IC cards (Suica/Pasmo in Japan, T-money in Korea, Octopus in Hong Kong) work on all metro, bus, and many convenience store purchases. Load them at airport stations immediately on arrival.' },
+    { icon: '🍜', title: 'Convenience stores are underrated', text: 'Japan\'s 7-Eleven, FamilyMart, and Lawson sell excellent fresh food, ATMs (Japan Post ATMs accept foreign cards when bank ATMs don\'t), and nearly everything you need 24/7.' },
+    { icon: '🔒', title: 'VPN required for China', text: 'Google, WhatsApp, Instagram, and most Western apps are blocked in mainland China. Download and activate a VPN (ExpressVPN, NordVPN) before you enter China — you cannot download them once inside.' },
+  ],
+  africa: [
+    { icon: '💉', title: 'Check vaccination requirements', text: 'Yellow fever vaccination is mandatory for entry to many African countries and required if you\'ve transited through affected regions. Malaria prophylaxis is recommended for most of sub-Saharan Africa — consult a travel doctor.' },
+    { icon: '🦟', title: 'Malaria prevention is critical', text: 'Take prescribed antimalarials consistently, use DEET repellent from dusk to dawn, sleep under treated nets, and wear long sleeves in the evening. Don\'t skip doses even if you feel fine.' },
+    { icon: '💧', title: 'Drink only bottled water', text: 'Tap water is not potable in most of Africa. Drink only sealed bottled water, use water purification tablets for remote areas, and avoid ice in drinks outside major hotels.' },
+    { icon: '📸', title: 'Ask before photographing people', text: 'Always ask permission before photographing locals. In some countries (Sudan, Ethiopia), photographing government buildings, military, or infrastructure is illegal and can result in camera confiscation.' },
+    { icon: '💵', title: 'USD cash is widely accepted', text: 'US dollars are accepted alongside local currency in many African countries, especially for safari bookings, visas on arrival, and larger purchases. Bring crisp, unfolded notes — damaged bills are often refused.' },
+  ],
+  americas: [
+    { icon: '🤑', title: 'Tipping is mandatory in North America', text: 'In the US and Canada, tipping 18–22% at restaurants is standard, not optional. Tip bartenders $1–2/drink, hotel housekeeping $2–5/night, and taxi/rideshare 15–20%. Not tipping is considered rude.' },
+    { icon: '🏥', title: 'Get comprehensive travel insurance', text: 'US medical costs are extraordinary — a single night in hospital can cost $10,000+. Ensure your travel insurance covers medical evacuation. Always carry your insurance card and emergency number.' },
+    { icon: '🌮', title: 'Explore beyond tourist areas', text: 'In Mexico and Central America, the best food and experiences are in local neighbourhoods. Taquerías and mercados serve better food at a fraction of tourist restaurant prices. Use local transport where safe.' },
+    { icon: '🚌', title: 'Long-distance buses are reliable', text: 'In South and Central America, companies like Cruz del Sur, Flixbus, and RedBus operate comfortable overnight buses between cities — far cheaper than flying and with scenic routes.' },
+  ],
+  // ── SPECIFIC COUNTRIES / CITIES ──
+  vietnam: [
+    { icon: '🏍️', title: 'Traffic chaos is normal', text: 'Vietnamese city traffic, especially in Hanoi and Ho Chi Minh City, moves in constant streams of motorbikes. To cross the road, walk slowly and steadily — traffic flows around you. Never run or freeze.' },
+    { icon: '🍜', title: 'Eat phở for breakfast', text: 'Phở is traditionally a breakfast dish. Head to a local phở shop before 9am for the freshest broth. Bún bò Huế (spicy beef noodle) and bánh mì from street carts are equally unmissable.' },
+    { icon: '💰', title: 'Bargain respectfully', text: 'Markets and non-metered transport expect negotiation. Start at 50–60% of the asking price. Smile, stay friendly, and be willing to walk away. Most vendors will meet somewhere in the middle.' },
+  ],
+  thailand: [
+    { icon: '👑', title: 'Respect the monarchy', text: 'Criticism of the Thai royal family (lèse-majesté) is a criminal offence with prison sentences. Avoid any negative comments about the monarchy in public or online while in Thailand.' },
+    { icon: '🛺', title: 'Use Grab, not tuk-tuks for transport', text: 'Grab gives fixed, fair prices. Tuk-tuks and unmarked taxis routinely overcharge tourists. If taking a tuk-tuk, always negotiate price before getting in and be wary of "helpful" drivers suggesting gem shops.' },
+    { icon: '🍛', title: 'Eat pad see ew over pad thai', text: 'Pad thai on tourist streets is often watered down. Try pad see ew, khao man gai, or som tam at local restaurants. Night markets like Bangkok\'s Or Tor Kor have exceptional quality at local prices.' },
+  ],
+  japan: [
+    { icon: '🚯', title: 'There are almost no public bins', text: 'Japan has very few public rubbish bins — carry a small bag for your own rubbish. Convenience stores have bins near their entrance. Never leave litter; it is genuinely considered antisocial.' },
+    { icon: '🗣️', title: 'Quiet in public spaces', text: 'Talking on phones on trains is frowned upon. Keep voices low on public transport, don\'t play audio without headphones, and queue orderly and silently. Politeness is the social currency.' },
+    { icon: '🏨', title: 'Try a ryokan', text: 'Staying at least one night in a traditional ryokan (Japanese inn) with onsen (hot spring), yukata robes, and multi-course kaiseki dinner is a genuinely once-in-a-lifetime experience worth the splurge.' },
+  ],
+  dubai: [
+    { icon: '🚇', title: 'Dubai Metro is excellent', text: 'The Dubai Metro is clean, air-conditioned, affordable, and on time. It covers most tourist areas including Downtown, Dubai Mall, and the Marina. Get a Nol card at any station for seamless travel.' },
+    { icon: '🏖️', title: 'Public beach rules', text: 'Public beaches require modest swimwear (no thongs). Public displays of affection are illegal. Alcohol is only available in licensed restaurants and hotels — not on beaches or public spaces.' },
+    { icon: '🕌', title: 'Visit the Blue Mosque early', text: 'The Jumeirah Mosque is open for non-Muslim visitors on selected mornings. Arrive early, dress conservatively, and join the guided tour — it is one of the most informative cultural experiences in Dubai.' },
+  ],
+  india: [
+    { icon: '🚂', title: 'Book trains via IRCTC', text: 'Register on IRCTC (irctc.co.in) to book trains directly. Tatkal quota opens 1 day before departure at 10am (AC) and 11am (non-AC). Premium Tatkal has no waitlist but is more expensive.' },
+    { icon: '🌡️', title: 'Adjust to the heat gradually', text: 'Stay hydrated (2–3L water/day minimum), avoid midday sun between 12–4pm, wear cotton clothing, and carry a small hand fan or portable mist spray. Mango lassi and coconut water are ideal hydration.' },
+    { icon: '🍛', title: 'Tell them your spice tolerance', text: 'Indian spice levels are genuinely high. At restaurants, explicitly say "mild please" or "less spicy" — even medium local spice can be very hot for those unaccustomed. Dahi (yoghurt) cools spice quickly.' },
+  ],
+  singapore: [
+    { icon: '🌿', title: 'Gardens by the Bay at night', text: 'The free Supertree light show (Garden Rhapsody) runs at 7:45pm and 8:45pm nightly. Arrive 15 minutes early for a good spot. The paid OCBC Skyway walkway through the treetops is worth the price.' },
+    { icon: '🍽️', title: 'Eat at hawker centres', text: 'Singapore hawker centres are UNESCO-listed cultural heritage. Maxwell Food Centre, Lau Pa Sat, and Tiong Bahru Market offer Michelin-quality dishes (some literally Michelin starred) for S$3–8.' },
+    { icon: '🚇', title: 'EZ-Link card for everything', text: 'The EZ-Link card works on all MRT and bus routes. Singapore\'s public transport is world-class — faster and cheaper than taxis for almost every journey. Get the card at any MRT station on arrival.' },
+  ],
+};
+
+// Map destination names to tip categories
+function getTipCategories(destName) {
+  const n = destName.toLowerCase();
+  const cats = ['universal'];
+  // Specific cities/countries first (more specific = higher priority)
+  if (n.includes('vietnam') || n.includes('hanoi') || n.includes('ho chi minh') || n.includes('saigon') || n.includes('da nang') || n.includes('hoi an')) cats.push('vietnam');
+  if (n.includes('thailand') || n.includes('bangkok') || n.includes('chiang mai') || n.includes('phuket') || n.includes('koh')) cats.push('thailand');
+  if (n.includes('japan') || n.includes('tokyo') || n.includes('osaka') || n.includes('kyoto') || n.includes('hiroshima')) cats.push('japan');
+  if (n.includes('dubai') || n.includes('abu dhabi') || n.includes('sharjah')) cats.push('dubai');
+  if (n.includes('india') || n.includes('mumbai') || n.includes('delhi') || n.includes('bangalore') || n.includes('chennai') || n.includes('kolkata') || n.includes('goa') || n.includes('jaipur') || n.includes('kerala')) cats.push('india');
+  if (n.includes('singapore')) cats.push('singapore');
+  // Regional fallbacks
+  const seAsia = ['cambodia','laos','myanmar','malaysia','indonesia','bali','philippines','kuala lumpur','kl ','penang'];
+  if (seAsia.some(x => n.includes(x))) cats.push('southeast_asia');
+  if (['vietnam','thailand','japan','singapore','cambodia','laos','myanmar','malaysia','indonesia','philippines','korea','hong kong','taiwan','china','bali'].some(x => n.includes(x))) {
+    if (!cats.includes('southeast_asia') && !cats.includes('east_asia')) {
+      if (['korea','hong kong','taiwan','china'].some(x => n.includes(x))) cats.push('east_asia');
+      else cats.push('southeast_asia');
+    }
+  }
+  if (['saudi','riyadh','qatar','doha','oman','muscat','kuwait','bahrain','jordan','amman'].some(x => n.includes(x))) cats.push('middle_east');
+  if (['france','spain','italy','germany','uk','london','paris','rome','barcelona','amsterdam','prague','vienna','portugal','lisbon','greece','athens'].some(x => n.includes(x))) cats.push('europe');
+  if (['kenya','tanzania','south africa','cape town','johannesburg','egypt','cairo','morocco','nairobi','ethiopia','ghana','nigeria'].some(x => n.includes(x))) cats.push('africa');
+  if (['usa','new york','los angeles','chicago','mexico','canada','toronto','brazil','argentina','colombia','peru','chile'].some(x => n.includes(x))) cats.push('americas');
+  if (['sri lanka','nepal','bangladesh','pakistan','bhutan','maldives'].some(x => n.includes(x))) cats.push('south_asia');
+  // Default fallback — if nothing matched, just show universal + southeast asia as generic
+  if (cats.length === 1) cats.push('southeast_asia');
+  return [...new Set(cats)];
+}
+
+function renderTips() {
+  const t = getTrip();
+  const c = $('tips-content');
+  const dests = (t.destinations || []).filter(d => d.name);
+  if (!dests.length) { c.innerHTML = `<div style="color:var(--gray-400);font-size:13px;padding:20px 0">Add destinations to see travel tips.</div>`; return; }
+
+  // Collect tips for all destinations, deduplicate
+  const seen = new Set();
+  const allTips = [];
+  dests.forEach(dest => {
+    const cats = getTipCategories(dest.name);
+    cats.forEach(cat => {
+      (TIPS_DB[cat] || []).forEach(tip => {
+        if (!seen.has(tip.title)) { seen.add(tip.title); allTips.push({ ...tip, cat }); }
+      });
+    });
+  });
+
+  // Destination search links
+  const destQuery = dests.map(d => d.name).join(' ');
+  const googleUrl = `https://www.google.com/search?q=travel+tips+${encodeURIComponent(destQuery)}`;
+  const chatgptUrl = `https://chatgpt.com/?q=${encodeURIComponent('Give me 10 practical travel tips for ' + destQuery)}`;
+
+  c.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-family:var(--font-display);font-size:15px;font-weight:700;margin-bottom:4px">${dests.map(d => d.name).join(' · ')}</div>
+      <div style="font-size:12px;color:var(--gray-400)">${allTips.length} curated tips · works offline</div>
+    </div>
+
+    ${allTips.map(tip => `
+      <div class="suggestion-card" style="margin-bottom:10px">
+        <div class="sug-top"><div class="sug-icon">${tip.icon}</div><div class="sug-title">${tip.title}</div></div>
+        <div class="sug-text">${tip.text}</div>
+      </div>
+    `).join('')}
+
+    <div style="margin-top:20px;padding-top:16px;border-top:var(--border)">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Want more personalised tips?</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="${googleUrl}" target="_blank" class="btn btn-secondary btn-sm">🔍 Search Google</a>
+        <a href="${chatgptUrl}" target="_blank" class="btn btn-secondary btn-sm">✦ Ask ChatGPT</a>
+      </div>
+      <div style="font-size:11px;color:var(--gray-400);margin-top:8px">Opens in browser · requires internet</div>
+    </div>
+  `;
+}
+
+// ── SHARE / EXPORT ──
+function openShareModal() { $('modal-share').classList.add('open'); }
+function shareAsText() {
+  const t = getTrip();
+  const sym = currencySymbol(t.currency || 'INR');
+  const spent = (t.expenses || []).reduce((s, e) => s + e.amount, 0);
+  let text = `✈️ ${t.name}\n📅 ${fmtRange(t.start, t.end)}\n\n`;
+  (t.destinations || []).forEach((d, i) => { text += `📍 Stop ${i + 1}: ${d.name}\n${d.arrival ? `  Arrive: ${fmtDT(d.arrival)}\n` : ''}${d.departure ? `  Depart: ${fmtDT(d.departure)}\n` : ''}${d.notes ? `  Notes: ${d.notes}\n` : ''}\n`; });
+  if (t.activities?.length) { text += `📅 Activities:\n`; t.activities.forEach(a => { text += `  ${a.date || ''} ${a.time || ''} — ${a.name}\n`; }); text += '\n'; }
+  if (t.budget) text += `💰 Budget: ${sym}${t.budget.toLocaleString('en-IN')} | Spent: ${sym}${spent.toLocaleString('en-IN')}\n`;
+  text += `\nPlanned with WanderPlan`;
+  if (navigator.share) { navigator.share({ title: t.name, text }); } else { navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard!')); }
+  closeModal('modal-share');
+}
+function shareJSON() {
+  const trip = tripWithoutDocs({ ...getTrip() });
+  const data = { version: 2, exported: new Date().toISOString(), trips: [trip] };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${trip.name.replace(/\s+/g, '_')}_backup.json`;
+  a.click(); URL.revokeObjectURL(url);
+  localStorage.setItem(BACKUP_TS_KEY, new Date().toISOString());
+  closeModal('modal-share');
+  toast('Exported!');
+}
+function importTrip(event) {
+  closeModal('modal-share');
+  restoreBackup(event);
+}
+
+// ── BACKUP ──
+const BACKUP_TS_KEY = 'wanderplan_last_backup';
+
+function tripWithoutDocs(trip) {
+  const t = { ...trip }; delete t.documents; return t;
+}
+
+function renderBackupScreen() {
+  // Status card
+  const ts = localStorage.getItem(BACKUP_TS_KEY);
+  if (ts) {
+    const d = new Date(ts);
+    const diff = Math.round((Date.now() - d) / 60000);
+    const ago = diff < 1 ? 'just now' : diff < 60 ? `${diff}m ago` : diff < 1440 ? `${Math.round(diff/60)}h ago` : `${Math.round(diff/1440)}d ago`;
+    $('backup-status-icon').textContent = '✅';
+    $('backup-last-label').textContent = `Last backup: ${ago}`;
+    $('backup-last-time').textContent = d.toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    $('backup-status-card').style.borderColor = 'rgba(0,184,122,0.3)';
+    $('backup-status-card').style.background = 'rgba(0,184,122,0.05)';
+  }
+  // Individual trip list
+  const list = $('backup-trip-list');
+  if (!state.trips.length) {
+    list.innerHTML = `<div style="font-size:13px;color:var(--gray-400)">No trips to back up yet.</div>`;
+    return;
+  }
+  list.innerHTML = state.trips.map((t, i, arr) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i < arr.length - 1 ? 'border-bottom:1px solid var(--gray-100)' : ''}">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div>
+        <div style="font-size:11px;color:var(--gray-400);font-family:var(--font-mono);margin-top:2px">${fmtRange(t.start, t.end)}</div>
+      </div>
+      <button class="btn btn-secondary btn-xs" onclick="backupSingle('${t.id}')">⬇ Export</button>
+    </div>
+  `).join('');
+}
+
+function backupAll() {
+  const data = { version: 2, exported: new Date().toISOString(), trips: state.trips.map(tripWithoutDocs) };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url; a.download = `wanderplan_backup_${date}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  localStorage.setItem(BACKUP_TS_KEY, new Date().toISOString());
+  renderBackupScreen();
+  toast(`${state.trips.length} trip${state.trips.length !== 1 ? 's' : ''} exported!`);
+}
+
+function backupSingle(id) {
+  const trip = state.trips.find(t => t.id === id);
+  if (!trip) return;
+  const data = { version: 2, exported: new Date().toISOString(), trips: [tripWithoutDocs(trip)] };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${trip.name.replace(/\s+/g,'_')}_backup.json`;
+  a.click(); URL.revokeObjectURL(url);
+  localStorage.setItem(BACKUP_TS_KEY, new Date().toISOString());
+  renderBackupScreen();
+  toast(`"${trip.name}" exported!`);
+}
+
+async function restoreBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // support both old single-trip format and new multi-trip format
+      const trips = data.trips || (data.id ? [data] : null);
+      if (!trips?.length) { toast('No trips found in file'); return; }
+      let added = 0;
+      for (const trip of trips) {
+        trip.id = uid();
+        trip.activities = trip.activities || [];
+        trip.documents = [];
+        trip.packingList = trip.packingList || [];
+        trip.expenses = trip.expenses || [];
+        trip.travellers = trip.travellers || [];
+        await saveTrip_db(trip);
+        added++;
+      }
+      nav('list');
+      toast(`${added} trip${added !== 1 ? 's' : ''} restored!`);
+    } catch { toast('Invalid backup file'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── DELETE TRIP ──
+async function deleteTrip(id) {
+  if (!confirm('Delete this trip and all its data?')) return;
+  const t = state.trips.find(x => x.id === id);
+  for (const doc of (t?.documents || [])) { await delDoc(doc.id); }
+  await dbDel('trips', id);
+  state.trips = state.trips.filter(x => x.id !== id);
+  // if deleting the currently open trip, hide the detail nav button
+  if (state.cur === id) {
+    state.cur = null;
+    $('bnav-detail').style.display = 'none';
+  }
+  nav('list');
+  toast('Trip deleted');
+}
+
+// ── MODALS ──
+function closeModal(id) { $(id).classList.remove('open'); }
+
+// close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ── INIT ──
+openDB().then(() => { loadAll().then(renderList); });
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+// ── Theme ────────────────────────────────────────────────────
+const THEME_KEY = 'abode_theme';
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = t === 'dark' ? '#0f0f0e' : '#ffffff';
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+(function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  applyTheme(saved || sys);
+})();
+</script>
+</body>
+</html>
