@@ -163,10 +163,10 @@ body {
 
 .greeting-text {
   font-family: var(--sans);
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--ink);
-  letter-spacing: -.8px;
+  letter-spacing: -.6px;
   line-height: 1.15;
 }
 
@@ -190,7 +190,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--rl);
-  padding: 10px 6px;
+  padding: 9px 6px;
   cursor: pointer;
   transition: border-color .15s, box-shadow .15s;
   text-decoration: none;
@@ -206,12 +206,12 @@ body {
 
 .stat-box-val {
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--ink);
-  letter-spacing: -.06em;
+  letter-spacing: -.05em;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .stat-box-label {
@@ -247,27 +247,23 @@ body {
 .app-card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   text-decoration: none;
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s, border-color .18s;
+  transition: transform .16s cubic-bezier(.34,1.56,.64,1), box-shadow .16s, border-color .16s;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  min-height: 110px;
 }
 
-.app-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shlg);
-  border-color: var(--line2);
-}
+.app-card:hover { border-color: var(--line2); box-shadow: var(--sh); transform: translateY(-1px); }
+.app-card:active { transform: scale(.97); }
 
-.app-card:active { transform: scale(.96); }
-
-/* top colour bar */
+/* top accent bar */
 .card-stripe {
   height: 3px;
   width: 100%;
@@ -279,162 +275,140 @@ body {
 .card-wander .card-stripe { background: var(--wander-c); }
 
 .card-body {
-  padding: 11px 12px 10px;
+  padding: 12px 13px 12px;
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.card-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
+/* icon pill — svg-based, no emoji */
+.card-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
-  font-size: 20px;
-  flex-shrink: 0;
   margin-bottom: 10px;
-  border: 1px solid rgba(0,0,0,.06);
+  flex-shrink: 0;
 }
+.card-split  .card-icon-wrap { background: rgba(192,57,43,.1); }
+.card-wealth .card-icon-wrap { background: rgba(123,47,190,.1); }
+.card-doc    .card-icon-wrap { background: rgba(26,86,219,.1); }
+.card-wander .card-icon-wrap { background: rgba(4,120,87,.1); }
 
-.card-split  .card-icon { background: #fff0ef; }
-.card-wealth .card-icon { background: #f3eeff; }
-.card-doc    .card-icon { background: #edf2ff; }
-.card-wander .card-icon { background: #edfbf4; }
+.card-icon-wrap svg { width: 17px; height: 17px; stroke-width: 1.8; }
+.card-split  .card-icon-wrap svg { stroke: var(--split-c); }
+.card-wealth .card-icon-wrap svg { stroke: var(--wealth-c); }
+.card-doc    .card-icon-wrap svg { stroke: var(--doc-c); }
+.card-wander .card-icon-wrap svg { stroke: var(--wander-c); }
 
 .card-name {
   font-family: var(--body);
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: -.02em;
-  margin-bottom: 2px;
   line-height: 1.2;
+  margin-bottom: 2px;
 }
 
 .card-desc {
   font-family: var(--body);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 400;
-  color: var(--ink3);
+  color: var(--ink4);
   line-height: 1.4;
-  margin-bottom: 10px;
   flex: 1;
-}
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
 }
 
 .card-stat-text {
   font-family: var(--mono);
-  font-size: 9.5px;
-  color: var(--ink4);
+  font-size: 9px;
+  color: var(--ink3);
   letter-spacing: .01em;
+  margin-top: 8px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.card-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.card-split  .card-dot { background: var(--split-c); }
-.card-wealth .card-dot { background: var(--wealth-c); }
-.card-doc    .card-dot { background: var(--doc-c); }
-.card-wander .card-dot { background: var(--wander-c); }
 
 /* ── Footer ── */
 
-/* ── Backup card ── */
+/* ── Backup row (inline, minimal) ── */
 .backup-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--rxl);
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
   margin-bottom: 0;
 }
 
-.backup-stripe {
-  height: 3px;
-  background: linear-gradient(90deg, #047857, #1a56db, #7B2FBE, #c0392b);
-}
+.backup-stripe { display: none; }
 
 .backup-body {
-  padding: 9px 13px;
+  padding: 0;
 }
 
 .backup-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .backup-info { flex: 1; min-width: 0; }
 
-.backup-title {
-  font-family: var(--sans);
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -.03em;
-  margin-bottom: 2px;
-}
+.backup-title { display: none; }
 
 .backup-meta {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9.5px;
   color: var(--ink4);
   letter-spacing: .02em;
 }
 
-.backup-meta.fresh { color: #047857; }
+.backup-meta.fresh { color: var(--wander-c); }
 .backup-meta.stale { color: #b45309; }
 .backup-meta.never { color: var(--ink4); }
 
 .backup-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
+  gap: 6px;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .btn-backup {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 12px;
-  border-radius: var(--r);
-  border: 1px solid var(--line);
-  background: var(--surface2);
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ink2);
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--line2);
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink3);
   cursor: pointer;
-  letter-spacing: -.01em;
-  transition: background .12s, border-color .12s;
+  letter-spacing: .01em;
+  transition: background .12s, border-color .12s, color .12s;
   white-space: nowrap;
 }
 
-.btn-backup:hover { background: var(--line); border-color: var(--line2); }
+.btn-backup:hover { background: var(--surface2); color: var(--ink2); border-color: var(--line2); }
 .btn-backup:active { opacity: .7; }
 
 .btn-backup.primary {
-  background: var(--ink);
-  color: #fff;
-  border-color: var(--ink);
+  background: var(--surface);
+  color: var(--ink2);
+  border-color: var(--line2);
 }
 
-.btn-backup.primary:hover { background: var(--ink2); border-color: var(--ink2); }
+.btn-backup.primary:hover { background: var(--surface2); color: var(--ink); }
 
 /* hidden file input */
 #restore-input { display: none; }
@@ -583,19 +557,16 @@ html[data-theme="dark"] .stat-box{background:var(--surface);border-color:var(--l
 html[data-theme="dark"] .stat-box:hover{border-color:var(--line2);box-shadow:var(--sh);}
 /* App cards */
 html[data-theme="dark"] .app-card{background:var(--surface);border-color:var(--line);}
-html[data-theme="dark"] .app-card:hover{border-color:var(--line2);box-shadow:var(--shlg);}
-html[data-theme="dark"] .card-footer{border-top-color:var(--line);}
-/* Card icon tints */
-html[data-theme="dark"] .card-split  .card-icon{background:rgba(224,90,78,.18);}
-html[data-theme="dark"] .card-wealth .card-icon{background:rgba(160,108,213,.18);}
-html[data-theme="dark"] .card-doc    .card-icon{background:rgba(77,128,230,.18);}
-html[data-theme="dark"] .card-wander .card-icon{background:rgba(46,168,120,.18);}
+html[data-theme="dark"] .app-card:hover{border-color:var(--line2);box-shadow:var(--sh);}
+html[data-theme="dark"] .card-split  .card-icon-wrap{background:rgba(224,90,78,.15);}
+html[data-theme="dark"] .card-wealth .card-icon-wrap{background:rgba(160,108,213,.15);}
+html[data-theme="dark"] .card-doc    .card-icon-wrap{background:rgba(77,128,230,.15);}
+html[data-theme="dark"] .card-wander .card-icon-wrap{background:rgba(46,168,120,.15);}
 /* Backup card */
-html[data-theme="dark"] .backup-card{background:var(--surface);border-color:var(--line);}
-html[data-theme="dark"] .btn-backup{background:var(--surface2);color:var(--ink2);border-color:var(--line2);}
-html[data-theme="dark"] .btn-backup:hover{background:var(--line);border-color:var(--line2);}
-html[data-theme="dark"] .btn-backup.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);}
-html[data-theme="dark"] .btn-backup.primary:hover{background:var(--ink2);border-color:var(--ink2);}
+html[data-theme="dark"] .btn-backup{background:var(--surface2);color:var(--ink3);border-color:var(--line);}
+html[data-theme="dark"] .btn-backup:hover{background:var(--surface);color:var(--ink2);border-color:var(--line2);}
+html[data-theme="dark"] .btn-backup.primary{background:var(--surface2);color:var(--ink2);border-color:var(--line);}
+html[data-theme="dark"] .btn-backup.primary:hover{background:var(--surface);color:var(--ink);}
 /* Modal */
 html[data-theme="dark"] .modal-overlay{background:rgba(0,0,0,.72);}
 html[data-theme="dark"] .modal{background:var(--surface);}
@@ -629,16 +600,15 @@ html[data-theme="dark"] .modal-note{background:var(--surface2);border-color:var(
 
   <!-- Greeting -->
   <div class="greeting">
-    <div class="greeting-eyebrow">Your personal suite</div>
+    <div class="greeting-eyebrow" id="greeting-date"></div>
     <div class="greeting-text" id="greeting-text">Good morning</div>
     <div class="greeting-sub" id="greeting-sub">All your apps in one place</div>
   </div>
 
   <!-- Stats -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;animation:fade-up .4s .06s ease both">
-    <span class="section-title">Overview</span>
+  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px;animation:fade-up .4s .06s ease both">
     <button onclick="loadStats();this.style.opacity='.4';setTimeout(()=>this.style.opacity='1',600)"
-      style="background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--ink3);padding:4px 0;letter-spacing:.04em;transition:opacity .2s">↺ Refresh</button>
+      style="background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--ink4);padding:2px 0;letter-spacing:.06em;text-transform:uppercase;transition:opacity .2s">↺ refresh</button>
   </div>
   <div class="stat-row" style="margin-top:0">
     <div class="stat-box" onclick="go('moneymate.html')">
@@ -661,58 +631,54 @@ html[data-theme="dark"] .modal-note{background:var(--surface2);border-color:var(
 
   <!-- Apps -->
   <div class="apps-section">
-    <div class="section-head"><span class="section-title">Apps</span></div>
+    <div class="section-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="section-title">Apps</span></div>
     <div class="apps-grid">
 
       <a class="app-card card-split" href="moneymate.html" id="card-split">
         <div class="card-stripe"></div>
         <div class="card-body">
-          <div class="card-icon">💰</div>
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v2m0 8v2M9.5 9.5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5c0 2.5-5 2.5-5 5 0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5"/></svg>
+          </div>
           <div class="card-name">MoneyMate</div>
           <div class="card-desc">Expenses, splits &amp; maintenance</div>
-          <div class="card-footer">
-            <span class="card-stat-text" id="stat-split">—</span>
-            <span class="card-dot"></span>
-          </div>
+          <span class="card-stat-text" id="stat-split">—</span>
         </div>
       </a>
 
       <a class="app-card card-wealth" href="wealth.html" id="card-wealth">
         <div class="card-stripe"></div>
         <div class="card-body">
-          <div class="card-icon">💹</div>
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
           <div class="card-name">Wealth</div>
           <div class="card-desc">SIP, lumpsum &amp; portfolio</div>
-          <div class="card-footer">
-            <span class="card-stat-text" id="stat-wealth">—</span>
-            <span class="card-dot"></span>
-          </div>
+          <span class="card-stat-text" id="stat-wealth">—</span>
         </div>
       </a>
 
       <a class="app-card card-doc" href="docvault.html" id="card-doc">
         <div class="card-stripe"></div>
         <div class="card-body">
-          <div class="card-icon">📁</div>
-          <div class="card-name">DocVault</div>
-          <div class="card-desc">Store &amp; manage documents</div>
-          <div class="card-footer">
-            <span class="card-stat-text" id="stat-doc">—</span>
-            <span class="card-dot"></span>
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
           </div>
+          <div class="card-name">DocVault</div>
+          <div class="card-desc">Documents &amp; expiry alerts</div>
+          <span class="card-stat-text" id="stat-doc">—</span>
         </div>
       </a>
 
       <a class="app-card card-wander" href="wanderplan.html" id="card-wander">
         <div class="card-stripe"></div>
         <div class="card-body">
-          <div class="card-icon">✈️</div>
-          <div class="card-name">WanderPlan</div>
-          <div class="card-desc">Plan trips &amp; itineraries</div>
-          <div class="card-footer">
-            <span class="card-stat-text" id="stat-wander">—</span>
-            <span class="card-dot"></span>
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
+          <div class="card-name">WanderPlan</div>
+          <div class="card-desc">Trips &amp; itineraries</div>
+          <span class="card-stat-text" id="stat-wander">—</span>
         </div>
       </a>
 
@@ -720,20 +686,17 @@ html[data-theme="dark"] .modal-note{background:var(--surface2);border-color:var(
   </div>
 
   <!-- Backup -->
-  <div class="backup-section" style="animation:fade-up .4s .36s ease both">
-    <div class="section-head"><span class="section-title">Backup</span></div>
+  <div class="backup-section" style="animation:fade-up .4s .36s ease both;padding-bottom:4px">
     <div class="backup-card">
-      <div class="backup-stripe"></div>
       <div class="backup-body">
         <div class="backup-row">
           <div class="backup-info">
-            <div class="backup-title">Abode Backup</div>
             <div class="backup-meta never" id="backup-last-text">Never backed up</div>
           </div>
-        </div>
-        <div class="backup-actions">
-          <button class="btn-backup primary" onclick="doExport()">↑ Export all</button>
-          <button class="btn-backup" onclick="document.getElementById('restore-input').click()">↓ Restore</button>
+          <div class="backup-actions">
+            <button class="btn-backup primary" onclick="doExport()">↑ Export</button>
+            <button class="btn-backup" onclick="document.getElementById('restore-input').click()">↓ Restore</button>
+          </div>
         </div>
       </div>
     </div>
@@ -795,6 +758,8 @@ function updateTime() {
   const date = now.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
 
   document.getElementById('topbar-time').textContent = `${time}  ${date}`;
+  const eyebrow = document.getElementById('greeting-date');
+  if (eyebrow) eyebrow.textContent = now.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' });
 
   let greet, sub;
   if      (h < 5)  { greet = 'Good night 🌙';     sub = 'Burning the midnight oil?'; }
