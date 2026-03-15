@@ -69,10 +69,15 @@ body {
   font-family: var(--body);
   background: var(--bg);
   color: var(--ink);
-  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
   font-size: 14px;
   line-height: 1.5;
   overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  display: flex;
+  flex-direction: column;
 }
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 2px; }
@@ -133,14 +138,17 @@ body {
 
 /* ── Content wrapper ── */
 .content {
+  flex: 1;
   padding: 0 16px calc(var(--bot) + 16px);
+  overflow-y: auto;
+  overscroll-behavior: none;
 }
 
 /* ── Greeting ── */
 .greeting {
-  padding: 14px 0 14px;
+  padding: 10px 0 10px;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   animation: fade-up .4s ease both;
 }
 
@@ -174,7 +182,7 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   animation: fade-up .4s .06s ease both;
 }
 
@@ -216,7 +224,7 @@ body {
 
 /* ── Section head ── */
 .section-head {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .section-title {
@@ -232,8 +240,8 @@ body {
 .apps-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .app-card {
@@ -271,7 +279,7 @@ body {
 .card-wander .card-stripe { background: var(--wander-c); }
 
 .card-body {
-  padding: 13px 13px 11px;
+  padding: 11px 12px 10px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -357,7 +365,7 @@ body {
 }
 
 .backup-body {
-  padding: 11px 14px;
+  padding: 9px 13px;
 }
 
 .backup-row {
