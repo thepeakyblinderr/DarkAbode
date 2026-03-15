@@ -1,7 +1,7 @@
-// Abode Service Worker v1.0
-const CACHE = 'abode-v1';
+// Abode Service Worker v2.0
+// !! Bump CACHE version on every deploy to bust old cache !!
+const CACHE = 'abode-v2';
 
-// All app files to cache for offline use
 const ASSETS = [
   './',
   './index.html',
@@ -12,7 +12,7 @@ const ASSETS = [
   './manifest.json'
 ];
 
-// Install — cache all app files
+// Install — pre-cache all files, skip waiting immediately
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(ASSETS))
@@ -20,37 +20,57 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Activate — delete old caches
+// Activate — delete ALL old caches, claim clients right away
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE).map(k => {
+          console.log('[SW] Deleting old cache:', k);
+          return caches.delete(k);
+        })
+      ))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch — cache first, fallback to network
+// Message — allow pages to trigger skipWaiting
+self.addEventListener('message', e => {
+  if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// Fetch strategy:
+//   HTML pages  → network first (always fresh on deploy)
+//   Other assets → cache first + background revalidate
 self.addEventListener('fetch', e => {
-  // Only handle same-origin requests
   if (!e.request.url.startsWith(self.location.origin)) return;
 
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
-        // Cache successful GET responses
-        if (e.request.method === 'GET' && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE).then(cache => cache.put(e.request, clone));
-        }
-        return response;
-      }).catch(() => {
-        // Offline fallback — return index.html for navigation requests
-        if (e.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
-    })
-  );
+  const isHTML = e.request.mode === 'navigate'
+    || e.request.destination === 'document'
+    || e.request.url.endsWith('.html');
+
+  if (isHTML) {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          if (res.status === 200) {
+            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        const networkFetch = fetch(e.request).then(res => {
+          if (res.status === 200) {
+            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          }
+          return res;
+        });
+        return cached || networkFetch;
+      })
+    );
+  }
 });
