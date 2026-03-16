@@ -370,13 +370,11 @@ body{
     <button class="btn bg bsm" onclick="openSearch()" title="Search everything" style="padding:6px 10px;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
     </button>
-    <button class="btn bg bsm" onclick="openCfg()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-      Settings
+    <button class="btn bg bsm" onclick="openCfg()" title="Settings" style="padding:6px 10px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
     </button>
-    <button class="btn bg bsm" onclick="openMod('m-bkp')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-      Backup
+    <button class="btn bg bsm" onclick="openMod('m-bkp')" title="Backup" style="padding:6px 10px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
     </button>
   </div>
 </nav>
@@ -2877,9 +2875,15 @@ function toggleMaint(expandId) {
   const open = el.style.display === 'block';
   el.style.display = open ? 'none' : 'block';
   if (chv) chv.style.transform = open ? '' : 'rotate(90deg)';
+  el._expanded = !open;
 }
 
 function _autoExpandMaint() {
+  // First: explicitly initialise ALL expand panels to none (fixes first-tap issue)
+  document.querySelectorAll('[id^="mx-"]').forEach(el => {
+    if (el.style.display !== 'block') el.style.display = 'none';
+  });
+  // Then: open urgent items
   document.querySelectorAll('[data-auto-expand="1"]').forEach(card => {
     const inner = card.querySelector('[id^="mx-"]');
     if (inner) {
