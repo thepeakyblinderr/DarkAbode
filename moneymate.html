@@ -32,17 +32,6 @@
   --shxl:0 24px 60px rgba(0,0,0,.14),0 6px 20px rgba(0,0,0,.08);
   --nh:54px;--th:62px;
 }
-html[data-theme="dark"]{
-  --bg:#0f0f0e;--bg2:#1a1a18;--bg3:#242422;--bg4:#2e2e2a;
-  --brd:#2a2a28;--brd2:#3a3a36;
-  --ink:#f0f0ec;--ink2:#c8c8c0;--ink3:#8a8a80;--ink4:#5a5a54;
-  --red:#e05a4e;--rbg:rgba(224,90,78,.12);
-  --grn:#2ea878;--gbg:rgba(46,168,120,.1);
-  --amb:#d4900a;--abg:rgba(212,144,10,.1);
-  --sh:0 1px 4px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2);
-  --shlg:0 8px 32px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25);
-  --shxl:0 24px 60px rgba(0,0,0,.5),0 6px 20px rgba(0,0,0,.35);
-}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{
   -webkit-tap-highlight-color:transparent;
@@ -91,12 +80,7 @@ body{
 }
 .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;letter-spacing:-.04em;color:var(--ink);cursor:pointer;user-select:none}
 .brand-mark{width:28px;height:28px;border-radius:7px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px;font-weight:500;flex-shrink:0}
-.nav-acts{display:flex;gap:4px;align-items:center}
-.nav-icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--brd2);background:var(--bg3);color:var(--ink2);cursor:pointer;display:grid;place-items:center;transition:background .12s,border-color .12s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.nav-icon-btn:hover{background:var(--bg4);border-color:var(--brd2)}
-.nav-icon-btn:active{opacity:.7}
-html[data-theme="dark"] .nav-icon-btn{background:var(--bg3);border-color:var(--brd2);color:var(--ink2)}
-html[data-theme="dark"] .nav-icon-btn:hover{background:var(--bg4)}
+.nav-acts{display:flex;gap:6px}
 
 /* ── TAB BAR ── */
 .tabbar{
@@ -371,139 +355,6 @@ html[data-theme="dark"] .nav-icon-btn:hover{background:var(--bg4)}
 .fade{animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .budget-bar{background:var(--bg2);border:1.5px solid var(--brd);border-radius:var(--rl);padding:14px;margin-bottom:18px}
-
-
-
-/* Primary button in dark — keep high contrast */
-html[data-theme="dark"] .bp{background:var(--ink);color:#0f0f0e;}
-html[data-theme="dark"] .bp:hover{opacity:.85;}
-/* FAB in dark */
-html[data-theme="dark"] .fab{background:var(--ink);}
-html[data-theme="dark"] .fab-item-lbl{background:var(--ink);color:#0f0f0e;}
-html[data-theme="dark"] .fab-item-btn{background:var(--ink);color:#0f0f0e;}
-/* Toast in dark — keep readable */
-html[data-theme="dark"] .toast{background:var(--surface2);color:var(--ink);border:1px solid var(--brd2);}
-
-/* Logo / brand mark fix in dark */
-html[data-theme="dark"] .brand-mark{background:#f0f0ec;color:#0f0f0e;}
-html[data-theme="dark"] .brand{color:var(--ink);}
-
-/* ════ DARK MODE ════ */
-/* Nav & Tab bar */
-html[data-theme="dark"] .nav{background:rgba(15,15,14,.97);border-bottom-color:var(--brd);}
-html[data-theme="dark"] .tabbar{background:rgba(15,15,14,.97);border-top-color:var(--brd);}
-/* Overlays & Modals */
-html[data-theme="dark"] .ovr{background:rgba(0,0,0,.72);}
-html[data-theme="dark"] .srch-ovr{background:rgba(0,0,0,.72);}
-html[data-theme="dark"] .modal{background:var(--bg2);}
-html[data-theme="dark"] .mclose{background:var(--bg3);color:var(--ink2);}
-html[data-theme="dark"] .mclose:hover{background:var(--bg4);}
-/* Search bar */
-html[data-theme="dark"] .srch-bar{background:var(--bg);border-bottom-color:var(--brd);}
-html[data-theme="dark"] .srch-inp{color:var(--ink);}
-html[data-theme="dark"] .srch-inp::placeholder{color:var(--ink4);}
-html[data-theme="dark"] .srch-body{background:var(--bg);}
-/* Inputs & Forms */
-html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{
-  background:var(--bg2);color:var(--ink);border-color:var(--brd2);color-scheme:dark;}
-html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:var(--ink4);}
-html[data-theme="dark"] .fi,html[data-theme="dark"] .fs,html[data-theme="dark"] .fta{
-  background:var(--bg2);color:var(--ink);border-color:var(--brd2);}
-html[data-theme="dark"] .fi:focus,html[data-theme="dark"] .fs:focus,html[data-theme="dark"] .fta:focus{
-  border-color:var(--ink3);box-shadow:0 0 0 3px rgba(240,240,236,.08);}
-html[data-theme="dark"] .fip{background:var(--bg3);border-color:var(--brd2);color:var(--ink3);}
-/* Buttons */
-html[data-theme="dark"] .bg{color:var(--ink2);border-color:var(--brd2);}
-html[data-theme="dark"] .bg:hover{background:var(--bg3);border-color:var(--brd2);}
-html[data-theme="dark"] .bd{color:var(--red);border-color:rgba(224,90,78,.35);}
-html[data-theme="dark"] .bd:hover{background:var(--rbg);}
-/* Cards & Containers */
-html[data-theme="dark"] .card{background:var(--bg2);border-color:var(--brd);}
-html[data-theme="dark"] .cr{border-bottom-color:var(--brd);}
-html[data-theme="dark"] .cr:hover{background:var(--bg3);}
-html[data-theme="dark"] .sc{background:var(--bg2);border-color:var(--brd);}
-html[data-theme="dark"] .sc::before{opacity:.15;}
-html[data-theme="dark"] .cc{background:var(--bg2);border-color:var(--brd);}
-html[data-theme="dark"] .stlr{background:var(--bg2);border-color:var(--brd);}
-html[data-theme="dark"] .gcrd{background:var(--bg2);border-color:var(--brd);}
-html[data-theme="dark"] .gcrd:hover{border-color:var(--brd2);box-shadow:var(--sh);}
-html[data-theme="dark"] .bxb{background:var(--bg2);border-color:var(--brd);}
-html[data-theme="dark"] .bzn{background:var(--rbg);border-color:rgba(224,90,78,.4);}
-html[data-theme="dark"] .sumc{background:var(--bg2);border-color:var(--brd);}
-html[data-theme="dark"] .budget-bar{background:var(--bg2);border-color:var(--brd);}
-/* Category icon backgrounds — dimmed for dark */
-html[data-theme="dark"] .ci-0{background:rgba(254,243,199,.18)}
-html[data-theme="dark"] .ci-1{background:rgba(219,234,254,.18)}
-html[data-theme="dark"] .ci-2{background:rgba(209,250,229,.18)}
-html[data-theme="dark"] .ci-3{background:rgba(252,231,243,.18)}
-html[data-theme="dark"] .ci-4{background:rgba(237,233,254,.18)}
-html[data-theme="dark"] .ci-5{background:rgba(254,226,226,.18)}
-html[data-theme="dark"] .ci-6{background:rgba(207,250,254,.18)}
-html[data-theme="dark"] .ci-7{background:rgba(254,249,195,.18)}
-html[data-theme="dark"] .ci-8{background:rgba(253,232,216,.18)}
-html[data-theme="dark"] .ci-9{background:rgba(209,250,229,.18)}
-html[data-theme="dark"] .ci-10{background:rgba(241,245,249,.18)}
-html[data-theme="dark"] .ci-11{background:rgba(254,243,199,.18)}
-/* Cat picker selected states */
-html[data-theme="dark"] .catb{background:var(--bg2);border-color:var(--brd);color:var(--ink);}
-html[data-theme="dark"] .catb span{color:var(--ink3);}
-html[data-theme="dark"] .catb.sel{border-color:var(--ink3);box-shadow:0 0 0 3px rgba(240,240,236,.1);}
-html[data-theme="dark"] .catb.sel.c0{background:rgba(254,243,199,.2)}
-html[data-theme="dark"] .catb.sel.c1{background:rgba(219,234,254,.2)}
-html[data-theme="dark"] .catb.sel.c2{background:rgba(209,250,229,.2)}
-html[data-theme="dark"] .catb.sel.c3{background:rgba(252,231,243,.2)}
-html[data-theme="dark"] .catb.sel.c4{background:rgba(237,233,254,.2)}
-html[data-theme="dark"] .catb.sel.c5{background:rgba(254,226,226,.2)}
-html[data-theme="dark"] .catb.sel.c6{background:rgba(207,250,254,.2)}
-html[data-theme="dark"] .catb.sel.c7{background:rgba(254,249,195,.2)}
-html[data-theme="dark"] .catb.sel.c8{background:rgba(253,232,216,.2)}
-html[data-theme="dark"] .catb.sel.c9{background:rgba(209,250,229,.2)}
-html[data-theme="dark"] .catb.sel.c10{background:rgba(241,245,249,.2)}
-/* Pills & chips */
-html[data-theme="dark"] .pill{background:var(--bg2);border-color:var(--brd);color:var(--ink3);}
-html[data-theme="dark"] .pill.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
-html[data-theme="dark"] .ytb{background:var(--bg2);border-color:var(--brd);color:var(--ink3);}
-html[data-theme="dark"] .ytb.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
-html[data-theme="dark"] .spt{background:var(--bg2);border-color:var(--brd);color:var(--ink3);}
-html[data-theme="dark"] .spt.sel{background:var(--ink);color:var(--bg);border-color:var(--ink);}
-html[data-theme="dark"] .badge{background:var(--bg3);color:var(--ink3);}
-html[data-theme="dark"] .mtag{background:var(--bg3);}
-html[data-theme="dark"] .cg{background:rgba(46,168,120,.18);color:var(--grn);}
-html[data-theme="dark"] .cr2{background:rgba(224,90,78,.18);color:var(--red);}
-html[data-theme="dark"] .cgr{background:var(--bg3);color:var(--ink3);}
-html[data-theme="dark"] .cam{background:rgba(212,144,10,.18);color:var(--amb);}
-/* Member / payer selectors */
-html[data-theme="dark"] .po{border-color:var(--brd);}
-html[data-theme="dark"] .po.sel{border-color:var(--ink3);background:var(--bg3);}
-html[data-theme="dark"] .pr{border-color:var(--brd2);}
-html[data-theme="dark"] .po.sel .pr{border-color:var(--ink);background:var(--ink);}
-html[data-theme="dark"] .mc{border-color:var(--brd);}
-html[data-theme="dark"] .mc.sel{border-color:var(--ink3);background:var(--bg3);}
-html[data-theme="dark"] .mcb{border-color:var(--brd2);}
-html[data-theme="dark"] .mc.sel .mcb{background:var(--ink);border-color:var(--ink);color:var(--bg);}
-html[data-theme="dark"] .smr{border-bottom-color:var(--brd);}
-/* Spend bars */
-html[data-theme="dark"] .sbt{background:var(--bg3);}
-/* Empty states */
-html[data-theme="dark"] .empty{border-color:var(--brd2);}
-/* Reminders */
-html[data-theme="dark"] .remind-card{background:rgba(224,90,78,.12);border-color:rgba(224,90,78,.3);}
-html[data-theme="dark"] .remind-card.warn{background:rgba(212,144,10,.12);border-color:rgba(212,144,10,.3);}
-html[data-theme="dark"] .remind-card.ok{background:rgba(46,168,120,.12);border-color:rgba(46,168,120,.3);}
-/* Charts */
-html[data-theme="dark"] canvas{filter:none;}
-/* Recurring badge */
-html[data-theme="dark"] .rec-badge{background:rgba(77,128,230,.2);color:#7da8f0;}
-/* Theme toggle */
-.theme-btn{
-  width:32px;height:32px;border-radius:8px;
-  border:1px solid var(--brd2);background:var(--bg3);
-  color:var(--ink3);cursor:pointer;display:grid;place-items:center;
-  font-size:15px;transition:background .15s;flex-shrink:0;
-  -webkit-tap-highlight-color:transparent;
-}
-.theme-btn:hover{background:var(--bg4);}
-.theme-btn:active{opacity:.7;}
 </style>
 </head>
 <body>
@@ -516,16 +367,17 @@ html[data-theme="dark"] .rec-badge{background:rgba(77,128,230,.2);color:#7da8f0;
     MoneyMate
   </div>
   <div class="nav-acts">
-    <button class="nav-icon-btn" onclick="openSearch()" title="Search">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+    <button class="btn bg bsm" onclick="openSearch()" title="Search everything" style="padding:6px 10px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
     </button>
-    <button class="nav-icon-btn" onclick="openCfg()" title="Settings">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <button class="btn bg bsm" onclick="openCfg()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Settings
     </button>
-    <button class="nav-icon-btn" onclick="openMod('m-bkp')" title="Backup">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+    <button class="btn bg bsm" onclick="openMod('m-bkp')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Backup
     </button>
-    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
   </div>
 </nav>
 
@@ -2934,6 +2786,7 @@ function rMaintain() {
       <div style="display:grid;gap:10px;">${aItems.map(item=>_maintCard(item,cur)).join('')}</div>
     </div>`).join('')}
   </div>`;
+  setTimeout(_autoExpandMaint, 0);
 }
 
 function _maintCard(item, cur) {
@@ -2945,6 +2798,7 @@ function _maintCard(item, cur) {
   const total    = totalMaintCost(item);
   const isOver   = dl!==null && dl<0;
   const isSoon   = dl!==null && dl>=0 && dl<=7;
+  const isUrgent = isOver || isSoon;
   const borderCol = isOver ? '#fcc' : isSoon ? '#fcd9a0' : 'var(--brd)';
   const barCol    = isOver ? 'var(--red)' : isSoon ? 'var(--amb)' : 'var(--grn)';
   let pct = 0;
@@ -2953,69 +2807,89 @@ function _maintCard(item, cur) {
     pct = Math.min(100, Math.max(0, ((new Date()-last)/(due-last))*100));
   }
 
-  // Progress bar section
-  const progressHtml = (item.lastDate && due)
-    ? '<div style="padding:0 15px 12px;">'
-        + '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink4);font-family:var(--mono);margin-bottom:5px;">'
-          + '<span>Last: ' + fDate(item.lastDate) + '</span>'
-          + '<span>Next: ' + fDate(due.toISOString().slice(0,10)) + '</span>'
-        + '</div>'
-        + '<div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;">'
-          + '<div style="height:100%;width:' + pct.toFixed(1) + '%;background:' + barCol + ';border-radius:4px;transition:width .4s;"></div>'
-        + '</div>'
-        + '<div style="font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:4px;text-align:right;">' + pct.toFixed(0) + '% of interval elapsed</div>'
-      + '</div>'
-    : '';
+  const expandId = 'mx-' + item.id;
 
-  // History button — only if there's history
   const histBtn = hist.length
-    ? '<button class="btn bg bsm" onclick="openMaintHistory(\'' + item.id + '\')">📋 History (' + hist.length + ')</button>'
+    ? '<button class="btn bg bsm" onclick="openMaintHistory(\''+item.id+'\')">\u{1F4CB} History ('+hist.length+')</button>'
     : '';
 
-  return '<div style="background:var(--bg);border:1.5px solid ' + borderCol + ';border-radius:var(--rl);overflow:hidden;">'
+  const expandedHtml =
+    '<div id="'+expandId+'" style="display:none;">'
+    +(item.lastDate && due
+      ? '<div style="padding:0 14px 10px;">'
+          +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink4);font-family:var(--mono);margin-bottom:5px;">'
+            +'<span>Last: '+fDate(item.lastDate)+'</span>'
+            +'<span>Next: '+fDate(due.toISOString().slice(0,10))+'</span>'
+          +'</div>'
+          +'<div style="height:6px;background:var(--bg3);border-radius:4px;overflow:hidden;">'
+            +'<div style="height:100%;width:'+pct.toFixed(1)+'%;background:'+barCol+';border-radius:4px;transition:width .4s;"></div>'
+          +'</div>'
+          +'<div style="font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:3px;text-align:right;">'+pct.toFixed(0)+'% elapsed</div>'
+        +'</div>'
+      : '')
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--brd);">'
+      +'<div style="padding:9px 12px;border-right:1px solid var(--brd);">'
+        +'<div style="font-size:9px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);">Last Done</div>'
+        +'<div style="font-size:12px;font-weight:700;margin-top:2px;font-family:var(--mono);">'+(item.lastDate ? fDate(item.lastDate) : 'Never')+'</div>'
+      +'</div>'
+      +'<div style="padding:9px 12px;border-right:1px solid var(--brd);">'
+        +'<div style="font-size:9px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);">Last Cost</div>'
+        +'<div style="font-size:12px;font-weight:700;margin-top:2px;font-family:var(--mono);">'+(lastCost ? cur+fmt(lastCost) : '–')+'</div>'
+      +'</div>'
+      +'<div style="padding:9px 12px;">'
+        +'<div style="font-size:9px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);">Total Spent</div>'
+        +'<div style="font-size:12px;font-weight:700;margin-top:2px;font-family:var(--mono);">'+(total ? cur+fmt(total) : '–')+'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--brd);background:var(--bg2);flex-wrap:wrap;">'
+      +'<button class="btn bp bsm" style="flex:1;justify-content:center;min-width:100px;" onclick="openMaintLog(\''+item.id+'\')">\u2713 Mark as Done</button>'
+      +'<button class="btn bg bsm" onclick="openAddMaint(\''+item.id+'\')">\u270F\uFE0F Edit</button>'
+      +histBtn
+      +'<button class="btn bd bsm" onclick="deleteMaintItem(\''+item.id+'\')">\uD83D\uDDD1\uFE0F Delete</button>'
+    +'</div>'
+    +'</div>';
 
-    // Header
-    + '<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 15px 10px;">'
-      + '<div style="width:44px;height:44px;border-radius:10px;background:var(--bg3);display:grid;place-items:center;font-size:22px;flex-shrink:0;">' + (item.icon||'🔧') + '</div>'
-      + '<div style="flex:1;min-width:0;">'
-        + '<div style="font-size:15px;font-weight:800;letter-spacing:-.03em;">' + esc(item.name) + '</div>'
-        + (item.asset ? '<div style="font-size:11px;color:var(--ink3);font-family:var(--mono);margin-top:1px;">📌 Asset: ' + esc(item.asset) + '</div>' : '')
-        + '<div style="font-size:11px;color:var(--ink4);font-family:var(--mono);margin-top:2px;">🔄 Every ' + item.interval + ' ' + item.unit + '</div>'
-      + '</div>'
-      + '<div style="text-align:right;flex-shrink:0;padding-top:2px;">'
-        + '<div style="font-size:12px;font-weight:700;color:' + st.color + ';font-family:var(--mono);">' + st.label + '</div>'
-        + (due ? '<div style="font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:2px;">📅 Due ' + fDate(due.toISOString().slice(0,10)) + '</div>' : '')
-      + '</div>'
-    + '</div>'
+  const collapsedRow =
+    '<div onclick="toggleMaint(\''+expandId+'\')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;">'
+      +'<div style="width:38px;height:38px;border-radius:10px;background:var(--bg3);display:grid;place-items:center;font-size:20px;flex-shrink:0;">'+(item.icon||'\uD83D\uDD27')+'</div>'
+      +'<div style="flex:1;min-width:0;">'
+        +'<div style="font-size:14px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(item.name)+'</div>'
+        +'<div style="font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:1px;">\uD83D\uDD04 Every '+item.interval+' '+item.unit+(item.asset ? ' \u00B7 '+esc(item.asset) : '')+'</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+        +'<span style="font-size:11px;font-weight:700;color:'+st.color+';font-family:var(--mono);white-space:nowrap;">'+st.label+'</span>'
+        +'<span id="chv-'+expandId+'" style="font-size:14px;color:var(--ink4);transition:transform .2s;display:inline-block;">&#8250;</span>'
+      +'</div>'
+    +'</div>';
 
-    // Progress bar
-    + progressHtml
+  const autoExpand = isUrgent ? ' data-auto-expand="1"' : '';
 
-    // Stats row
-    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--brd);">'
-      + '<div style="padding:10px 12px;border-right:1px solid var(--brd);">'
-        + '<div style="font-size:9px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);">Last Done</div>'
-        + '<div style="font-size:12px;font-weight:700;margin-top:3px;font-family:var(--mono);">' + (item.lastDate ? fDate(item.lastDate) : 'Never') + '</div>'
-      + '</div>'
-      + '<div style="padding:10px 12px;border-right:1px solid var(--brd);">'
-        + '<div style="font-size:9px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);">Last Cost</div>'
-        + '<div style="font-size:12px;font-weight:700;margin-top:3px;font-family:var(--mono);">' + (lastCost ? cur+fmt(lastCost) : '–') + '</div>'
-      + '</div>'
-      + '<div style="padding:10px 12px;">'
-        + '<div style="font-size:9px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono);">Total Spent</div>'
-        + '<div style="font-size:12px;font-weight:700;margin-top:3px;font-family:var(--mono);">' + (total ? cur+fmt(total) : '–') + '</div>'
-      + '</div>'
-    + '</div>'
-
-    // Action buttons
-    + '<div style="display:flex;gap:8px;padding:10px 15px;border-top:1px solid var(--brd);background:var(--bg2);flex-wrap:wrap;">'
-      + '<button class="btn bp bsm" style="flex:1;justify-content:center;min-width:100px;" onclick="openMaintLog(\'' + item.id + '\')">✓ Mark as Done</button>'
-      + '<button class="btn bg bsm" onclick="openAddMaint(\'' + item.id + '\')">✏️ Edit</button>'
-      + histBtn
-      + '<button class="btn bd bsm" onclick="deleteMaintItem(\'' + item.id + '\')">🗑️ Delete</button>'
-    + '</div>'
-  + '</div>';
+  return '<div style="background:var(--bg);border:1.5px solid '+borderCol+';border-radius:var(--rl);overflow:hidden;"'+autoExpand+'>'
+    +collapsedRow
+    +expandedHtml
+  +'</div>';
 }
+
+function toggleMaint(expandId) {
+  const el  = document.getElementById(expandId);
+  const chv = document.getElementById('chv-'+expandId);
+  if (!el) return;
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  if (chv) chv.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+function _autoExpandMaint() {
+  document.querySelectorAll('[data-auto-expand="1"]').forEach(card => {
+    const inner = card.querySelector('[id^="mx-"]');
+    if (inner) {
+      inner.style.display = 'block';
+      const chv = card.querySelector('[id^="chv-mx-"]');
+      if (chv) chv.style.transform = 'rotate(90deg)';
+    }
+  });
+}
+
 
 function openAddMaint(editId) {
   MAINT_EID = editId||null; MAINT_ICON_IDX = 0;
@@ -3270,54 +3144,12 @@ function openMaintHistory(id) {
 // ═══════════════════════════════════════════════
 function init() {
   DB = loadDB();
-  // ── Service Worker registration + update check ──────────────────
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').then(reg => {
-    // Immediately check for a new SW version on every page load
-    reg.update();
-    // When a new SW is waiting, reload all clients to apply it
-    reg.addEventListener('updatefound', () => {
-      const sw = reg.installing;
-      sw.addEventListener('statechange', () => {
-        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-          // New version ready — reload to pick it up
-          navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-          window.location.reload();
-        }
-      });
-    });
-  }).catch(() => {});
-  // If SW tells us to reload (new version activated), do it
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload();
-  });
-}
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
   initPersonalView();
   showView('dash');
 }
 
 init();
-
-// ── Theme ────────────────────────────────────────────────────
-const THEME_KEY = 'abode_theme';
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  const btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = t === 'dark' ? '#0f0f0e' : '#0a0a0a';
-}
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = cur === 'dark' ? 'light' : 'dark';
-  localStorage.setItem(THEME_KEY, next);
-  applyTheme(next);
-}
-(function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  applyTheme(saved || sys);
-})();
 </script>
 </body>
 </html>
