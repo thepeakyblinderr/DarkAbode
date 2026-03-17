@@ -27,6 +27,7 @@
   --wealth-c: #7B2FBE;
   --doc-c:    #1a56db;
   --wander-c: #047857;
+  --nutrily-c: #b87333;
   --sans: 'Syne', system-ui, sans-serif;
   --body: 'Plus Jakarta Sans', system-ui, sans-serif;
   --mono: 'JetBrains Mono', monospace;
@@ -49,10 +50,11 @@ html[data-theme="dark"] {
   --ink4:    #5a5a54;
   --line:    #2a2a28;
   --line2:   #3a3a36;
-  --split-c:  #e05a4e;
-  --wealth-c: #a06cd5;
-  --doc-c:    #4d80e6;
-  --wander-c: #2ea878;
+  --split-c:   #e05a4e;
+  --wealth-c:  #a06cd5;
+  --doc-c:     #4d80e6;
+  --wander-c:  #2ea878;
+  --nutrily-c: #d4904a;
   --sh:  0 1px 4px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
   --shlg:0 6px 24px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.25);
 }
@@ -244,6 +246,7 @@ body {
   margin-bottom: 12px;
 }
 
+
 .app-card {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -269,10 +272,11 @@ body {
   width: 100%;
   flex-shrink: 0;
 }
-.card-split  .card-stripe { background: var(--split-c); }
-.card-wealth .card-stripe { background: var(--wealth-c); }
-.card-doc    .card-stripe { background: var(--doc-c); }
-.card-wander .card-stripe { background: var(--wander-c); }
+.card-split   .card-stripe { background: var(--split-c); }
+.card-wealth  .card-stripe { background: var(--wealth-c); }
+.card-doc     .card-stripe { background: var(--doc-c); }
+.card-wander  .card-stripe { background: var(--wander-c); }
+.card-nutrily .card-stripe { background: var(--nutrily-c); }
 
 .card-body {
   padding: 12px 13px 12px;
@@ -291,16 +295,18 @@ body {
   margin-bottom: 10px;
   flex-shrink: 0;
 }
-.card-split  .card-icon-wrap { background: rgba(192,57,43,.1); }
-.card-wealth .card-icon-wrap { background: rgba(123,47,190,.1); }
-.card-doc    .card-icon-wrap { background: rgba(26,86,219,.1); }
-.card-wander .card-icon-wrap { background: rgba(4,120,87,.1); }
+.card-split   .card-icon-wrap { background: rgba(192,57,43,.1); }
+.card-wealth  .card-icon-wrap { background: rgba(123,47,190,.1); }
+.card-doc     .card-icon-wrap { background: rgba(26,86,219,.1); }
+.card-wander  .card-icon-wrap { background: rgba(4,120,87,.1); }
+.card-nutrily .card-icon-wrap { background: rgba(184,115,51,.1); }
 
 .card-icon-wrap svg { width: 17px; height: 17px; stroke-width: 1.8; }
-.card-split  .card-icon-wrap svg { stroke: var(--split-c); }
-.card-wealth .card-icon-wrap svg { stroke: var(--wealth-c); }
-.card-doc    .card-icon-wrap svg { stroke: var(--doc-c); }
-.card-wander .card-icon-wrap svg { stroke: var(--wander-c); }
+.card-split   .card-icon-wrap svg { stroke: var(--split-c); }
+.card-wealth  .card-icon-wrap svg { stroke: var(--wealth-c); }
+.card-doc     .card-icon-wrap svg { stroke: var(--doc-c); }
+.card-wander  .card-icon-wrap svg { stroke: var(--wander-c); }
+.card-nutrily .card-icon-wrap svg { stroke: var(--nutrily-c); }
 
 .card-name {
   font-family: var(--body);
@@ -558,10 +564,11 @@ html[data-theme="dark"] .stat-box:hover{border-color:var(--line2);box-shadow:var
 /* App cards */
 html[data-theme="dark"] .app-card{background:var(--surface);border-color:var(--line);}
 html[data-theme="dark"] .app-card:hover{border-color:var(--line2);box-shadow:var(--sh);}
-html[data-theme="dark"] .card-split  .card-icon-wrap{background:rgba(224,90,78,.15);}
-html[data-theme="dark"] .card-wealth .card-icon-wrap{background:rgba(160,108,213,.15);}
-html[data-theme="dark"] .card-doc    .card-icon-wrap{background:rgba(77,128,230,.15);}
-html[data-theme="dark"] .card-wander .card-icon-wrap{background:rgba(46,168,120,.15);}
+html[data-theme="dark"] .card-split   .card-icon-wrap{background:rgba(224,90,78,.15);}
+html[data-theme="dark"] .card-wealth  .card-icon-wrap{background:rgba(160,108,213,.15);}
+html[data-theme="dark"] .card-doc     .card-icon-wrap{background:rgba(77,128,230,.15);}
+html[data-theme="dark"] .card-wander  .card-icon-wrap{background:rgba(46,168,120,.15);}
+html[data-theme="dark"] .card-nutrily .card-icon-wrap{background:rgba(212,144,74,.15);}
 /* Backup card */
 html[data-theme="dark"] .btn-backup{background:var(--surface2);color:var(--ink3);border-color:var(--line);}
 html[data-theme="dark"] .btn-backup:hover{background:var(--surface);color:var(--ink2);border-color:var(--line2);}
@@ -682,7 +689,20 @@ html[data-theme="dark"] .modal-note{background:var(--surface2);border-color:var(
         </div>
       </a>
 
+      <a class="app-card card-nutrily" href="nutrily.html" id="card-nutrily">
+        <div class="card-stripe"></div>
+        <div class="card-body">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12h8M12 8v8"/></svg>
+          </div>
+          <div class="card-name">Nutrily</div>
+          <div class="card-desc">Nutrition, fitness &amp; wellness</div>
+          <span class="card-stat-text" id="stat-nutrily">—</span>
+        </div>
+      </a>
+
     </div>
+
   </div>
 
   <!-- Backup -->
@@ -733,10 +753,11 @@ html[data-theme="dark"] .modal-note{background:var(--surface2);border-color:var(
 
 <script>
 const APPS = {
-  split:  { name:'MoneyMate', emoji:'💰', color:'#c0392b', href:'moneymate.html' },
-  wealth: { name:'Wealth',     emoji:'💹', color:'#7B2FBE', href:'wealth.html'     },
-  doc:    { name:'DocVault',   emoji:'📁', color:'#1a56db', href:'docvault.html'   },
-  wander: { name:'WanderPlan', emoji:'✈️', color:'#047857', href:'wanderplan.html' },
+  split:   { name:'MoneyMate', emoji:'💰', color:'#c0392b', href:'moneymate.html' },
+  wealth:  { name:'Wealth',     emoji:'💹', color:'#7B2FBE', href:'wealth.html'     },
+  doc:     { name:'DocVault',   emoji:'📁', color:'#1a56db', href:'docvault.html'   },
+  wander:  { name:'WanderPlan', emoji:'✈️', color:'#047857', href:'wanderplan.html' },
+  nutrily: { name:'Nutrily',    emoji:'🥗', color:'#b87333', href:'nutrily.html'    },
 };
 
 function go(href) { window.location.href = href; }
@@ -838,6 +859,20 @@ async function doExport() {
       };
     }
   } catch(e) { console.warn('WanderPlan export skipped:', e); }
+
+  // Nutrily — IndexedDB (logs + kv stores)
+  try {
+    const nutrilyLogs = await readIDB('nutrily6', 1, 'logs');
+    const nutrilyKv   = await readNutrilyKv();
+    if (nutrilyLogs?.length || nutrilyKv?.length) {
+      payload.apps.nutrily = {
+        version: 2,
+        exported: new Date().toISOString(),
+        logs: nutrilyLogs || [],
+        kv:   nutrilyKv   || [],
+      };
+    }
+  } catch(e) { console.warn('Nutrily export skipped:', e); }
 
   // Stamp and download
   localStorage.setItem(BK_TS_KEY, new Date().toISOString());
@@ -959,6 +994,7 @@ function showRestoreModal(payload) {
     { id:'wealth',     label:'Wealth',     emoji:'💹', has: !!apps.wealth     },
     { id:'docvault',   label:'DocVault',   emoji:'📁', has: !!apps.docvault   },
     { id:'wanderplan', label:'WanderPlan', emoji:'✈️', has: !!apps.wanderplan  },
+    { id:'nutrily',    label:'Nutrily',    emoji:'🥗', has: !!apps.nutrily    },
   ];
 
   const sourceLabel = { wanderplan:'WanderPlan', splitvault:'MoneyMate', docvault:'DocVault', wealth:'Wealth' };
@@ -1018,6 +1054,11 @@ async function confirmRestore() {
     // WanderPlan — write trips back to IndexedDB
     if (apps.wanderplan?.trips?.length) {
       await writeIDB('wanderplan_db', 2, 'trips', apps.wanderplan.trips);
+    }
+
+    // Nutrily — write logs + kv back to IndexedDB
+    if (apps.nutrily?.logs?.length) {
+      await writeNutrilyData(apps.nutrily.logs, apps.nutrily.kv || []);
     }
 
     // Update backup timestamp
@@ -1143,6 +1184,34 @@ function loadStats() {
     }
   } catch(e) { document.getElementById("val-funds").textContent = "—"; }
 
+  // Nutrily — today's kcal from IndexedDB
+  (function() {
+    const TODAY = new Date().toISOString().split('T')[0];
+    const req = indexedDB.open('nutrily6', 1);
+    req.onsuccess = e => {
+      try {
+        const db = e.target.result;
+        const tx = db.transaction('logs', 'readonly');
+        const idx = tx.objectStore('logs').index('date');
+        const r = idx.getAll(TODAY);
+        r.onsuccess = () => {
+          const logs = r.result || [];
+          const kcal = logs.reduce((s, l) => s + (l.kcal || 0), 0);
+          const el = document.getElementById('stat-nutrily');
+          if (el) el.textContent = kcal > 0 ? Math.round(kcal) + ' kcal today' : 'No logs today';
+          db.close();
+        };
+      } catch(e) {
+        const el = document.getElementById('stat-nutrily');
+        if (el) el.textContent = 'Open to log food';
+      }
+    };
+    req.onerror = () => {
+      const el = document.getElementById('stat-nutrily');
+      if (el) el.textContent = 'Open to log food';
+    };
+  })();
+
   // WanderPlan — trips from IndexedDB
   readIDB("wanderplan_db", 2, "trips").then(trips => {
     const n = (trips||[]).length;
@@ -1152,6 +1221,32 @@ function loadStats() {
     document.getElementById("val-trips").textContent = "0";
     document.getElementById("stat-wander").textContent = "No trips yet";
   });
+
+  // Nutrily — today's calories from IndexedDB
+  (function loadNutrilyStats() {
+    const req = indexedDB.open('nutrily6', 1);
+    req.onsuccess = e => {
+      const db = e.target.result;
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const tx = db.transaction('logs', 'readonly');
+        const idx = tx.objectStore('logs').index('date');
+        const range = IDBKeyRange.bound(today, today + '￿');
+        const all = idx.getAll(range);
+        all.onsuccess = () => {
+          const logs = all.result || [];
+          const kcal = logs.reduce((s, l) => s + (l.calories || 0), 0);
+          const el = document.getElementById('stat-nutrily');
+          if (el) el.textContent = kcal > 0 ? Math.round(kcal) + ' kcal today' : 'No logs today';
+          db.close();
+        };
+      } catch(err) { db.close(); }
+    };
+    req.onerror = () => {
+      const el = document.getElementById('stat-nutrily');
+      if (el) el.textContent = 'No logs today';
+    };
+  })();
 }
 
 
@@ -1197,6 +1292,56 @@ if ('serviceWorker' in navigator) {
   // If SW tells us to reload (new version activated), do it
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     window.location.reload();
+  });
+}
+
+// ── Nutrily IDB helpers ──────────────────────────────────────────
+function readNutrilyKv() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('nutrily6', 1);
+    req.onsuccess = e => {
+      const db = e.target.result;
+      try {
+        const tx = db.transaction('kv', 'readonly');
+        const all = tx.objectStore('kv').getAll();
+        all.onsuccess = () => { db.close(); res(all.result || []); };
+        all.onerror   = () => { db.close(); rej(); };
+      } catch(err) { db.close(); rej(err); }
+    };
+    req.onerror = () => rej();
+  });
+}
+
+function writeNutrilyData(logs, kv) {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('nutrily6', 1);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('logs')) {
+        const s = d.createObjectStore('logs', { keyPath:'id', autoIncrement:true });
+        s.createIndex('date', 'date');
+      }
+      if (!d.objectStoreNames.contains('kv')) d.createObjectStore('kv', { keyPath:'k' });
+    };
+    req.onsuccess = e => {
+      const db = e.target.result;
+      try {
+        // Write logs (merge — don't clear existing)
+        const logTx = db.transaction('logs', 'readwrite');
+        const logStore = logTx.objectStore('logs');
+        logs.forEach(l => { const entry = {...l}; delete entry.id; logStore.add(entry); });
+        logTx.oncomplete = () => {
+          // Write kv (overwrite)
+          const kvTx = db.transaction('kv', 'readwrite');
+          const kvStore = kvTx.objectStore('kv');
+          kv.forEach(item => kvStore.put(item));
+          kvTx.oncomplete = () => { db.close(); res(); };
+          kvTx.onerror    = () => { db.close(); rej(); };
+        };
+        logTx.onerror = () => { db.close(); rej(); };
+      } catch(err) { db.close(); rej(err); }
+    };
+    req.onerror = () => rej();
   });
 }
 </script>
