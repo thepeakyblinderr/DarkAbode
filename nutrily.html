@@ -313,6 +313,46 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 .wbq-dot.on{background:var(--purple);color:#fff}
 .toast{position:fixed;bottom:calc(var(--nh) + var(--sb) + 12px);left:50%;transform:translateX(-50%) translateY(6px);background:var(--text);color:#fff;padding:9px 18px;border-radius:20px;font-size:12.5px;z-index:500;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .22s,transform .22s}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+
+/* ── Exercise YouTube links ── */
+.ex-yt-btn{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:10px;background:#fff0f0;border:1px solid #ffcdd2;color:#cc0000;font-size:10.5px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.ex-yt-btn:hover{background:#ffcdd2}
+html[data-theme="dark"] .ex-yt-btn{background:rgba(204,0,0,.15);border-color:rgba(204,0,0,.3);color:#ff6b6b}
+.ex-yt-inp{width:100%;padding:8px 12px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;margin-top:6px;transition:border-color .2s}
+.ex-yt-inp:focus{border-color:#cc0000}
+.ex-yt-inp::placeholder{color:var(--faint)}
+
+/* ── Meal Templates ── */
+.tpl-bar{display:flex;gap:7px;padding:0 14px 12px;overflow-x:auto;scrollbar-width:none}
+.tpl-bar::-webkit-scrollbar{display:none}
+.tpl-chip{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.tpl-chip:hover{border-color:var(--amber)}
+.tpl-chip.save-btn{background:var(--text);color:#fff;border-color:var(--text)}
+.tpl-chip.save-btn:hover{opacity:.85}
+.tpl-ov{display:none;position:fixed;inset:0;z-index:250;background:rgba(26,23,20,.3);backdrop-filter:blur(3px);align-items:flex-end;justify-content:center}
+.tpl-ov.open{display:flex}
+.tpl-sh{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:430px;max-height:80dvh;display:flex;flex-direction:column;animation:su .26s cubic-bezier(.4,0,.2,1);padding-bottom:calc(20px + var(--sb))}
+.tpl-hd{width:36px;height:4px;background:var(--bdr);border-radius:4px;margin:12px auto 0}
+.tpl-head{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between}
+.tpl-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:600}
+.tpl-close{width:28px;height:28px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.tpl-body{padding:0 20px;overflow-y:auto;flex:1}
+.tpl-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--bdr)}
+.tpl-row:last-child{border-bottom:none}
+.tpl-name{flex:1;font-size:13.5px;font-weight:500}
+.tpl-meta{font-size:11.5px;color:var(--muted)}
+.tpl-actions{display:flex;gap:6px;flex-shrink:0}
+.tpl-btn{padding:5px 11px;border-radius:12px;border:1.5px solid var(--bdr);background:transparent;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--text)}
+.tpl-btn:hover{background:var(--bg)}
+.tpl-btn.load{background:var(--amber);color:#fff;border-color:var(--amber)}
+.tpl-btn.del{color:var(--red)}
+.tpl-footer{padding:14px 20px 0}
+.tpl-name-inp{width:100%;padding:11px 14px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:10px;transition:border-color .2s}
+.tpl-name-inp:focus{border-color:var(--amber)}
+.tpl-save-btn{width:100%;padding:13px;background:var(--text);color:#fff;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.tpl-save-btn:hover{opacity:.85}
+.tpl-empty{padding:24px 0;text-align:center;font-size:13px;color:var(--muted);line-height:1.7}
 </style>
 
 <style>
@@ -540,6 +580,7 @@ html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
       <input class="ex-inp" id="exWeight" type="number" placeholder="kg" min="0" step=".5" style="max-width:65px">
       <button class="ex-add-btn" onclick="addPlanned()">+ Add</button>
     </div>
+    <input class="ex-yt-inp" id="exYtUrl" placeholder="📺 YouTube reference link (optional)" type="url">
   </div>
 </div>
 
@@ -1007,6 +1048,39 @@ const FOODS=[
   {n:'Soya Chunks (dry)',kcal:345,p:52,c:33,f:0.5,fib:13,sug:0,ca:180,fe:10,pot:0,na:10,vc:0,vd:0,b12:0,mg:0,sf:.1},
   {n:'Soya Chunks (cooked)',kcal:112,p:17,c:10,f:.2,fib:4,sug:0,ca:60,fe:3.5,pot:180,na:4,vc:0,vd:0,b12:0,mg:40,sf:.05},
   {n:'Soya Milk (sweetened)',kcal:54,p:3.3,c:6.3,f:1.8,fib:.4,sug:5,ca:123,fe:.4,pot:118,na:51,vc:0,vd:1,b12:.6,mg:18,sf:.2},
+  {n:'Chicken Tandoori (2 pieces)',kcal:190,p:28,c:4,f:6,fib:.5,sug:1,ca:25,fe:1.4,pot:380,na:480,vc:3,vd:.2,b12:.4,mg:28,sf:1.5},
+  {n:'Chicken Tikka (6 pieces)',kcal:220,p:30,c:5,f:8,fib:.3,sug:2,ca:20,fe:1.2,pot:420,na:510,vc:2,vd:.2,b12:.4,mg:25,sf:2},
+  {n:'Seekh Kebab (2 pieces)',kcal:180,p:22,c:4,f:9,fib:.5,sug:.5,ca:18,fe:2.1,pot:340,na:440,vc:1,vd:.1,b12:2,mg:22,sf:3},
+  {n:'Paneer Tikka (6 pieces)',kcal:230,p:14,c:6,f:17,fib:.5,sug:2,ca:310,fe:.5,pot:120,na:380,vc:3,vd:.2,b12:.4,mg:20,sf:10},
+  {n:'Tandoori Roti',kcal:120,p:3.5,c:22,f:2.5,fib:2,sug:0,ca:18,fe:.9,pot:70,na:210,vc:0,vd:0,b12:0,mg:18,sf:.5},
+  {n:'Tandoori Fish',kcal:160,p:24,c:3,f:5,fib:.2,sug:1,ca:30,fe:.8,pot:400,na:360,vc:2,vd:5,b12:3,mg:32,sf:1},
+  {n:'Shahi Paneer',kcal:245,p:12,c:11,f:18,fib:1,sug:4,ca:290,fe:.8,pot:200,na:420,vc:4,vd:.2,b12:.4,mg:25,sf:11},
+  {n:'Dal Tadka',kcal:130,p:7.5,c:18,f:3.5,fib:5,sug:.5,ca:35,fe:2.5,pot:320,na:360,vc:2,vd:0,b12:0,mg:38,sf:.8},
+  {n:'Kadai Chicken',kcal:210,p:20,c:7,f:12,fib:1.5,sug:2,ca:30,fe:1.6,pot:380,na:480,vc:8,vd:.1,b12:.3,mg:28,sf:3.5},
+  {n:'Pav Bhaji (2 pav)',kcal:380,p:8,c:58,f:13,fib:5,sug:4,ca:60,fe:2.2,pot:450,na:680,vc:18,vd:0,b12:0,mg:40,sf:6},
+  {n:'Chhole Bhature',kcal:520,p:14,c:70,f:20,fib:8,sug:2,ca:90,fe:4,pot:480,na:720,vc:5,vd:0,b12:0,mg:60,sf:7},
+  {n:'Kadhi Pakora',kcal:160,p:5,c:20,f:7,fib:2,sug:2,ca:100,fe:1,pot:200,na:480,vc:2,vd:.1,b12:.2,mg:20,sf:3},
+  {n:'Saag (Sarson ka)',kcal:110,p:4.5,c:10,f:6,fib:4,sug:1.5,ca:120,fe:3,pot:350,na:280,vc:25,vd:0,b12:0,mg:45,sf:3},
+  {n:'Makki di Roti',kcal:140,p:3,c:26,f:2.5,fib:2.5,sug:0,ca:10,fe:.8,pot:80,na:180,vc:0,vd:0,b12:0,mg:20,sf:.5},
+  {n:'Veg Korma',kcal:175,p:5,c:14,f:12,fib:3,sug:3,ca:55,fe:1.2,pot:300,na:360,vc:10,vd:.1,b12:0,mg:30,sf:5},
+  {n:'Rava Dosa',kcal:120,p:3,c:20,f:3.5,fib:.8,sug:.3,ca:12,fe:.5,pot:60,na:240,vc:0,vd:0,b12:0,mg:10,sf:.7},
+  {n:'Medu Vada (2 pieces)',kcal:200,p:6,c:22,f:10,fib:2.5,sug:.5,ca:30,fe:1.5,pot:180,na:340,vc:0,vd:0,b12:0,mg:25,sf:1.5},
+  {n:'Pongal',kcal:165,p:4.5,c:26,f:5,fib:2,sug:.5,ca:20,fe:.8,pot:120,na:300,vc:0,vd:0,b12:0,mg:25,sf:2},
+  {n:'Rasam',kcal:40,p:1.5,c:7,f:.8,fib:1,sug:1,ca:20,fe:.6,pot:200,na:380,vc:8,vd:0,b12:0,mg:15,sf:.1},
+  {n:'Vada Pav',kcal:290,p:6,c:42,f:11,fib:3,sug:2,ca:25,fe:1.5,pot:220,na:480,vc:4,vd:0,b12:0,mg:20,sf:2},
+  {n:'Pani Puri (6 pieces)',kcal:180,p:3,c:32,f:5,fib:2,sug:2,ca:20,fe:.8,pot:150,na:360,vc:2,vd:0,b12:0,mg:15,sf:.8},
+  {n:'Bhel Puri',kcal:160,p:4,c:28,f:4,fib:2.5,sug:3,ca:25,fe:1.2,pot:200,na:340,vc:5,vd:0,b12:0,mg:20,sf:.5},
+  {n:'Dhokla (4 pieces)',kcal:160,p:6.5,c:25,f:3.5,fib:1.5,sug:1,ca:35,fe:1,pot:180,na:480,vc:0,vd:0,b12:0,mg:18,sf:.5},
+  {n:'Jalebi (2 pieces)',kcal:200,p:1.5,c:40,f:5,fib:.2,sug:30,ca:12,fe:.5,pot:30,na:10,vc:0,vd:0,b12:0,mg:5,sf:1.2},
+  {n:'Gulab Jamun (2 pieces)',kcal:200,p:3,c:34,f:7,fib:.2,sug:28,ca:50,fe:.4,pot:80,na:80,vc:0,vd:.1,b12:.2,mg:8,sf:3.5},
+  {n:'Halwa (suji)',kcal:260,p:3.5,c:38,f:11,fib:.5,sug:22,ca:20,fe:.8,pot:70,na:90,vc:0,vd:.1,b12:0,mg:12,sf:5},
+  {n:'Veg Biryani',kcal:190,p:4.5,c:30,f:6,fib:2.5,sug:1,ca:25,fe:1,pot:200,na:480,vc:5,vd:0,b12:0,mg:22,sf:1.5},
+  {n:'Mutton Biryani',kcal:240,p:15,c:28,f:8,fib:1,sug:.5,ca:30,fe:2,pot:280,na:560,vc:2,vd:.1,b12:2,mg:25,sf:2.5},
+  {n:'Egg Biryani',kcal:215,p:11,c:27,f:7,fib:.8,sug:.5,ca:32,fe:1.5,pot:230,na:520,vc:2,vd:1.2,b12:.8,mg:22,sf:2},
+  {n:'Curd Rice',kcal:140,p:4.5,c:22,f:3.5,fib:.5,sug:3,ca:110,fe:.2,pot:140,na:200,vc:.5,vd:.1,b12:.3,mg:12,sf:2},
+  {n:'Besan Chilla (2 pieces)',kcal:180,p:9,c:22,f:6,fib:4,sug:1,ca:30,fe:2.5,pot:220,na:300,vc:3,vd:0,b12:0,mg:40,sf:.8},
+  {n:'Sprouts Salad',kcal:90,p:6.5,c:14,f:1,fib:4.5,sug:1.5,ca:25,fe:1.8,pot:280,na:60,vc:8,vd:0,b12:0,mg:30,sf:.1},
+  {n:'Anda Bhurji Toast',kcal:320,p:17,c:30,f:14,fib:2,sug:3,ca:60,fe:2,pot:260,na:560,vc:2,vd:2,b12:1,mg:22,sf:4.5},
 ];
 
 /* INIT */
@@ -1021,7 +1095,7 @@ async function init(){
   const ew=await kG('exWeek');if(ew)exWeek=ew;
   const sd=await kG('sleepData');if(sd)sleepData=sd;
   const md=await kG('moodData');if(md)moodData=md;
-  rGl();rStUI();await rH();
+  rGl();rStUI();await rH();renderTplBar();
 }
 
 /* NAV */
@@ -1032,6 +1106,7 @@ function gn(p,i){
   if(p==='progress')rPg();
   if(p==='home')rH();
   if(p==='exercise')renderExPage();
+  if(p==='food')renderTplBar();
   if(p==='sleep')renderSlpPage();
   if(p==='mood')renderMoodPage();
 }
@@ -1424,7 +1499,8 @@ function renderExCard(){
     else plan.forEach((ex,i)=>{
       const row=document.createElement('div');row.className='ex-row';
       const meta=[ex.sets?ex.sets+' sets':'',ex.reps?ex.reps+' reps':'',ex.weight?ex.weight+'kg':''].filter(Boolean).join(' · ');
-      row.innerHTML=`<div class="ex-icon">${exIcon(ex.name)}</div><div class="ex-info"><div class="ex-name">${ex.name}</div>${meta?`<div class="ex-meta">${meta}</div>`:''}</div><button class="ex-del" onclick="delPlanned(${i})">✕</button>`;
+      const ytBtn=ex.ytUrl?`<a class="ex-yt-btn" href="${ex.ytUrl}" target="_blank" rel="noopener">▶ Watch</a>`:'';
+      row.innerHTML=`<div class="ex-icon">${exIcon(ex.name)}</div><div class="ex-info"><div class="ex-name">${ex.name}</div>${meta?`<div class="ex-meta">${meta}</div>`:''}</div>${ytBtn}<button class="ex-del" onclick="delPlanned(${i})">✕</button>`;
       pl.appendChild(row);
     });
   }
@@ -1446,7 +1522,8 @@ function renderExCard(){
         const row=document.createElement('div');
         row.className='ex-check-row'+(ex.done?' done-ex':'');
         const meta=[ex.sets?ex.sets+' sets':'',ex.reps?ex.reps+' reps':'',ex.weight?ex.weight+'kg':''].filter(Boolean).join(' · ');
-        row.innerHTML=`<div class="ex-cb${ex.done?' checked':''}" onclick="toggleLogEx(${i})">${ex.done?'✓':''}</div><div class="ex-icon">${exIcon(ex.name)}</div><div class="ex-info"><div class="ex-name">${ex.name}</div>${meta?`<div class="ex-meta">${meta}</div>`:''}</div>`;
+        const ytBtn2=ex.ytUrl?`<a class="ex-yt-btn" href="${ex.ytUrl}" target="_blank" rel="noopener">▶ Watch</a>`:'';
+        row.innerHTML=`<div class="ex-cb${ex.done?' checked':''}" onclick="toggleLogEx(${i})">${ex.done?'✓':''}</div><div class="ex-icon">${exIcon(ex.name)}</div><div class="ex-info"><div class="ex-name">${ex.name}</div>${meta?`<div class="ex-meta">${meta}</div>`:''}</div>${ytBtn2}`;
         ll.appendChild(row);
       });
     }
@@ -2303,7 +2380,205 @@ function applyTheme(t) {
   const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   applyTheme(saved || sys);
 })();
+
+// ══════════════════════════════════════════════════════
+// MEAL TEMPLATES
+// ══════════════════════════════════════════════════════
+let tplMode = 'list'; // 'list' | 'save'
+
+async function renderTplBar() {
+  const bar = document.getElementById('tplBar');
+  if (!bar) return;
+  const templates = await kG('mealTemplates') || [];
+  bar.innerHTML = '<button class="tpl-chip save-btn" onclick="openTplSave()">💾 Save today</button>';
+  templates.slice(0, 5).forEach((t, i) => {
+    const chip = document.createElement('button');
+    chip.className = 'tpl-chip';
+    chip.textContent = t.name;
+    chip.onclick = () => confirmLoadTemplate(i);
+    bar.appendChild(chip);
+  });
+  if (templates.length > 5) {
+    const more = document.createElement('button');
+    more.className = 'tpl-chip';
+    more.textContent = `+${templates.length - 5} more`;
+    more.onclick = () => openTplList();
+    bar.appendChild(more);
+  }
+}
+
+async function openTplSave() {
+  tplMode = 'save';
+  const logs = await lD(TODAY);
+  if (!logs.length) { toast('No meals logged today to save'); return; }
+  const ov = document.getElementById('tplOv');
+  document.getElementById('tplSheetTitle').textContent = 'Save as Template';
+  const kcal = Math.round(logs.reduce((s, l) => s + (l.kcal || 0), 0));
+  const meals = logs.length;
+  document.getElementById('tplBody').innerHTML = `
+    <div style="background:var(--bg);border-radius:var(--rs);padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Today's meals (${meals} items · ${kcal} kcal)</div>
+      ${logs.slice(0, 6).map(l => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:13px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">${l.name}</span><span style="color:var(--muted);flex-shrink:0">${Math.round(l.kcal||0)} kcal</span></div>`).join('')}
+      ${logs.length > 6 ? `<div style="font-size:12px;color:var(--muted);padding-top:6px">+${logs.length - 6} more items</div>` : ''}
+    </div>`;
+  document.getElementById('tplFooter').innerHTML = `
+    <input class="tpl-name-inp" id="tplNameInp" placeholder="Template name (e.g. Monday meal plan)" maxlength="40">
+    <button class="tpl-save-btn" onclick="saveTemplate()">Save Template</button>`;
+  ov.classList.add('open');
+  setTimeout(() => document.getElementById('tplNameInp')?.focus(), 300);
+}
+
+async function saveTemplate() {
+  const name = document.getElementById('tplNameInp')?.value.trim();
+  if (!name) { toast('Enter a template name'); return; }
+  const logs = await lD(TODAY);
+  if (!logs.length) { toast('No meals to save'); return; }
+  const templates = await kG('mealTemplates') || [];
+  // strip IDs so they re-insert fresh
+  const items = logs.map(l => ({ name: l.name, kcal: l.kcal, protein: l.protein, carbs: l.carbs, fat: l.fat, fiber: l.fiber, sugar: l.sugar, grams: l.grams, unit: l.unit, meal: l.meal }));
+  templates.push({ name, items, savedAt: new Date().toISOString() });
+  await kP('mealTemplates', templates);
+  closeTpl();
+  renderTplBar();
+  toast(`✓ Saved as "${name}"`);
+}
+
+async function openTplList() {
+  tplMode = 'list';
+  const templates = await kG('mealTemplates') || [];
+  document.getElementById('tplSheetTitle').textContent = 'Meal Templates';
+  const body = document.getElementById('tplBody');
+  if (!templates.length) {
+    body.innerHTML = '<div class="tpl-empty">No templates yet.<br>Log your meals and tap<br><strong>💾 Save today</strong> to create one.</div>';
+  } else {
+    body.innerHTML = templates.map((t, i) => {
+      const kcal = Math.round(t.items.reduce((s, x) => s + (x.kcal || 0), 0));
+      return `<div class="tpl-row">
+        <div style="flex:1;min-width:0">
+          <div class="tpl-name">${t.name}</div>
+          <div class="tpl-meta">${t.items.length} items · ${kcal} kcal</div>
+        </div>
+        <div class="tpl-actions">
+          <button class="tpl-btn load" onclick="confirmLoadTemplate(${i})">Load</button>
+          <button class="tpl-btn del" onclick="deleteTpl(${i})">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('tplFooter').innerHTML = '';
+  document.getElementById('tplOv').classList.add('open');
+}
+
+async function confirmLoadTemplate(idx) {
+  const templates = await kG('mealTemplates') || [];
+  const t = templates[idx];
+  if (!t) return;
+  const kcal = Math.round(t.items.reduce((s, x) => s + (x.kcal || 0), 0));
+  document.getElementById('tplSheetTitle').textContent = t.name;
+  document.getElementById('tplBody').innerHTML = `
+    <div style="background:var(--bg);border-radius:var(--rs);padding:14px 16px;margin-bottom:4px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">${t.items.length} items · ${kcal} kcal</div>
+      ${t.items.map(l => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:13px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">${l.name}</span><span style="color:var(--muted);flex-shrink:0">${Math.round(l.kcal||0)} kcal</span></div>`).join('')}
+    </div>
+    <div style="font-size:12px;color:var(--muted);padding:10px 0 6px;line-height:1.6">
+      This will add all items to today's log. You can delete any you didn't eat.
+    </div>`;
+  document.getElementById('tplFooter').innerHTML = `
+    <button class="tpl-save-btn" onclick="loadTemplate(${idx})">Load into today</button>`;
+  document.getElementById('tplOv').classList.add('open');
+}
+
+async function loadTemplate(idx) {
+  const templates = await kG('mealTemplates') || [];
+  const t = templates[idx];
+  if (!t) return;
+  for (const item of t.items) {
+    await sL({ ...item, date: TODAY, loggedAt: new Date().toISOString() });
+  }
+  closeTpl();
+  await rH();
+  toast(`✓ ${t.name} loaded — edit what you didn't eat`);
+  // refresh food page if visible
+  const fp = document.getElementById('p-food');
+  if (fp && fp.classList.contains('active')) dS();
+}
+
+async function deleteTpl(idx) {
+  const templates = await kG('mealTemplates') || [];
+  const name = templates[idx]?.name;
+  templates.splice(idx, 1);
+  await kP('mealTemplates', templates);
+  renderTplBar();
+  openTplList();
+  toast(`Deleted "${name}"`);
+}
+
+function closeTpl() {
+  document.getElementById('tplOv').classList.remove('open');
+}
+
+function closeTplOv(e) {
+  if (e.target === document.getElementById('tplOv')) closeTpl();
+}
+
+// ══════════════════════════════════════════════════════
+// EXERCISE YOUTUBE LINKS
+// ══════════════════════════════════════════════════════
+async function addPlannedWithYt() {
+  // wrapped by the existing addPlanned — we hook in after
+}
+
+// Override addPlanned to also capture YouTube URL
+const _origAddPlanned = addPlanned;
+async function addPlanned() {
+  const name = document.getElementById('exName').value.trim();
+  if (!name) { toast('Enter exercise name'); return; }
+  const sets  = parseInt(document.getElementById('exSets').value) || null;
+  const reps  = parseInt(document.getElementById('exReps').value) || null;
+  const weight = parseFloat(document.getElementById('exWeight').value) || null;
+  const ytUrl  = (document.getElementById('exYtUrl')?.value || '').trim();
+
+  if (!exWeek[exSelDay]) exWeek[exSelDay] = {plan:[], log:[], rest:false, status:null};
+  if (!exWeek[exSelDay].plan) exWeek[exSelDay].plan = [];
+  exWeek[exSelDay].plan.push({ name, sets, reps, weight, ytUrl: ytUrl || null });
+
+  if (!exWeek[exSelDay].status) {
+    const existingLog = exWeek[exSelDay].log || [];
+    exWeek[exSelDay].log = exWeek[exSelDay].plan.map((e, i) => {
+      const existing = existingLog[i];
+      return { name:e.name, sets:e.sets, reps:e.reps, weight:e.weight, ytUrl:e.ytUrl, done: existing ? existing.done : false };
+    });
+  }
+  await kP('exWeek', exWeek);
+  document.getElementById('exName').value = '';
+  document.getElementById('exSets').value = '';
+  document.getElementById('exReps').value = '';
+  document.getElementById('exWeight').value = '';
+  const ytInp = document.getElementById('exYtUrl');
+  if (ytInp) ytInp.value = '';
+  renderExPage();
+  toast('Added to plan!');
+}
 </script>
 
+
+<!-- Meal Template Sheet -->
+<div class="tpl-ov" id="tplOv" onclick="closeTplOv(event)">
+  <div class="tpl-sh">
+    <div class="tpl-hd"></div>
+    <div class="tpl-head">
+      <div class="tpl-title" id="tplSheetTitle">Meal Templates</div>
+      <button class="tpl-close" onclick="closeTpl()">✕</button>
+    </div>
+    <div class="tpl-body" id="tplBody"></div>
+    <div class="tpl-footer" id="tplFooter"></div>
+  </div>
+</div>
 </body>
+
+  <!-- Meal Templates bar -->
+  <div class="tpl-bar" id="tplBar">
+    <button class="tpl-chip save-btn" onclick="openTplSave()">💾 Save today as template</button>
+  </div>
+
 </html>
