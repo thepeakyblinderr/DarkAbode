@@ -2407,22 +2407,53 @@ async function renderTplBar() {
   }
 }
 
+function renderMealSections(items, tplIdx) {
+  const MEALS = [
+    { id:'breakfast', label:'Breakfast', icon:'🌅' },
+    { id:'lunch',     label:'Lunch',     icon:'☀️' },
+    { id:'snacks',    label:'Snacks',    icon:'🍎' },
+    { id:'dinner',    label:'Dinner',    icon:'🌙' },
+  ];
+  const showLoad = tplIdx !== undefined;
+  let html = '';
+  MEALS.forEach(m => {
+    const group = items.filter(l => (l.meal || 'breakfast') === m.id);
+    if (!group.length) return;
+    const gKcal = Math.round(group.reduce((s, l) => s + (l.kcal || 0), 0));
+    const loadBtn = showLoad
+      ? `<button onclick="loadMeal(${tplIdx},'${m.id}')" style="padding:3px 10px;border-radius:12px;border:1.5px solid var(--amber);background:transparent;color:var(--amber);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s" onmouseover="this.style.background='var(--amber)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--amber)'">+ Load</button>`
+      : '';
+    html += `<div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">${m.icon} ${m.label}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;color:var(--muted)">${gKcal} kcal</div>
+          ${loadBtn}
+        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:var(--rs);overflow:hidden">
+        ${group.map(l => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--bdr);font-size:13px">
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">${l.name}</span>
+          <span style="color:var(--muted);flex-shrink:0;font-size:11.5px">${Math.round(l.kcal||0)} kcal</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  return html || '<div style="color:var(--muted);font-size:13px;padding:8px 0">No items</div>';
+}
+
 async function openTplSave() {
   tplMode = 'save';
   const logs = await lD(TODAY);
   if (!logs.length) { toast('No meals logged today to save'); return; }
   const ov = document.getElementById('tplOv');
   document.getElementById('tplSheetTitle').textContent = 'Save as Template';
-  const kcal = Math.round(logs.reduce((s, l) => s + (l.kcal || 0), 0));
-  const meals = logs.length;
+  const totalKcal = Math.round(logs.reduce((s, l) => s + (l.kcal || 0), 0));
   document.getElementById('tplBody').innerHTML = `
-    <div style="background:var(--bg);border-radius:var(--rs);padding:14px 16px;margin-bottom:14px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">Today's meals (${meals} items · ${kcal} kcal)</div>
-      ${logs.slice(0, 6).map(l => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:13px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">${l.name}</span><span style="color:var(--muted);flex-shrink:0">${Math.round(l.kcal||0)} kcal</span></div>`).join('')}
-      ${logs.length > 6 ? `<div style="font-size:12px;color:var(--muted);padding-top:6px">+${logs.length - 6} more items</div>` : ''}
-    </div>`;
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">${logs.length} items · ${totalKcal} kcal total</div>
+    ${renderMealSections(logs)}`;
   document.getElementById('tplFooter').innerHTML = `
-    <input class="tpl-name-inp" id="tplNameInp" placeholder="Template name (e.g. Monday meal plan)" maxlength="40">
+    <input class="tpl-name-inp" id="tplNameInp" placeholder="e.g. My weekday plan" maxlength="40">
     <button class="tpl-save-btn" onclick="saveTemplate()">Save Template</button>`;
   ov.classList.add('open');
   setTimeout(() => document.getElementById('tplNameInp')?.focus(), 300);
@@ -2451,12 +2482,20 @@ async function openTplList() {
   if (!templates.length) {
     body.innerHTML = '<div class="tpl-empty">No templates yet.<br>Log your meals and tap<br><strong>💾 Save today</strong> to create one.</div>';
   } else {
+    const MEAL_ICONS = {breakfast:'🌅',lunch:'☀️',snacks:'🍎',dinner:'🌙'};
     body.innerHTML = templates.map((t, i) => {
       const kcal = Math.round(t.items.reduce((s, x) => s + (x.kcal || 0), 0));
+      // count items per meal for the subtitle
+      const mealCounts = {};
+      t.items.forEach(item => { const m = item.meal||'breakfast'; mealCounts[m] = (mealCounts[m]||0)+1; });
+      const mealSummary = ['breakfast','lunch','snacks','dinner']
+        .filter(m => mealCounts[m])
+        .map(m => `${MEAL_ICONS[m]} ${mealCounts[m]}`)
+        .join('  ');
       return `<div class="tpl-row">
         <div style="flex:1;min-width:0">
           <div class="tpl-name">${t.name}</div>
-          <div class="tpl-meta">${t.items.length} items · ${kcal} kcal</div>
+          <div class="tpl-meta" style="margin-top:2px">${kcal} kcal &nbsp;·&nbsp; ${mealSummary}</div>
         </div>
         <div class="tpl-actions">
           <button class="tpl-btn load" onclick="confirmLoadTemplate(${i})">Load</button>
@@ -2473,18 +2512,16 @@ async function confirmLoadTemplate(idx) {
   const templates = await kG('mealTemplates') || [];
   const t = templates[idx];
   if (!t) return;
-  const kcal = Math.round(t.items.reduce((s, x) => s + (x.kcal || 0), 0));
+  const totalKcal = Math.round(t.items.reduce((s, x) => s + (x.kcal || 0), 0));
   document.getElementById('tplSheetTitle').textContent = t.name;
   document.getElementById('tplBody').innerHTML = `
-    <div style="background:var(--bg);border-radius:var(--rs);padding:14px 16px;margin-bottom:4px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em">${t.items.length} items · ${kcal} kcal</div>
-      ${t.items.map(l => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:13px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">${l.name}</span><span style="color:var(--muted);flex-shrink:0">${Math.round(l.kcal||0)} kcal</span></div>`).join('')}
-    </div>
-    <div style="font-size:12px;color:var(--muted);padding:10px 0 6px;line-height:1.6">
-      This will add all items to today's log. You can delete any you didn't eat.
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">${t.items.length} items · ${totalKcal} kcal total</div>
+    ${renderMealSections(t.items, idx)}
+    <div style="font-size:12px;color:var(--muted);padding:6px 0 2px;line-height:1.6">
+      Load individual meals above, or load everything at once below.
     </div>`;
   document.getElementById('tplFooter').innerHTML = `
-    <button class="tpl-save-btn" onclick="loadTemplate(${idx})">Load into today</button>`;
+    <button class="tpl-save-btn" onclick="loadTemplate(${idx})">Load all meals</button>`;
   document.getElementById('tplOv').classList.add('open');
 }
 
@@ -2498,7 +2535,27 @@ async function loadTemplate(idx) {
   closeTpl();
   await rH();
   toast(`✓ ${t.name} loaded — edit what you didn't eat`);
-  // refresh food page if visible
+  const fp = document.getElementById('p-food');
+  if (fp && fp.classList.contains('active')) dS();
+}
+
+async function loadMeal(idx, mealId) {
+  const templates = await kG('mealTemplates') || [];
+  const t = templates[idx];
+  if (!t) return;
+  const MEAL_LABELS = { breakfast:'Breakfast', lunch:'Lunch', snacks:'Snacks', dinner:'Dinner' };
+  const items = t.items.filter(l => (l.meal || 'breakfast') === mealId);
+  if (!items.length) { toast('No items for this meal'); return; }
+  for (const item of items) {
+    await sL({ ...item, date: TODAY, loggedAt: new Date().toISOString() });
+  }
+  const label = MEAL_LABELS[mealId] || mealId;
+  // switch to that meal tab
+  const tabBtn = document.querySelector(`.tab[onclick*="'${mealId}'"]`);
+  if (tabBtn) { sM(mealId, tabBtn); gn('food', 1); }
+  closeTpl();
+  await rH();
+  toast(`✓ ${label} loaded from "${t.name}"`);
   const fp = document.getElementById('p-food');
   if (fp && fp.classList.contains('active')) dS();
 }
