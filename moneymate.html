@@ -32,6 +32,29 @@
   --shxl:0 24px 60px rgba(0,0,0,.14),0 6px 20px rgba(0,0,0,.08);
   --nh:54px;--th:62px;
 }
+[data-theme="dark"]{
+  --bg:#0f0f13;--bg2:#17171e;--bg3:#1e1e28;--bg4:#252530;
+  --brd:#2a2a38;--brd2:#3a3a4e;
+  --ink:#f0f0f5;--ink2:#c0c0cc;--ink3:#7a7a90;--ink4:#4a4a60;
+  --red:#e05545;--rbg:#1a0a08;
+  --grn:#2ecc71;--gbg:#0a1a10;
+  --amb:#e0a030;--abg:#1a1200;
+  --sh:0 1px 4px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2);
+  --shlg:0 8px 32px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
+  --shxl:0 24px 60px rgba(0,0,0,.5),0 6px 20px rgba(0,0,0,.4);
+}
+[data-theme="dark"] .nav,[data-theme="dark"] .tabbar{
+  background:rgba(15,15,19,.96);
+  border-color:var(--brd);
+}
+[data-theme="dark"] .btn{color:var(--ink2);}
+[data-theme="dark"] .bg{background:transparent;color:var(--ink2);border-color:var(--brd);}
+[data-theme="dark"] .bg:hover{background:var(--bg3);}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{
+  background:var(--bg2);color:var(--ink);border-color:var(--brd);color-scheme:dark;
+}
+[data-theme="dark"] .modal{background:var(--bg2);}
+[data-theme="dark"] .ovr{background:rgba(0,0,0,.7);}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{
   -webkit-tap-highlight-color:transparent;
@@ -369,6 +392,10 @@ body{
   <div class="nav-acts">
     <button class="btn bg bsm" onclick="openSearch()" title="Search everything" style="padding:6px 10px;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+    </button>
+    <button class="btn bg bsm" onclick="toggleTheme()" id="theme-btn" title="Toggle theme" style="padding:6px 10px;">
+      <svg id="theme-icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <svg id="theme-icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
     </button>
     <button class="btn bg bsm" onclick="openCfg()" title="Settings" style="padding:6px 10px;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
@@ -817,6 +844,7 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 const FMON   = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const PAL    = ['#0a0a0a','#1a3dc0','#1a7a3c','#c0392b','#9a5000','#6d28d9','#0891b2','#be185d','#065f46','#7c2d12'];
+function getPAL(){const dk=document.documentElement.getAttribute('data-theme')==='dark';return dk?['#f0f0f5','#4a7aff','#2ecc71','#e05545','#e0a030','#9b6dff','#22d3ee','#f472b6','#34d399','#fb923c']:PAL;}
 
 // ── STATE ────────────────────────────────────
 let DB;
@@ -1513,7 +1541,7 @@ function rDash() {
   dChart('c-dash');
   CI['c-dash'] = new Chart(document.getElementById('c-dash'), {
     type:'bar',
-    data:{ labels:MONTHS, datasets:[{ data:mly, backgroundColor:mly.map((_,i)=>i===now.getMonth()?'#0a0a0a':'#e4e4dc'), borderRadius:5, borderSkipped:false }] },
+    data:{ labels:MONTHS, datasets:[{ data:mly, backgroundColor:mly.map((_,i)=>{const dk=document.documentElement.getAttribute('data-theme')==='dark';return i===now.getMonth()?(dk?'#f0f0f5':'#0a0a0a'):(dk?'#2a2a38':'#e4e4dc');}), borderRadius:5, borderSkipped:false }] },
     options:cOpts()
   });
 
@@ -2581,13 +2609,13 @@ function rAnalytics() {
   </div>`;
 
   dChart('c-an-bar');
-  CI['c-an-bar']=new Chart(document.getElementById('c-an-bar'),{type:'bar',data:{labels:MONTHS,datasets:[{label:'Expenses',data:mly,backgroundColor:'#0a0a0a',borderRadius:4,borderSkipped:false}]},options:cOpts()});
+  const _bc=document.documentElement.getAttribute('data-theme')==='dark'?'#f0f0f5':'#0a0a0a';CI['c-an-bar']=new Chart(document.getElementById('c-an-bar'),{type:'bar',data:{labels:MONTHS,datasets:[{label:'Expenses',data:mly,backgroundColor:_bc,borderRadius:4,borderSkipped:false}]},options:cOpts()});
   dChart('c-an-dnt');
-  if(ctF.length)CI['c-an-dnt']=new Chart(document.getElementById('c-an-dnt'),{type:'doughnut',data:{labels:ctF.map(c=>CATS[c.i].l),datasets:[{data:ctF.map(c=>c.v),backgroundColor:PAL.slice(0,ctF.length),borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
+  if(ctF.length)CI['c-an-dnt']=new Chart(document.getElementById('c-an-dnt'),{type:'doughnut',data:{labels:ctF.map(c=>CATS[c.i].l),datasets:[{data:ctF.map(c=>c.v),backgroundColor:getPAL().slice(0,ctF.length),borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
   dChart('c-an-dow');
-  CI['c-an-dow']=new Chart(document.getElementById('c-an-dow'),{type:'bar',data:{labels:DAYS,datasets:[{data:dow,backgroundColor:'#0a0a0a',borderRadius:4,borderSkipped:false}]},options:cOpts()});
+  CI['c-an-dow']=new Chart(document.getElementById('c-an-dow'),{type:'bar',data:{labels:DAYS,datasets:[{data:dow,backgroundColor:_bc,borderRadius:4,borderSkipped:false}]},options:cOpts()});
   dChart('c-an-cum');
-  CI['c-an-cum']=new Chart(document.getElementById('c-an-cum'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Cumulative',data:cum,borderColor:'#0a0a0a',backgroundColor:'rgba(10,10,10,.05)',fill:true,tension:.3,borderWidth:2,pointRadius:3},{label:'Monthly',data:mly,borderColor:'#c8c8be',backgroundColor:'transparent',borderDash:[4,4],tension:.3,borderWidth:1.5,pointRadius:2}]},options:cOpts({},true)});
+  CI['c-an-cum']=new Chart(document.getElementById('c-an-cum'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Cumulative',data:cum,borderColor:_bc,backgroundColor:document.documentElement.getAttribute('data-theme')==='dark'?'rgba(240,240,245,.05)':'rgba(10,10,10,.05)',fill:true,tension:.3,borderWidth:2,pointRadius:3},{label:'Monthly',data:mly,borderColor:document.documentElement.getAttribute('data-theme')==='dark'?'#3a3a4e':'#c8c8be',backgroundColor:'transparent',borderDash:[4,4],tension:.3,borderWidth:1.5,pointRadius:2}]},options:cOpts({},true)});
 }
 
 function _heatmap(yr,exps,cur) {
@@ -2634,7 +2662,11 @@ function getG(){return DB.groups.find(g=>g.id===CGI);}
 // CHARTS
 // ═══════════════════════════════════════════════
 function cOpts(extra={},legend=false){
-  return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:legend,position:'bottom',labels:{font:{family:"'DM Mono'",size:10},padding:12,boxWidth:10}},tooltip:{bodyFont:{family:"'DM Mono'"},titleFont:{family:"'Syne'"}}},scales:{x:{grid:{display:false},ticks:{font:{family:"'DM Mono'",size:10},color:'#9a9a8e'},border:{display:false}},y:{grid:{color:'#f0f0ec'},ticks:{font:{family:"'DM Mono'",size:10},color:'#9a9a8e'},border:{display:false},...(extra.y||{})}}};
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  const tc = dark ? '#4a4a60' : '#9a9a8e';
+  const gc = dark ? '#2a2a38' : '#f0f0ec';
+  const lc = dark ? '#f0f0f5' : '#0a0a0a';
+  return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:legend,position:'bottom',labels:{color:lc,font:{family:"'DM Mono'",size:10},padding:12,boxWidth:10}},tooltip:{bodyFont:{family:"'DM Mono'"},titleFont:{family:"'Syne'"}}},scales:{x:{grid:{display:false},ticks:{font:{family:"'DM Mono'",size:10},color:tc},border:{display:false}},y:{grid:{color:gc},ticks:{font:{family:"'DM Mono'",size:10},color:tc},border:{display:false},...(extra.y||{})}}};
 }
 function dChart(id){if(CI[id]){CI[id].destroy();delete CI[id];}}
 
@@ -3154,6 +3186,34 @@ function init() {
 }
 
 init();
+
+// ── THEME TOGGLE ──────────────────────────────────────────────
+const THEME_KEY = 'mm_theme';
+
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('theme-icon-sun').style.display  = dark ? 'block' : 'none';
+  document.getElementById('theme-icon-moon').style.display = dark ? 'none'  : 'block';
+  document.querySelector('meta[name="theme-color"]').content = dark ? '#0f0f13' : '#ffffff';
+  // Redraw charts with new colors
+  Object.keys(CI).forEach(id => { try { if(CI[id]) CI[id].destroy(); delete CI[id]; } catch(e){} });
+  const activeView = VIEWS.find(v => document.getElementById('v-'+v) && document.getElementById('v-'+v).classList.contains('active'));
+  if (activeView === 'analytics') rAnalytics();
+  else if (activeView === 'dash') rDash();
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const newDark = !isDark;
+  localStorage.setItem(THEME_KEY, newDark ? 'dark' : 'light');
+  applyTheme(newDark);
+}
+
+// Init theme on load
+(function() {
+  const saved = localStorage.getItem(THEME_KEY);
+  applyTheme(saved === 'dark');
+})();
 </script>
 </body>
 </html>
