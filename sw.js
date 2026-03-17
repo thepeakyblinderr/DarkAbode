@@ -1,6 +1,5 @@
-// Abode Service Worker v2.0
-// !! Bump CACHE version on every deploy to bust old cache !!
-const CACHE = 'abode-v2';
+// Abode Service Worker v3.0
+const CACHE = 'abode-v3';
 
 const ASSETS = [
   './',
@@ -9,18 +8,17 @@ const ASSETS = [
   './wealth.html',
   './docvault.html',
   './wanderplan.html',
+  './nutrily.html',
   './manifest.json'
 ];
 
-// Install — pre-cache all files, skip waiting immediately
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE).then(c => c.addAll(ASSETS))
   );
   self.skipWaiting();
 });
 
-// Activate — delete ALL old caches, claim clients right away
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
@@ -34,14 +32,10 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Message — allow pages to trigger skipWaiting
 self.addEventListener('message', e => {
   if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// Fetch strategy:
-//   HTML pages  → network first (always fresh on deploy)
-//   Other assets → cache first + background revalidate
 self.addEventListener('fetch', e => {
   if (!e.request.url.startsWith(self.location.origin)) return;
 
