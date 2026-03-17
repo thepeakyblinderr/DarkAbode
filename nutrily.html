@@ -552,7 +552,6 @@ html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
     <div class="ex-day-title" id="exDayTitle">Today</div>
     <div class="ex-day-sub" id="exDaySub"></div>
 
-```
 <!-- rest toggle -->
 <div class="rest-toggle" id="restToggle" onclick="toggleRest()">
   <div>
@@ -612,7 +611,6 @@ html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
     </div>
   </div>
 </div>
-```
 
   </div>
 
@@ -897,7 +895,6 @@ html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
       </div>
       <button class="prof-save" onclick="saveProf()">Save Profile</button>
 
-```
   <div class="prof-sec">Data & Backup</div>
   <div style="display:flex;flex-direction:column;gap:9px">
     <button onclick="exportBackup()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s">
@@ -910,7 +907,6 @@ html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
     <div style="font-size:11px;color:var(--faint);text-align:center;line-height:1.5">Backup includes all food logs, goals, exercise plans &amp; water data</div>
   </div>
 </div>
-```
 
   </div>
 </div>
@@ -1612,31 +1608,7 @@ function toggleRest(){
   kP('exWeek',exWeek);renderExPage();
   toast(exWeek[exSelDay].rest?'Rest day set 😴':'Rest day removed');
 }
-async function addPlanned(){
-  const name=document.getElementById('exName').value.trim();
-  if(!name){toast('Enter exercise name');return;}
-  const sets=parseInt(document.getElementById('exSets').value)||null;
-  const reps=parseInt(document.getElementById('exReps').value)||null;
-  const weight=parseFloat(document.getElementById('exWeight').value)||null;
-  if(!exWeek[exSelDay])exWeek[exSelDay]={plan:[],log:[],rest:false,status:null};
-  if(!exWeek[exSelDay].plan)exWeek[exSelDay].plan=[];
-  exWeek[exSelDay].plan.push({name,sets,reps,weight});
-  // only re-seed log if not yet started logging (preserve checked state)
-  if(!exWeek[exSelDay].status){
-    const existingLog=exWeek[exSelDay].log||[];
-    // rebuild log: preserve done state for existing items, add new item at end
-    exWeek[exSelDay].log=exWeek[exSelDay].plan.map((e,i)=>{
-      const existing=existingLog[i];
-      return {name:e.name,sets:e.sets,reps:e.reps,weight:e.weight,done:existing?existing.done:false};
-    });
-  }
-  await kP('exWeek',exWeek);
-  document.getElementById('exName').value='';
-  document.getElementById('exSets').value='';
-  document.getElementById('exReps').value='';
-  document.getElementById('exWeight').value='';
-  renderExPage();toast('Added to plan!');
-}
+// addPlanned defined below with YouTube URL support
 async function delPlanned(i){
   if(!exWeek[exSelDay]||!exWeek[exSelDay].plan)return;
   exWeek[exSelDay].plan.splice(i,1);
@@ -2622,12 +2594,8 @@ function closeTplOv(e) {
 // ══════════════════════════════════════════════════════
 // EXERCISE YOUTUBE LINKS
 // ══════════════════════════════════════════════════════
-async function addPlannedWithYt() {
-  // wrapped by the existing addPlanned — we hook in after
-}
 
-// Override addPlanned to also capture YouTube URL
-const _origAddPlanned = addPlanned;
+// addPlanned with YouTube URL support
 async function addPlanned() {
   const name = document.getElementById('exName').value.trim();
   if (!name) { toast('Enter exercise name'); return; }
