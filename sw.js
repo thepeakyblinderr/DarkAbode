@@ -1,5 +1,5 @@
-// Abode Service Worker v3.0
-const CACHE = 'abode-v3';
+// Abode Service Worker v4.0
+const CACHE = 'abode-v4';
 
 const ASSETS = [
   './',
@@ -9,25 +9,19 @@ const ASSETS = [
   './docvault.html',
   './wanderplan.html',
   './nutrily.html',
+  './hobby.html',
   './manifest.json'
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS))
-  );
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE).map(k => {
-          console.log('[SW] Deleting old cache:', k);
-          return caches.delete(k);
-        })
-      ))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -38,18 +32,14 @@ self.addEventListener('message', e => {
 
 self.addEventListener('fetch', e => {
   if (!e.request.url.startsWith(self.location.origin)) return;
-
   const isHTML = e.request.mode === 'navigate'
     || e.request.destination === 'document'
     || e.request.url.endsWith('.html');
-
   if (isHTML) {
     e.respondWith(
       fetch(e.request)
         .then(res => {
-          if (res.status === 200) {
-            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-          }
+          if (res.status === 200) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
           return res;
         })
         .catch(() => caches.match(e.request))
@@ -57,13 +47,11 @@ self.addEventListener('fetch', e => {
   } else {
     e.respondWith(
       caches.match(e.request).then(cached => {
-        const networkFetch = fetch(e.request).then(res => {
-          if (res.status === 200) {
-            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-          }
+        const net = fetch(e.request).then(res => {
+          if (res.status === 200) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
           return res;
         });
-        return cached || networkFetch;
+        return cached || net;
       })
     );
   }
