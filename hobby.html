@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HobbySpace">
+<title>HobbySpace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Design tokens (Abode-matched) ── */
+:root {
+  --bg:      #f5f5f3;
+  --surface: #ffffff;
+  --surface2:#f0f0ee;
+  --ink:     #0a0a0a;
+  --ink2:    #3a3a34;
+  --ink3:    #6a6a60;
+  --ink4:    #9a9a8e;
+  --line:    #e4e4e0;
+  --line2:   #c8c8be;
+  --accent:  #5b3fd4;
+  --accent-bg: rgba(91,63,212,.08);
+  --green:   #047857;
+  --green-bg:rgba(4,120,87,.08);
+  --red:     #c0392b;
+  --amber:   #b45309;
+  --sans: 'Syne', system-ui, sans-serif;
+  --body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --r:   8px;
+  --rl:  14px;
+  --rxl: 20px;
+  --sh:  0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --shlg:0 6px 24px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.05);
+  --top: env(safe-area-inset-top, 0px);
+  --bot: env(safe-area-inset-bottom, 0px);
+}
+html[data-theme="dark"] {
+  --bg:      #0f0f0e;
+  --surface: #1a1a18;
+  --surface2:#242422;
+  --ink:     #f0f0ec;
+  --ink2:    #c8c8c0;
+  --ink3:    #8a8a80;
+  --ink4:    #5a5a54;
+  --line:    #2a2a28;
+  --line2:   #3a3a36;
+  --accent:  #8b6ff0;
+  --accent-bg: rgba(139,111,240,.12);
+  --green:   #2ea878;
+  --green-bg:rgba(46,168,120,.12);
+  --red:     #e05a4e;
+  --amber:   #d4900a;
+  --sh:  0 1px 4px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+  --shlg:0 6px 24px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.25);
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html { -webkit-font-smoothing:antialiased; overscroll-behavior:none; height:100%; }
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--ink);
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: none;
+}
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-thumb { background:var(--line2); border-radius:2px; }
+
+/* ── Topbar ── */
+.topbar {
+  position: sticky; top:0; z-index:200;
+  height: calc(54px + var(--top));
+  padding-top: var(--top);
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  padding-left: 16px; padding-right: 16px; gap: 10px;
+  flex-shrink: 0;
+}
+html[data-theme="dark"] .topbar { background: rgba(15,15,14,.97); }
+
+.back-link {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  color: var(--ink3); text-decoration: none;
+  letter-spacing: .04em; padding: 4px 0;
+  transition: color .15s;
+}
+.back-link:hover { color: var(--ink); }
+.back-link svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; }
+
+.brand {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--sans); font-weight: 800; font-size: 15px;
+  letter-spacing: -.04em; color: var(--ink); user-select: none;
+}
+.brand-mark {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: var(--accent); color: #fff;
+  display: grid; place-items: center;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  flex-shrink: 0;
+}
+
+.theme-btn {
+  width:32px; height:32px; border-radius:8px;
+  border:1px solid var(--line2); background:var(--surface2);
+  color:var(--ink3); cursor:pointer; display:grid; place-items:center;
+  font-size:15px; transition:background .15s; flex-shrink:0;
+}
+.theme-btn:hover { background:var(--line); }
+.theme-btn:active { opacity:.7; }
+
+/* ── Content ── */
+.content {
+  flex:1; padding: 0 16px calc(var(--bot) + 24px);
+  overflow-y: auto; overscroll-behavior: none;
+}
+
+/* ── Greeting ── */
+.greeting {
+  padding: 14px 0 12px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+  animation: fade-up .4s ease both;
+}
+.greeting-eyebrow {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink4); text-transform: uppercase;
+  letter-spacing: .08em; margin-bottom: 5px;
+}
+.greeting-text {
+  font-family: var(--sans); font-size: 20px;
+  font-weight: 800; color: var(--ink); letter-spacing: -.5px;
+  line-height: 1.2;
+}
+.greeting-sub {
+  font-size: 12px; color: var(--ink3); margin-top: 4px;
+}
+
+/* ── Section label ── */
+.section-label {
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--ink3); font-weight: 600;
+  margin-bottom: 8px; display: block;
+}
+
+/* ── Energy picker ── */
+.energy-row {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 8px; margin-bottom: 16px;
+  animation: fade-up .4s .06s ease both;
+}
+.energy-btn {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--rl); padding: 12px 8px;
+  cursor: pointer; text-align: center;
+  transition: all .15s; font-family: var(--body);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.energy-btn:hover { border-color: var(--line2); box-shadow: var(--sh); }
+.energy-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 3px rgba(91,63,212,.1);
+}
+html[data-theme="dark"] .energy-btn.active {
+  box-shadow: 0 0 0 3px rgba(139,111,240,.12);
+}
+.energy-btn:active { transform: scale(.97); }
+.energy-icon { font-size: 20px; }
+.energy-label {
+  font-size: 11px; font-weight: 700; font-family: var(--sans);
+  color: var(--ink2); letter-spacing: -.01em;
+}
+.energy-btn.active .energy-label { color: var(--accent); }
+
+/* ── Decide button ── */
+.decide-btn {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--rl);
+  font-family: var(--sans); font-size: 15px; font-weight: 800;
+  letter-spacing: -.02em; cursor: pointer;
+  transition: opacity .15s, transform .12s;
+  margin-bottom: 16px;
+  animation: fade-up .4s .1s ease both;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.decide-btn:hover { opacity: .88; }
+.decide-btn:active { transform: scale(.98); opacity: .8; }
+
+/* ── Result card ── */
+.result-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--rxl); overflow: hidden;
+  margin-bottom: 16px; animation: fade-up .4s .14s ease both;
+  min-height: 80px;
+}
+.result-stripe {
+  height: 3px; background: var(--accent);
+  transition: background .3s;
+}
+.result-body { padding: 16px; }
+.result-empty {
+  padding: 24px 16px; text-align: center;
+}
+.result-empty-icon { font-size: 28px; margin-bottom: 8px; }
+.result-empty-text { font-size: 13px; color: var(--ink4); font-family: var(--mono); }
+.result-hobby {
+  font-family: var(--sans); font-size: 20px; font-weight: 800;
+  color: var(--ink); letter-spacing: -.04em; margin-bottom: 4px;
+}
+.result-task {
+  font-size: 13px; color: var(--ink2); margin-bottom: 14px;
+  line-height: 1.5;
+}
+.result-meta {
+  display: flex; align-items: center; gap: 6px;
+}
+.result-chip {
+  font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px;
+}
+.chip-energy { background: var(--accent-bg); color: var(--accent); }
+.chip-count  { background: var(--surface2); color: var(--ink4); border: 1px solid var(--line); }
+
+/* ── Hobbies grid ── */
+.hobbies-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 16px;
+  animation: fade-up .4s .2s ease both;
+}
+.hobby-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--rl); padding: 12px;
+  transition: border-color .15s, box-shadow .15s;
+  position: relative; overflow: hidden;
+}
+.hobby-card:hover { border-color: var(--line2); box-shadow: var(--sh); }
+.hobby-card-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.hobby-card-name {
+  font-family: var(--body); font-size: 12px; font-weight: 700;
+  color: var(--ink); letter-spacing: -.01em;
+}
+.hobby-card-icon { font-size: 18px; }
+.hobby-bar-track {
+  height: 4px; background: var(--line);
+  border-radius: 4px; overflow: hidden; margin-bottom: 5px;
+}
+.hobby-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: var(--accent);
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.hobby-card-count {
+  font-family: var(--mono); font-size: 9.5px; color: var(--ink4);
+}
+.hobby-energy-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-low    { background: var(--green); }
+.dot-medium { background: var(--amber); }
+.dot-high   { background: var(--red); }
+
+/* ── Add hobby section ── */
+.add-section { animation: fade-up .4s .26s ease both; }
+.add-form {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--rxl); padding: 14px;
+  display: none;
+}
+.add-form.open { display: block; }
+.field { margin-bottom: 10px; }
+.field-label {
+  font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+  color: var(--ink4); text-transform: uppercase;
+  letter-spacing: .07em; margin-bottom: 5px; display: block;
+}
+.field-input {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid var(--line2); border-radius: var(--r);
+  background: var(--surface2); color: var(--ink);
+  font-family: var(--body); font-size: 14px;
+  outline: none; transition: border-color .15s;
+  -webkit-appearance: none;
+}
+.field-input:focus { border-color: var(--accent); }
+html[data-theme="dark"] .field-input { color-scheme: dark; }
+.field-input::placeholder { color: var(--ink4); }
+.energy-select-row {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 6px;
+}
+.energy-opt {
+  padding: 7px; border: 1px solid var(--line2);
+  border-radius: var(--r); background: var(--surface2);
+  text-align: center; cursor: pointer;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  color: var(--ink3); transition: all .12s; letter-spacing: .02em;
+}
+.energy-opt:hover { border-color: var(--line2); background: var(--line); }
+.energy-opt.sel { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.btn-row { display: flex; gap: 8px; margin-top: 12px; }
+.btn-cancel {
+  flex: 1; padding: 10px; border: 1px solid var(--line2);
+  border-radius: var(--r); background: var(--surface2);
+  font-family: var(--sans); font-size: 13px; font-weight: 700;
+  color: var(--ink3); cursor: pointer; transition: all .12s;
+}
+.btn-cancel:hover { background: var(--line); }
+.btn-add {
+  flex: 2; padding: 10px; border: none;
+  border-radius: var(--r); background: var(--accent);
+  font-family: var(--sans); font-size: 13px; font-weight: 700;
+  color: #fff; cursor: pointer; transition: opacity .12s;
+}
+.btn-add:hover { opacity: .85; }
+.btn-add-hobby {
+  width: 100%; padding: 10px; margin-top: 8px;
+  border: 1px dashed var(--line2); border-radius: var(--rl);
+  background: transparent; font-family: var(--body);
+  font-size: 13px; color: var(--ink3); cursor: pointer;
+  transition: all .15s; display: flex; align-items: center;
+  justify-content: center; gap: 6px;
+}
+.btn-add-hobby:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+
+/* ── Toast ── */
+#toast {
+  position: fixed; bottom: calc(var(--bot) + 20px);
+  left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: #fff;
+  border-radius: var(--rl); padding: 9px 18px;
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: .02em; z-index: 999;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap; pointer-events: none;
+}
+html[data-theme="dark"] #toast { background: var(--surface); color: var(--ink); border: 1px solid var(--line2); }
+
+/* ── Animations ── */
+@keyframes fade-up {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes pop {
+  0%   { transform:scale(1); }
+  50%  { transform:scale(1.04); }
+  100% { transform:scale(1); }
+}
+.result-card.popped { animation: pop .3s ease; }
+
+/* ── Streak ── */
+.streak-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--rl); padding: 10px 14px;
+  margin-bottom: 16px; animation: fade-up .4s .18s ease both;
+}
+.streak-label { font-family: var(--mono); font-size: 10px; color: var(--ink4); letter-spacing: .04em; text-transform: uppercase; }
+.streak-val { font-family: var(--sans); font-size: 18px; font-weight: 800; color: var(--ink); letter-spacing: -.04em; }
+.streak-unit { font-family: var(--mono); font-size: 9.5px; color: var(--ink4); margin-top: 1px; }
+
+@media (max-width: 300px) { .hobbies-grid { grid-template-columns: 1fr; } }
+
+/* ── Mood sheet ── */
+.mood-ov {
+  display:none; position:fixed; inset:0; z-index:400;
+  background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
+  align-items:flex-end; justify-content:center;
+}
+.mood-ov.open { display:flex; }
+.mood-sh {
+  background:var(--surface); border-radius:var(--rxl) var(--rxl) 0 0;
+  width:100%; max-width:480px; padding:20px 20px calc(20px + var(--bot));
+  animation:slide-up .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slide-up { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+.mood-handle { width:36px;height:4px;background:var(--line2);border-radius:2px;margin:0 auto 18px; }
+.mood-title { font-family:var(--sans);font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.03em;margin-bottom:4px; }
+.mood-sub { font-size:12px;color:var(--ink3);margin-bottom:18px; }
+.mood-row { display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px; }
+.mood-btn {
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:12px 6px; border:1px solid var(--line);
+  border-radius:var(--rl); background:var(--surface2);
+  cursor:pointer; transition:all .15s; font-family:var(--body);
+}
+.mood-btn:hover { border-color:var(--line2); box-shadow:var(--sh); }
+.mood-btn.sel { border-color:var(--accent); background:var(--accent-bg); }
+.mood-emoji { font-size:22px; }
+.mood-label { font-size:9.5px;font-weight:700;font-family:var(--mono);color:var(--ink3);letter-spacing:.02em; }
+.mood-btn.sel .mood-label { color:var(--accent); }
+.mood-skip { width:100%;padding:10px;border:1px solid var(--line);border-radius:var(--r);
+  background:transparent;font-family:var(--body);font-size:13px;color:var(--ink3);cursor:pointer;transition:all .12s; }
+.mood-skip:hover { background:var(--surface2); }
+/* ── Heatmap ── */
+.heatmap-section { margin-bottom:16px; animation:fade-up .4s .28s ease both; }
+.heatmap-grid {
+  display:grid; gap:3px; margin-top:8px;
+  grid-template-columns: repeat(13,1fr);
+}
+.hm-cell {
+  aspect-ratio:1; border-radius:3px;
+  background:var(--line); transition:background .2s;
+  cursor:default; position:relative;
+}
+.hm-cell.lvl-1 { background:rgba(91,63,212,.25); }
+.hm-cell.lvl-2 { background:rgba(91,63,212,.5); }
+.hm-cell.lvl-3 { background:rgba(91,63,212,.75); }
+.hm-cell.lvl-4 { background:rgba(91,63,212,1); }
+html[data-theme="dark"] .hm-cell.lvl-1 { background:rgba(139,111,240,.25); }
+html[data-theme="dark"] .hm-cell.lvl-2 { background:rgba(139,111,240,.5); }
+html[data-theme="dark"] .hm-cell.lvl-3 { background:rgba(139,111,240,.75); }
+html[data-theme="dark"] .hm-cell.lvl-4 { background:rgba(139,111,240,1); }
+.hm-cell.hm-today { outline:2px solid var(--accent); outline-offset:1px; }
+.hm-legend { display:flex;align-items:center;gap:6px;margin-top:6px;justify-content:flex-end; }
+.hm-leg-label { font-family:var(--mono);font-size:9px;color:var(--ink4); }
+.hm-leg-dots { display:flex;gap:3px; }
+.hm-leg-dot { width:10px;height:10px;border-radius:2px; }
+/* ── Streak in stats row ── */
+.streak-fire { font-size:15px; }
+/* ── Surprise button ── */
+.btn-row-main { display:flex;gap:8px;margin-bottom:16px;animation:fade-up .4s .1s ease both; }
+.decide-btn { flex:1;margin-bottom:0; }
+.surprise-btn {
+  width:46px;height:46px;border-radius:var(--rl);
+  border:1px solid var(--line2);background:var(--surface);
+  font-size:18px;cursor:pointer;display:grid;place-items:center;
+  transition:all .15s;flex-shrink:0;
+}
+.surprise-btn:hover { border-color:var(--accent);background:var(--accent-bg);transform:scale(1.06); }
+.surprise-btn:active { transform:scale(.95); }
+
+/* ── Tab bar (Home / Stats) ── */
+.tab-bar-main {
+  display:flex; gap:2px; background:var(--surface2);
+  border:1px solid var(--line); border-radius:var(--rl);
+  padding:3px; margin-bottom:16px;
+  animation:fade-up .4s .02s ease both;
+}
+.tab-bar-btn {
+  flex:1; padding:7px 10px; border-radius:10px; border:none;
+  background:transparent; font-family:var(--sans); font-size:12px;
+  font-weight:700; color:var(--ink3); cursor:pointer;
+  transition:all .15s; letter-spacing:-.01em;
+  display:flex; align-items:center; justify-content:center; gap:5px;
+}
+.tab-bar-btn.active { background:var(--surface); color:var(--ink); box-shadow:var(--sh); }
+
+/* ── Pages ── */
+.page-home, .page-stats { display:none; }
+.page-home.visible, .page-stats.visible { display:block; }
+
+/* ── Stats page sections ── */
+.stats-section { margin-bottom:20px; }
+
+/* Mood chart */
+.mood-bar-row {
+  display:flex; align-items:center; gap:10px;
+  padding:7px 0; border-bottom:1px solid var(--line);
+}
+.mood-bar-row:last-child { border-bottom:none; }
+.mood-bar-label { width:64px; font-size:12px; font-weight:600; color:var(--ink2); flex-shrink:0; }
+.mood-bar-track { flex:1; height:8px; background:var(--line); border-radius:8px; overflow:hidden; }
+.mood-bar-fill  { height:100%; border-radius:8px; transition:width .6s ease; }
+.mood-bar-count { font-family:var(--mono); font-size:10px; color:var(--ink4); width:28px; text-align:right; flex-shrink:0; }
+
+/* Recent sessions list */
+.session-row {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--line);
+}
+.session-row:last-child { border-bottom:none; }
+.session-icon { font-size:20px; flex-shrink:0; }
+.session-info { flex:1; min-width:0; }
+.session-name { font-size:13px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.session-date { font-family:var(--mono); font-size:10px; color:var(--ink4); margin-top:2px; }
+.session-mood { font-size:18px; flex-shrink:0; }
+
+/* Hobby insight cards */
+.insight-card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--rl); padding:14px; margin-bottom:8px;
+}
+.insight-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.insight-name { font-size:13px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px; }
+.insight-total { font-family:var(--mono); font-size:10px; color:var(--ink4); }
+.insight-mood-row { display:flex; gap:4px; align-items:center; margin-top:6px; }
+.insight-mood-dot { font-size:13px; }
+.insight-mood-avg { font-family:var(--mono); font-size:10px; color:var(--ink3); margin-left:4px; }
+.insight-bar-track { flex:1; height:4px; background:var(--line); border-radius:4px; overflow:hidden; }
+.insight-bar-fill  { height:100%; border-radius:4px; }
+
+/* Empty state */
+.stats-empty { text-align:center; padding:32px 20px; }
+.stats-empty-icon { font-size:32px; margin-bottom:10px; }
+.stats-empty-text { font-size:13px; color:var(--ink4); line-height:1.6; }
+
+/* Best streak */
+.best-streak-row { 
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--rl); padding:12px 14px; margin-bottom:8px;
+}
+.bsr-label { font-family:var(--mono); font-size:10px; color:var(--ink4); text-transform:uppercase; letter-spacing:.06em; }
+.bsr-val { font-family:var(--sans); font-size:22px; font-weight:800; color:var(--ink); letter-spacing:-.04em; }
+
+/* ── Edit sheet ── */
+.edit-ov {
+  display:none; position:fixed; inset:0; z-index:400;
+  background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
+  align-items:flex-end; justify-content:center;
+}
+.edit-ov.open { display:flex; }
+.edit-sh {
+  background:var(--surface); border-radius:var(--rxl) var(--rxl) 0 0;
+  width:100%; max-width:480px;
+  max-height:88dvh; display:flex; flex-direction:column;
+  padding-bottom:calc(16px + var(--bot));
+  animation:slide-up .25s cubic-bezier(.34,1.56,.64,1);
+}
+.edit-handle { width:36px;height:4px;background:var(--line2);border-radius:2px;margin:12px auto 0;flex-shrink:0; }
+.edit-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px 12px; border-bottom:1px solid var(--line); flex-shrink:0;
+}
+.edit-title { font-family:var(--sans);font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.03em; }
+.edit-close {
+  width:28px;height:28px;border-radius:50%;background:var(--surface2);
+  border:none;cursor:pointer;font-size:15px;color:var(--ink3);
+  display:grid;place-items:center;transition:background .12s;
+}
+.edit-close:hover { background:var(--line); }
+.edit-body { padding:16px 18px; overflow-y:auto; flex:1; }
+.edit-footer { padding:0 18px 4px; flex-shrink:0; display:flex; gap:8px; }
+.edit-del-btn {
+  padding:10px 14px; border:1px solid var(--line2);
+  border-radius:var(--r); background:transparent;
+  font-family:var(--sans); font-size:13px; font-weight:700;
+  color:var(--red); cursor:pointer; transition:all .12s;
+}
+.edit-del-btn:hover { background:rgba(192,57,43,.08); border-color:var(--red); }
+.edit-save-btn {
+  flex:1; padding:10px; border:none; border-radius:var(--r);
+  background:var(--accent); color:#fff;
+  font-family:var(--sans); font-size:13px; font-weight:700;
+  cursor:pointer; transition:opacity .12s;
+}
+.edit-save-btn:hover { opacity:.85; }
+
+/* ── Pinned section ── */
+.pinned-section { margin-bottom:16px; animation:fade-up .4s .04s ease both; }
+.pinned-card {
+  background:var(--surface); border:2px solid var(--accent);
+  border-radius:var(--rl); padding:14px 14px 12px;
+  display:flex; align-items:center; gap:12px;
+  position:relative; overflow:hidden;
+}
+.pinned-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0;
+  width:3px; background:var(--accent);
+}
+.pinned-icon { font-size:28px; flex-shrink:0; }
+.pinned-info { flex:1; min-width:0; }
+.pinned-label {
+  font-family:var(--mono); font-size:9px; font-weight:600;
+  color:var(--accent); text-transform:uppercase; letter-spacing:.08em;
+  margin-bottom:3px;
+}
+.pinned-name {
+  font-family:var(--sans); font-size:15px; font-weight:800;
+  color:var(--ink); letter-spacing:-.03em; margin-bottom:2px;
+}
+.pinned-task { font-size:11.5px; color:var(--ink3); line-height:1.4; }
+.pinned-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+.pin-do-btn {
+  padding:7px 12px; border:none; border-radius:var(--r);
+  background:var(--accent); color:#fff;
+  font-family:var(--sans); font-size:12px; font-weight:700;
+  cursor:pointer; transition:opacity .12s; white-space:nowrap;
+}
+.pin-do-btn:hover { opacity:.85; }
+.pin-do-btn:active { transform:scale(.97); }
+.pin-unpin-btn {
+  padding:5px 10px; border:1px solid var(--line2); border-radius:var(--r);
+  background:transparent; font-family:var(--mono); font-size:10px;
+  color:var(--ink4); cursor:pointer; transition:all .12s; text-align:center;
+}
+.pin-unpin-btn:hover { border-color:var(--line2); color:var(--ink3); background:var(--surface2); }
+
+/* ── Hobby card pin button ── */
+.hobby-pin-btn {
+  background:none; border:none; cursor:pointer;
+  font-size:13px; padding:2px 4px; border-radius:4px;
+  color:var(--ink4); transition:all .12s; line-height:1;
+}
+.hobby-pin-btn:hover { color:var(--accent); }
+.hobby-pin-btn.pinned { color:var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <a class="back-link" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Abode
+  </a>
+  <div class="brand">
+    <div class="brand-mark">Hb</div>
+    HobbySpace
+  </div>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
+</div>
+
+<div class="content">
+
+  <!-- Tab bar -->
+  <div class="tab-bar-main">
+    <button class="tab-bar-btn active" id="tab-home-btn" onclick="switchTab('home')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      Home
+    </button>
+    <button class="tab-bar-btn" id="tab-stats-btn" onclick="switchTab('stats')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Stats
+    </button>
+  </div>
+
+  <!-- HOME PAGE -->
+  <div class="page-home visible" id="page-home">
+
+  <!-- Greeting -->
+  <div class="greeting">
+    <div class="greeting-eyebrow" id="greeting-date">Your hobby companion</div>
+    <div class="greeting-text" id="greeting-text">What shall we do?</div>
+    <div class="greeting-sub" id="greeting-sub">Pick your energy and let's go</div>
+  </div>
+
+  <!-- Streaks -->
+  <div class="streak-row">
+    <div>
+      <div class="streak-label">🔥 Streak</div>
+      <div class="streak-val" id="streak-val">0</div>
+      <div class="streak-unit">days</div>
+    </div>
+    <div style="text-align:center">
+      <div class="streak-label">Total</div>
+      <div class="streak-val" id="total-sessions">0</div>
+      <div class="streak-unit">sessions</div>
+    </div>
+    <div style="text-align:right">
+      <div class="streak-label">Today</div>
+      <div class="streak-val" id="today-count">0</div>
+      <div class="streak-unit">done</div>
+    </div>
+  </div>
+
+  <!-- Energy -->
+  <span class="section-label">How's your energy?</span>
+  <div class="energy-row">
+    <button class="energy-btn" data-energy="low" onclick="selectEnergy('low',this)">
+      <span class="energy-icon">🌿</span>
+      <span class="energy-label">Low</span>
+    </button>
+    <button class="energy-btn active" data-energy="medium" onclick="selectEnergy('medium',this)">
+      <span class="energy-icon">⚡</span>
+      <span class="energy-label">Medium</span>
+    </button>
+    <button class="energy-btn" data-energy="high" onclick="selectEnergy('high',this)">
+      <span class="energy-icon">🔥</span>
+      <span class="energy-label">High</span>
+    </button>
+  </div>
+
+  <!-- Decide + Surprise -->
+  <div class="btn-row-main">
+    <button class="decide-btn" onclick="decide()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+      Suggest something
+    </button>
+    <button class="surprise-btn" onclick="surpriseMe()" title="Surprise me — ignore energy level">🎲</button>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="result-card">
+    <div class="result-stripe" id="result-stripe"></div>
+    <div class="result-empty" id="result-empty">
+      <div class="result-empty-icon">🎯</div>
+      <div class="result-empty-text">Tap the button to get a suggestion</div>
+    </div>
+    <div class="result-body" id="result-body" style="display:none">
+      <div class="result-hobby" id="result-hobby"></div>
+      <div class="result-task" id="result-task"></div>
+      <div class="result-meta">
+        <span class="result-chip chip-energy" id="result-energy-chip"></span>
+        <span class="result-chip chip-count" id="result-count-chip"></span>
+      </div>
+      <button id="done-btn" onclick="markDone()" style="
+        width:100%;margin-top:14px;padding:11px;
+        border:none;border-radius:var(--r);
+        background:var(--green);color:#fff;
+        font-family:var(--sans);font-size:13px;font-weight:700;
+        cursor:pointer;letter-spacing:-.01em;
+        display:flex;align-items:center;justify-content:center;gap:6px;
+        transition:opacity .15s;
+      " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        I'm done — log session
+      </button>
+    </div>
+  </div>
+
+  <!-- Hobbies -->
+  <!-- Pinned hobby -->
+  <div class="pinned-section" id="pinned-section" style="display:none"></div>
+
+  <!-- Heatmap -->
+  <div class="heatmap-section">
+    <span class="section-label">Activity — last 91 days</span>
+    <div class="heatmap-grid" id="heatmap-grid"></div>
+    <div class="hm-legend">
+      <span class="hm-leg-label">Less</span>
+      <div class="hm-leg-dots">
+        <div class="hm-leg-dot" style="background:var(--line)"></div>
+        <div class="hm-leg-dot" style="background:rgba(91,63,212,.25)"></div>
+        <div class="hm-leg-dot" style="background:rgba(91,63,212,.55)"></div>
+        <div class="hm-leg-dot" style="background:rgba(91,63,212,.8)"></div>
+        <div class="hm-leg-dot" style="background:rgba(91,63,212,1)"></div>
+      </div>
+      <span class="hm-leg-label">More</span>
+    </div>
+  </div>
+
+  <span class="section-label">Your hobbies</span>
+  <div class="hobbies-grid" id="hobbies-grid"></div>
+
+  <!-- Add hobby -->
+  <div class="add-section">
+    <button class="btn-add-hobby" id="add-toggle-btn" onclick="toggleAddForm()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add a hobby
+    </button>
+    <div class="add-form" id="add-form">
+      <div class="field">
+        <label class="field-label">Hobby name</label>
+        <input class="field-input" id="new-name" placeholder="e.g. Guitar, Painting…" maxlength="30">
+      </div>
+      <div class="field">
+        <label class="field-label">Energy level</label>
+        <div class="energy-select-row">
+          <div class="energy-opt sel" data-e="low" onclick="selEnergyOpt(this)">🌿 Low</div>
+          <div class="energy-opt" data-e="medium" onclick="selEnergyOpt(this)">⚡ Medium</div>
+          <div class="energy-opt" data-e="high" onclick="selEnergyOpt(this)">🔥 High</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Tasks (one per line)</label>
+        <textarea class="field-input" id="new-tasks" placeholder="Practice scales&#10;Learn a new chord&#10;Record a short clip" rows="3" style="resize:vertical;min-height:72px;font-size:13px"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="toggleAddForm()">Cancel</button>
+        <button class="btn-add" onclick="addHobby()">Add hobby</button>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /page-home -->
+
+  <!-- STATS PAGE -->
+  <div class="page-stats" id="page-stats">
+    <div id="stats-content"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Theme ──────────────────────────────────────────────────────────
+const THEME_KEY = 'abode_theme';
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = t === 'dark' ? '#0f0f0e' : '#ffffff';
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+(function() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  applyTheme(saved || sys);
+})();
+
+// ── Data ───────────────────────────────────────────────────────────
+const HOBBY_KEY   = 'hobbyspace_hobbies';
+const HISTORY_KEY = 'hobbyspace_history';
+const TODAY_KEY   = 'hobbyspace_today';
+const LOG_KEY     = 'hobbyspace_log';    // {date: [{id, mood, ts}]}
+const STREAK_KEY  = 'hobbyspace_streak'; // {current, best, lastDate}
+const PIN_KEY     = 'hobbyspace_pin';    // hobby id | null
+
+const ACCENT_COLORS = [
+  '#5b3fd4','#047857','#c0392b','#1a56db','#b87333','#7B2FBE','#0891b2','#be185d'
+];
+const ICONS = {
+  photography:'📷', sketching:'✏️', coding:'💻', reading:'📚',
+  writing:'✍️', guitar:'🎸', piano:'🎹', painting:'🎨',
+  running:'🏃', yoga:'🧘', gaming:'🎮', cooking:'🍳',
+  gardening:'🌱', knitting:'🧶', hiking:'🥾', cycling:'🚴',
+};
+function hobbyIcon(name) {
+  const n = name.toLowerCase();
+  for (const [k,v] of Object.entries(ICONS)) {
+    if (n.includes(k)) return v;
+  }
+  return '🎯';
+}
+
+let currentEnergy = 'medium';
+let newHobbyEnergy = 'low';
+let selectedColor = ACCENT_COLORS[0];
+
+function loadHobbies() {
+  const stored = localStorage.getItem(HOBBY_KEY);
+  if (stored) return JSON.parse(stored);
+  // Defaults
+  return [
+    { id:1, name:'Photography', energy:'medium', tasks:['Edit 5 photos','Shoot shadows','Study composition'], color:'#5b3fd4' },
+    { id:2, name:'Sketching',   energy:'low',    tasks:['Quick sketch','Shade an object'], color:'#047857' },
+    { id:3, name:'Coding',      energy:'high',   tasks:['Work on a feature','Fix a bug','Read docs'], color:'#1a56db' },
+    { id:4, name:'Reading',     energy:'low',    tasks:['Read 10 pages','Read a chapter'], color:'#c0392b' },
+    { id:5, name:'Writing',     energy:'medium', tasks:['Write a paragraph','Journal for 10 min'], color:'#b87333' },
+  ];
+}
+
+function saveHobbies(h) { localStorage.setItem(HOBBY_KEY, JSON.stringify(h)); }
+function loadHistory()  { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}'); }
+function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+function loadToday() {
+  const t = JSON.parse(localStorage.getItem(TODAY_KEY) || '{}');
+  const today = new Date().toDateString();
+  if (t.date !== today) { t.date = today; t.count = 0; localStorage.setItem(TODAY_KEY, JSON.stringify(t)); }
+  return t;
+}
+
+// ── Log helpers ────────────────────────────────────────────────────
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+function loadLog() { return JSON.parse(localStorage.getItem(LOG_KEY) || '{}'); }
+function saveLog(l) { localStorage.setItem(LOG_KEY, JSON.stringify(l)); }
+
+function logSession(hobbyId, mood) {
+  const log = loadLog();
+  const d = todayStr();
+  if (!log[d]) log[d] = [];
+  log[d].push({ id: hobbyId, mood: mood || null, ts: Date.now() });
+  saveLog(log);
+  updateStreak();
+}
+
+function getSessionsOnDate(dateStr) {
+  return (loadLog()[dateStr] || []).length;
+}
+
+function getSessionsLast7(hobbyId) {
+  const log = loadLog();
+  const today = new Date();
+  let count = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const ds = d.toISOString().slice(0,10);
+    count += (log[ds] || []).filter(s => s.id === hobbyId).length;
+  }
+  return count;
+}
+
+// ── Streak ─────────────────────────────────────────────────────────
+function loadStreak() { return JSON.parse(localStorage.getItem(STREAK_KEY) || '{"current":0,"best":0,"lastDate":""}'); }
+function saveStreak(s) { localStorage.setItem(STREAK_KEY, JSON.stringify(s)); }
+
+function updateStreak() {
+  const streak = loadStreak();
+  const today  = todayStr();
+  if (streak.lastDate === today) return; // already counted today
+
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yStr = yesterday.toISOString().slice(0,10);
+
+  if (streak.lastDate === yStr) {
+    streak.current += 1; // consecutive
+  } else if (streak.lastDate !== today) {
+    streak.current = 1;  // broke streak or first ever
+  }
+  streak.best = Math.max(streak.best, streak.current);
+  streak.lastDate = today;
+  saveStreak(streak);
+}
+
+// ── Greeting ───────────────────────────────────────────────────────
+function updateGreeting() {
+  const h = new Date().getHours();
+  const now = new Date();
+  let greeting, sub;
+  if      (h < 5)  { greeting = 'Good night 🌙';     sub = 'A late-night hobby session?'; }
+  else if (h < 12) { greeting = 'Good morning ☀️';   sub = 'A great time to create'; }
+  else if (h < 17) { greeting = 'Good afternoon 🌤️'; sub = 'Take a creative break'; }
+  else if (h < 21) { greeting = 'Good evening 🌆';   sub = 'Wind down with something you love'; }
+  else             { greeting = 'Good night 🌙';      sub = 'One last creative session?'; }
+  document.getElementById('greeting-text').textContent = greeting;
+  document.getElementById('greeting-sub').textContent  = sub;
+  document.getElementById('greeting-date').textContent =
+    now.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' });
+}
+
+// ── Energy select ──────────────────────────────────────────────────
+function selectEnergy(e, btn) {
+  currentEnergy = e;
+  document.querySelectorAll('.energy-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selEnergyOpt(el) {
+  newHobbyEnergy = el.dataset.e;
+  document.querySelectorAll('.energy-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ── Decide ─────────────────────────────────────────────────────────
+// Smart pick — rotates within energy level using recent (7-day) weight
+function smartPick(pool) {
+  const history = loadHistory();
+  const today   = todayStr();
+  const log     = loadLog();
+  const todayIds = (log[today] || []).map(s => s.id);
+
+  // Score each hobby: lower = more likely to be picked
+  // Formula: (total sessions * 0.3) + (last-7-days sessions * 2) + (done today * 5)
+  const scored = pool.map(h => {
+    const total   = history[h.id]?.count || 0;
+    const recent  = getSessionsLast7(h.id);
+    const doneToday = todayIds.filter(id => id === h.id).length;
+    return { h, score: total * 0.3 + recent * 2 + doneToday * 5 };
+  });
+  scored.sort((a, b) => a.score - b.score);
+
+  // Pick from the bottom third with some randomness so it's not always the same
+  const topCandidates = scored.slice(0, Math.max(1, Math.ceil(scored.length / 3)));
+  return topCandidates[Math.floor(Math.random() * topCandidates.length)].h;
+}
+
+let _lastChoiceId = null; // track for mood prompt
+
+function decide(forceEnergy) {
+  const hobbies = loadHobbies();
+  const energy  = forceEnergy || currentEnergy;
+  let filtered = hobbies.filter(h => h.energy === energy);
+  if (!filtered.length) filtered = hobbies;
+
+  const choice = smartPick(filtered);
+  showResult(choice, energy);
+}
+
+function surpriseMe() {
+  const hobbies = loadHobbies();
+  if (!hobbies.length) { toast('Add some hobbies first'); return; }
+  const choice = smartPick(hobbies); // ignores energy level entirely
+  showResult(choice, 'surprise');
+}
+
+function showResult(choice, energyLabel) {
+  const history = loadHistory();
+  const task    = choice.tasks[Math.floor(Math.random() * choice.tasks.length)];
+
+  // Update history
+  if (!history[choice.id]) history[choice.id] = { count:0 };
+  history[choice.id].count += 1;
+  saveHistory(history);
+
+  // Update today count
+  const today = loadToday();
+  today.count = (today.count || 0) + 1;
+  localStorage.setItem(TODAY_KEY, JSON.stringify(today));
+
+  // Log the session (mood added later via done button)
+  _lastChoiceId  = choice.id;
+  _lastHobbyName = choice.name;
+  logSession(choice.id, null);
+
+  // Reset done button
+  const doneBtn = document.getElementById('done-btn');
+  if (doneBtn) {
+    doneBtn.textContent = '';
+    doneBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> I\'m done — log session';
+    doneBtn.style.background = 'var(--green)';
+    doneBtn.style.color = '#fff';
+    doneBtn.style.border = 'none';
+    doneBtn.disabled = false;
+  }
+
+  // Show result card
+  document.getElementById('result-empty').style.display = 'none';
+  document.getElementById('result-body').style.display  = 'block';
+  document.getElementById('result-stripe').style.background = choice.color || 'var(--accent)';
+  document.getElementById('result-hobby').textContent = hobbyIcon(choice.name) + '  ' + choice.name;
+  document.getElementById('result-task').textContent  = task;
+
+  const energyChipText =
+    energyLabel === 'surprise' ? '🎲 Surprise pick' :
+    energyLabel === 'low'      ? '🌿 Low energy' :
+    energyLabel === 'medium'   ? '⚡ Medium energy' : '🔥 High energy';
+  document.getElementById('result-energy-chip').textContent = energyChipText;
+  document.getElementById('result-count-chip').textContent =
+    history[choice.id].count + ' session' + (history[choice.id].count !== 1 ? 's' : '');
+
+  // Pop animation
+  const card = document.getElementById('result-card');
+  card.classList.remove('popped');
+  void card.offsetWidth;
+  card.classList.add('popped');
+
+  renderStats();
+  renderHobbies();
+  renderHeatmap();
+}
+
+// ── Render hobbies grid ────────────────────────────────────────────
+function renderHobbies() {
+  const hobbies = loadHobbies();
+  const history = loadHistory();
+  const pinId   = loadPin();
+  const maxCount = Math.max(1, ...hobbies.map(h => history[h.id]?.count || 0));
+  const grid = document.getElementById('hobbies-grid');
+  grid.innerHTML = '';
+
+  hobbies.forEach(h => {
+    const count = history[h.id]?.count || 0;
+    const pct   = Math.round((count / maxCount) * 100);
+    const dotCls = h.energy === 'low' ? 'dot-low' : h.energy === 'medium' ? 'dot-medium' : 'dot-high';
+    const card = document.createElement('div');
+    card.className = 'hobby-card';
+    const isPinned = pinId === h.id;
+    card.innerHTML = `
+      <div class="hobby-card-top">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="hobby-energy-dot ${dotCls}"></div>
+          <div class="hobby-card-name">${h.name}</div>
+        </div>
+        <div class="hobby-card-icon" style="cursor:pointer" onclick="openEdit(${h.id})" title="Edit">${hobbyIcon(h.name)}</div>
+      </div>
+      <div class="hobby-bar-track">
+        <div class="hobby-bar-fill" style="width:${pct}%;background:${h.color || 'var(--accent)'}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <div class="hobby-card-count">${count} session${count !== 1 ? 's' : ''}</div>
+        <div style="display:flex;gap:2px">
+          <button class="hobby-pin-btn ${isPinned ? 'pinned' : ''}" onclick="pinHobby(${h.id})" title="${isPinned ? 'Unpin' : 'Pin'}">📌</button>
+          <button class="hobby-pin-btn" onclick="openEdit(${h.id})" title="Edit" style="font-size:12px">✎</button>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── Stats ──────────────────────────────────────────────────────────
+function renderStats() {
+  const hobbies = loadHobbies();
+  const history = loadHistory();
+  const today   = loadToday();
+  const streak  = loadStreak();
+
+  const total = Object.values(history).reduce((s, h) => s + (h.count || 0), 0);
+  document.getElementById('total-sessions').textContent = total;
+  document.getElementById('today-count').textContent    = today.count || 0;
+  document.getElementById('streak-val').textContent     = streak.current || 0;
+}
+
+// ── Add hobby ──────────────────────────────────────────────────────
+function toggleAddForm() {
+  const form = document.getElementById('add-form');
+  const btn  = document.getElementById('add-toggle-btn');
+  const open = form.classList.toggle('open');
+  btn.style.display = open ? 'none' : 'flex';
+  if (open) document.getElementById('new-name').focus();
+}
+
+function addHobby() {
+  const name = document.getElementById('new-name').value.trim();
+  if (!name) { toast('Enter a hobby name'); return; }
+  const tasksRaw = document.getElementById('new-tasks').value.trim();
+  const tasks = tasksRaw
+    ? tasksRaw.split('\n').map(t => t.trim()).filter(Boolean)
+    : ['Work on ' + name, 'Practice ' + name, 'Explore ' + name];
+
+  const hobbies = loadHobbies();
+  const newId   = Date.now();
+  const color   = ACCENT_COLORS[hobbies.length % ACCENT_COLORS.length];
+  hobbies.push({ id: newId, name, energy: newHobbyEnergy, tasks, color });
+  saveHobbies(hobbies);
+
+  document.getElementById('new-name').value  = '';
+  document.getElementById('new-tasks').value = '';
+  toggleAddForm();
+  renderHobbies();
+  renderStats();
+  toast('✓ ' + name + ' added');
+}
+
+// ── Mood ───────────────────────────────────────────────────────────
+let _selectedMood = null;
+let _lastHobbyName = '';
+
+function markDone() {
+  // Change button to show it's been tapped
+  const btn = document.getElementById('done-btn');
+  if (btn) {
+    btn.textContent = '✓ Session logged!';
+    btn.style.background = 'var(--surface2)';
+    btn.style.color = 'var(--ink3)';
+    btn.style.border = '1px solid var(--line)';
+    btn.disabled = true;
+  }
+  openMood(_lastHobbyName);
+}
+
+function openMood(hobbyName) {
+  _selectedMood = null;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('sel'));
+  document.getElementById('mood-title').textContent = 'How did that feel?';
+  document.getElementById('mood-sub').textContent   = hobbyName + ' — rate this session';
+  document.getElementById('mood-ov').classList.add('open');
+}
+
+function selectMood(val, el) {
+  _selectedMood = val;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  // save mood back to last log entry and close
+  setTimeout(() => {
+    saveMoodToLastSession(val);
+    closeMood();
+    const emojis = ['','😩','😐','🙂','😊','🤩'];
+    toast(emojis[val] + '  Mood saved');
+  }, 300);
+}
+
+function saveMoodToLastSession(mood) {
+  if (!_lastChoiceId) return;
+  const log = loadLog();
+  const d = todayStr();
+  const entries = log[d] || [];
+  // update the most recent entry for this hobby
+  for (let i = entries.length - 1; i >= 0; i--) {
+    if (entries[i].id === _lastChoiceId) {
+      entries[i].mood = mood;
+      break;
+    }
+  }
+  log[d] = entries;
+  saveLog(log);
+}
+
+function closeMood() {
+  document.getElementById('mood-ov').classList.remove('open');
+}
+
+// close on backdrop tap — attached in init after DOM ready
+
+// ── Heatmap ─────────────────────────────────────────────────────────
+function renderHeatmap() {
+  const grid = document.getElementById('heatmap-grid');
+  if (!grid) return;
+  const log   = loadLog();
+  const today = new Date();
+  const todayStr_ = today.toISOString().slice(0,10);
+
+  // 91 days = 13 weeks exactly
+  const DAYS = 91;
+  grid.innerHTML = '';
+
+  for (let i = DAYS - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const ds = d.toISOString().slice(0,10);
+    const count = (log[ds] || []).length;
+
+    const lvl = count === 0 ? 0 : count === 1 ? 1 : count <= 2 ? 2 : count <= 4 ? 3 : 4;
+    const cell = document.createElement('div');
+    cell.className = 'hm-cell' + (lvl ? ' lvl-' + lvl : '') + (ds === todayStr_ ? ' hm-today' : '');
+    cell.title = ds + (count ? ': ' + count + ' session' + (count > 1 ? 's' : '') : ': no activity');
+    grid.appendChild(cell);
+  }
+}
+
+
+// ── Pin helpers ────────────────────────────────────────────────────
+function loadPin()    { const v = localStorage.getItem(PIN_KEY); return v ? JSON.parse(v) : null; }
+function savePin(id)  { localStorage.setItem(PIN_KEY, JSON.stringify(id)); }
+function clearPin()   { localStorage.removeItem(PIN_KEY); }
+
+function pinHobby(id) {
+  const current = loadPin();
+  if (current === id) { clearPin(); renderPinned(); renderHobbies(); toast('Unpinned'); return; }
+  savePin(id);
+  const hobbies = loadHobbies();
+  const h = hobbies.find(x => x.id === id);
+  renderPinned();
+  renderHobbies();
+  toast('📌 ' + (h?.name || 'Hobby') + ' pinned');
+}
+
+function renderPinned() {
+  const pinId   = loadPin();
+  const section = document.getElementById('pinned-section');
+  if (!section) return;
+
+  if (!pinId) { section.style.display = 'none'; return; }
+
+  const hobbies = loadHobbies();
+  const h = hobbies.find(x => x.id === pinId);
+  if (!h) { clearPin(); section.style.display = 'none'; return; }
+
+  const task = h.tasks[Math.floor(Math.random() * h.tasks.length)];
+  section.style.display = 'block';
+  section.innerHTML = `
+    <span class="section-label">📌 Pinned</span>
+    <div class="pinned-card">
+      <div class="pinned-icon">${hobbyIcon(h.name)}</div>
+      <div class="pinned-info">
+        <div class="pinned-label">Ready when you are</div>
+        <div class="pinned-name">${h.name}</div>
+        <div class="pinned-task">${task}</div>
+      </div>
+      <div class="pinned-actions">
+        <button class="pin-do-btn" onclick="doPinned(${h.id})">I'll do this</button>
+        <button class="pin-unpin-btn" onclick="pinHobby(${h.id})">Unpin</button>
+      </div>
+    </div>`;
+}
+
+function doPinned(id) {
+  const hobbies = loadHobbies();
+  const h = hobbies.find(x => x.id === id);
+  if (!h) return;
+  showResult(h, h.energy);
+}
+
+// ── Edit helpers ────────────────────────────────────────────────────
+let _editId = null;
+let _editEnergy = 'low';
+
+function openEdit(id) {
+  const hobbies = loadHobbies();
+  const h = hobbies.find(x => x.id === id);
+  if (!h) return;
+  _editId     = id;
+  _editEnergy = h.energy;
+
+  document.getElementById('edit-name').value  = h.name;
+  document.getElementById('edit-tasks').value = h.tasks.join('\n');
+
+  document.querySelectorAll('#edit-ov .energy-opt').forEach(o => {
+    o.classList.toggle('sel', o.dataset.e === h.energy);
+  });
+
+  document.getElementById('edit-ov').classList.add('open');
+  setTimeout(() => document.getElementById('edit-name').focus(), 300);
+}
+
+function closeEdit() {
+  document.getElementById('edit-ov').classList.remove('open');
+  _editId = null;
+}
+
+function selEditEnergy(el) {
+  _editEnergy = el.dataset.e;
+  document.querySelectorAll('#edit-ov .energy-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function saveEdit() {
+  if (!_editId) return;
+  const name     = document.getElementById('edit-name').value.trim();
+  const tasksRaw = document.getElementById('edit-tasks').value.trim();
+  if (!name) { toast('Enter a hobby name'); return; }
+  const tasks = tasksRaw
+    ? tasksRaw.split('\n').map(t => t.trim()).filter(Boolean)
+    : ['Work on ' + name];
+
+  const hobbies = loadHobbies();
+  const idx = hobbies.findIndex(x => x.id === _editId);
+  if (idx === -1) return;
+  hobbies[idx] = { ...hobbies[idx], name, energy: _editEnergy, tasks };
+  saveHobbies(hobbies);
+  closeEdit();
+  renderHobbies();
+  renderPinned();
+  toast('✓ ' + name + ' updated');
+}
+
+function deleteFromEdit() {
+  if (!_editId) return;
+  const hobbies = loadHobbies();
+  const h = hobbies.find(x => x.id === _editId);
+  const name = h?.name || 'Hobby';
+  closeEdit();
+  deleteHobby(_editId);
+  toast('Removed ' + name);
+}
+
+function deleteHobby(id) {
+  let hobbies = loadHobbies();
+  const h = hobbies.find(x => x.id === id);
+  if (!h) return;
+  hobbies = hobbies.filter(x => x.id !== id);
+  saveHobbies(hobbies);
+  renderHobbies();
+  renderStats();
+  toast('Removed ' + h.name);
+}
+
+// ── Toast ──────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(80px)'; }, 2600);
+}
+
+
+// ── Tab switching ──────────────────────────────────────────────────
+function switchTab(tab) {
+  const isStats = tab === 'stats';
+  document.getElementById('page-home').classList.toggle('visible', !isStats);
+  document.getElementById('page-stats').classList.toggle('visible', isStats);
+  document.getElementById('tab-home-btn').classList.toggle('active', !isStats);
+  document.getElementById('tab-stats-btn').classList.toggle('active', isStats);
+  if (isStats) renderStatsPage();
+}
+
+// ── Stats page renderer ────────────────────────────────────────────
+function renderStatsPage() {
+  const hobbies = loadHobbies();
+  const history = loadHistory();
+  const log     = loadLog();
+  const streak  = loadStreak();
+  
+
+  const MOOD_EMOJIS = ['','😩','😐','🙂','😊','🤩'];
+  const MOOD_LABELS = ['','Drained','Meh','Good','Great','Amazing'];
+  const MOOD_COLORS = ['','#e05a4e','#b45309','#047857','#1a56db','#5b3fd4'];
+
+  // Flatten all sessions from LOG (detailed, with mood + date)
+  const allSessions = [];
+  Object.entries(log).forEach(([date, sessions]) => {
+    sessions.forEach(s => {
+      const hobby = hobbies.find(h => h.id === s.id);
+      if (hobby) allSessions.push({ date, hobby, mood: s.mood, ts: s.ts });
+    });
+  });
+  allSessions.sort((a, b) => (b.ts||0) - (a.ts||0));
+
+  // Total from history counts (always available, even before LOG was introduced)
+  const totalFromHistory = Object.values(history).reduce((s, h) => s + (h.count || 0), 0);
+  const totalSessions    = allSessions.length;
+  const moodSessions     = allSessions.filter(s => s.mood);
+  const hasAnyData       = totalFromHistory > 0 || totalSessions > 0;
+
+  let html = '';
+
+  // ── No data at all ──
+  if (!hasAnyData) {
+    html = `<div class="stats-empty">
+      <div class="stats-empty-icon">📊</div>
+      <div class="stats-empty-text">No sessions logged yet.<br>
+        Get a suggestion, do the activity,<br>then tap <strong>I'm done</strong> to start tracking.</div>
+    </div>`;
+    document.getElementById('stats-content').innerHTML = html;
+    return;
+  }
+
+  // ── Streak cards ──
+  html += `<div class="stats-section">
+    <span class="section-label">Streak</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="best-streak-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+        <div class="bsr-label">🔥 Current</div>
+        <div class="bsr-val">${streak.current || 0} <span style="font-size:13px;font-weight:500;color:var(--ink4)">days</span></div>
+      </div>
+      <div class="best-streak-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+        <div class="bsr-label">🏆 Best ever</div>
+        <div class="bsr-val">${streak.best || 0} <span style="font-size:13px;font-weight:500;color:var(--ink4)">days</span></div>
+      </div>
+    </div>
+  </div>`;
+
+  // ── Mood breakdown ──
+  if (moodSessions.length) {
+    const moodCounts = [0,0,0,0,0,0];
+    moodSessions.forEach(s => { if (s.mood >= 1 && s.mood <= 5) moodCounts[s.mood]++; });
+    const maxMood = Math.max(1, ...moodCounts);
+    const avgMood = (moodSessions.reduce((s,x) => s + x.mood, 0) / moodSessions.length).toFixed(1);
+
+    html += `<div class="stats-section">
+      <span class="section-label">Mood after sessions · avg ${avgMood} ${MOOD_EMOJIS[Math.round(parseFloat(avgMood))]}</span>
+      <div class="surface-card" style="background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);padding:14px">`;
+
+    for (let m = 5; m >= 1; m--) {
+      const pct = Math.round((moodCounts[m] / maxMood) * 100);
+      html += `<div class="mood-bar-row">
+        <div class="mood-bar-label">${MOOD_EMOJIS[m]} ${MOOD_LABELS[m]}</div>
+        <div class="mood-bar-track">
+          <div class="mood-bar-fill" style="width:${pct}%;background:${MOOD_COLORS[m]}"></div>
+        </div>
+        <div class="mood-bar-count">${moodCounts[m]}</div>
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  // ── Per-hobby insights ──
+  html += `<div class="stats-section">
+    <span class="section-label">Per hobby</span>`;
+
+  // Build hobby stats — use log sessions for mood, history counts for totals
+  const hobbyStats = hobbies.map(h => {
+    const logSessions = allSessions.filter(s => s.hobby.id === h.id);
+    const moods       = logSessions.filter(s => s.mood).map(s => s.mood);
+    const avgMood     = moods.length ? (moods.reduce((s,m)=>s+m,0)/moods.length) : null;
+    const recent      = getSessionsLast7(h.id);
+    // Use history count as fallback when log is empty
+    const count       = logSessions.length || (history[h.id]?.count || 0);
+    return { h, logSessions, count, avgMood, recent };
+  }).filter(x => x.count > 0)
+    .sort((a,b) => b.count - a.count);
+
+  if (!hobbyStats.length) {
+    html += `<div style="font-size:13px;color:var(--ink4);padding:12px 0">No sessions yet</div>`;
+  } else {
+    const maxCount = Math.max(1, ...hobbyStats.map(x => x.count));
+    hobbyStats.forEach(({ h, logSessions, count, avgMood, recent }) => {
+      const pct       = Math.round((count / maxCount) * 100);
+      const moodEmoji = avgMood ? MOOD_EMOJIS[Math.round(avgMood)] : '';
+      const moodText  = avgMood ? `avg mood ${avgMood.toFixed(1)}` : 'No mood data yet';
+      html += `<div class="insight-card">
+        <div class="insight-top">
+          <div class="insight-name">
+            <span style="font-size:18px">${hobbyIcon(h.name)}</span>${h.name}
+          </div>
+          <div class="insight-total">${count} session${count!==1?'s':''}</div>
+        </div>
+        <div class="insight-bar-track" style="margin-bottom:8px">
+          <div class="insight-bar-fill" style="width:${pct}%;background:${h.color||'var(--accent)'}"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:11px;color:var(--ink4);font-family:var(--mono)">${recent} this week</div>
+          <div style="font-size:12px;color:var(--ink3)">${moodEmoji} ${moodText}</div>
+        </div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  // ── Recent sessions (last 20) ──
+  html += `<div class="stats-section">
+    <span class="section-label">Recent sessions</span>`;
+
+  if (!allSessions.length) {
+    html += `<div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);padding:16px 14px">
+      <div style="font-size:13px;color:var(--ink4);line-height:1.6">
+        Detailed session history starts from when you tap <strong>I'm done</strong> after a session.<br>
+        <span style="font-size:11px;color:var(--ink4)">Your past suggestion counts are shown in Per hobby above.</span>
+      </div>
+    </div>`;
+  } else {
+    html += `<div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);padding:0 14px">`;
+    allSessions.slice(0, 20).forEach(s => {
+      const d = new Date(s.date + 'T12:00:00');
+      const dateLabel = d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+      html += `<div class="session-row">
+        <div class="session-icon">${hobbyIcon(s.hobby.name)}</div>
+        <div class="session-info">
+          <div class="session-name">${s.hobby.name}</div>
+          <div class="session-date">${dateLabel}</div>
+        </div>
+        <div class="session-mood">${s.mood ? MOOD_EMOJIS[s.mood] : '—'}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  document.getElementById('stats-content').innerHTML = html;
+}
+
+// ── Init ───────────────────────────────────────────────────────────
+updateGreeting();
+renderPinned();
+renderHobbies();
+renderStats();
+renderHeatmap();
+
+// Attach backdrop listeners now that DOM exists
+const moodOv = document.getElementById('mood-ov');
+if (moodOv) moodOv.addEventListener('click', function(e) {
+  if (e.target === this) closeMood();
+});
+const editOv = document.getElementById('edit-ov');
+if (editOv) editOv.addEventListener('click', function(e) {
+  if (e.target === this) closeEdit();
+});
+
+// Service worker registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.update();
+  }).catch(() => {});
+}
+</script>
+
+<!-- Mood overlay -->
+<div class="mood-ov" id="mood-ov">
+  <div class="mood-sh">
+    <div class="mood-handle"></div>
+    <div class="mood-title" id="mood-title">How did that feel?</div>
+    <div class="mood-sub" id="mood-sub">Rate your mood after this session</div>
+    <div class="mood-row">
+      <div class="mood-btn" data-mood="1" onclick="selectMood(1,this)">
+        <span class="mood-emoji">😩</span>
+        <span class="mood-label">Drained</span>
+      </div>
+      <div class="mood-btn" data-mood="2" onclick="selectMood(2,this)">
+        <span class="mood-emoji">😐</span>
+        <span class="mood-label">Meh</span>
+      </div>
+      <div class="mood-btn" data-mood="3" onclick="selectMood(3,this)">
+        <span class="mood-emoji">🙂</span>
+        <span class="mood-label">Good</span>
+      </div>
+      <div class="mood-btn" data-mood="4" onclick="selectMood(4,this)">
+        <span class="mood-emoji">😊</span>
+        <span class="mood-label">Great</span>
+      </div>
+      <div class="mood-btn" data-mood="5" onclick="selectMood(5,this)">
+        <span class="mood-emoji">🤩</span>
+        <span class="mood-label">Amazing</span>
+      </div>
+    </div>
+    <button class="mood-skip" onclick="closeMood()">Skip for now</button>
+  </div>
+</div>
+
+<!-- Edit hobby sheet -->
+<div class="edit-ov" id="edit-ov">
+  <div class="edit-sh">
+    <div class="edit-handle"></div>
+    <div class="edit-head">
+      <div class="edit-title">Edit Hobby</div>
+      <button class="edit-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="edit-body">
+      <div class="field">
+        <label class="field-label">Hobby name</label>
+        <input class="field-input" id="edit-name" maxlength="30">
+      </div>
+      <div class="field">
+        <label class="field-label">Energy level</label>
+        <div class="energy-select-row">
+          <div class="energy-opt" data-e="low"    onclick="selEditEnergy(this)">🌿 Low</div>
+          <div class="energy-opt" data-e="medium" onclick="selEditEnergy(this)">⚡ Medium</div>
+          <div class="energy-opt" data-e="high"   onclick="selEditEnergy(this)">🔥 High</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Tasks (one per line)</label>
+        <textarea class="field-input" id="edit-tasks" rows="4"
+          style="resize:vertical;min-height:88px;font-size:13px"></textarea>
+      </div>
+    </div>
+    <div class="edit-footer">
+      <button class="edit-del-btn" onclick="deleteFromEdit()">Delete</button>
+      <button class="edit-save-btn" onclick="saveEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
