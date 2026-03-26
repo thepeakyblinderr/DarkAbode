@@ -1457,7 +1457,7 @@ async function cA(){
   const n=selF.n;
   const displayQty=qty;
   const displayUnit=unit==='srv'?'serving':unit;
-  const micros={ca:n.ca*fac,fe:n.fe*fac,pot:n.pot*fac,na:n.na*fac,vc:n.vc*fac,vd:(n.vd||0)*fac,b12:(n.b12||0)*fac,fib:n.fib*fac,sug:n.sug*fac,mg:n.mg*fac,sf:n.sf*fac};
+  const micros={ca:(n.ca||0)*fac,fe:(n.fe||0)*fac,pot:(n.pot||0)*fac,na:(n.na||0)*fac,vc:(n.vc||0)*fac,vd:(n.vd||0)*fac,b12:(n.b12||0)*fac,fib:(n.fib||0)*fac,sug:(n.sug||0)*fac,mg:(n.mg||0)*fac,sf:(n.sf||0)*fac};
   await lAd({date:TODAY,meal:curMeal,name:selF.name,qty:displayQty,unit:displayUnit,kcal:n.kcal*fac,protein:n.protein*fac,carbs:n.carbs*fac,fat:n.fat*fac,micros,ts:Date.now()});
   document.getElementById('ov').classList.remove('open');selF=null;
   // Clear search so the meal list below is visible
@@ -1465,8 +1465,10 @@ async function cA(){
   if (sb) sb.value = '';
   const res = document.getElementById('res');
   if (res) res.innerHTML = '';
-  await rH();
   toast('Added to ' + curMeal);
+  // Small delay so IndexedDB write commits before re-read (important on mobile)
+  await new Promise(r => setTimeout(r, 80));
+  await rH();
 }
 
 /* WATER */
@@ -2707,8 +2709,9 @@ async function logManual() {
     if (sb2) sb2.value = '';
     const res2 = document.getElementById('res');
     if (res2) res2.innerHTML = '';
-    await rH();
     toast('✓ Added ' + displayName);
+    await new Promise(r => setTimeout(r, 80));
+    await rH();
   }
 }
 
