@@ -499,6 +499,9 @@ html[data-theme="dark"] .toast { background: var(--card); color: var(--text); bo
     <span class="sic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
   </div>
   <div class="res" id="res"></div>
+
+  <!-- Today's logged items for current meal -->
+  <div id="foodMealList" style="padding:0 0 80px"></div>
 </div>
 
 <!-- WATER -->
@@ -953,7 +956,7 @@ async function init(){
   const ew=await kG('exWeek');if(ew)exWeek=ew;
   const sd=await kG('sleepData');if(sd)sleepData=sd;
   const md=await kG('moodData');if(md)moodData=md;
-  rGl();rStUI();await rH();renderTplBar();
+  rGl();rStUI();await rH();renderTplBar();rFoodList();
 }
 
 /* NAV */
@@ -1017,6 +1020,7 @@ async function rH(){
     document.getElementById('hMoodLbl').textContent=td_md.wbScore?td_md.wbScore+'/100':MOOD_LABELS[mIdx];
   }else{document.getElementById('hMoodIcon').textContent='😐';document.getElementById('hMoodLbl').textContent='Tap to log';}
   await rHomeInsights(k,p,f);
+  rFoodList();
 }
 
 let _logAction = null; // current log entry being actioned
@@ -1090,6 +1094,45 @@ async function doEditLog() {
 }
 
 async function dL(id){await lDl(id);await rH();toast('Removed');}
+
+async function rFoodList() {
+  const el = document.getElementById('foodMealList');
+  if (!el) return;
+  const logs = await lD(TODAY);
+  const meal = logs.filter(l => l.meal === curMeal);
+  el.innerHTML = '';
+  if (!meal.length) {
+    el.innerHTML = '<div class="fml-empty">Nothing logged for this meal yet</div>';
+    return;
+  }
+  const totalKcal = Math.round(meal.reduce((s, l) => s + (l.kcal || 0), 0));
+  const MEAL_LABELS = {breakfast:'Breakfast',lunch:'Lunch',snacks:'Snacks',dinner:'Dinner'};
+  // Header
+  const head = document.createElement('div');
+  head.className = 'fml-head';
+  head.innerHTML = `<span class="fml-title">${MEAL_LABELS[curMeal] || curMeal}</span><span class="fml-kcal">${totalKcal} kcal</span>`;
+  el.appendChild(head);
+  // Card
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.cssText = 'margin:0 0 8px;padding:0;overflow:hidden';
+  meal.forEach(log => {
+    const item = document.createElement('div');
+    item.className = 'fml-item';
+    item.onclick = () => openLogAction(log);
+    item.innerHTML = `
+      <div style="flex:1;min-width:0">
+        <div class="fml-name">${log.name}</div>
+        <div class="fml-qty">${log.qty || ''}${log.unit || ''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="fml-k">${Math.round(log.kcal || 0)} kcal</div>
+        <div class="fml-dot">···</div>
+      </div>`;
+    card.appendChild(item);
+  });
+  el.appendChild(card);
+}
 
 async function rHomeInsights(kcalToday,protToday,fatToday){
   const el=document.getElementById('homeIns');el.innerHTML='';
@@ -1177,7 +1220,7 @@ async function rHomeInsights(kcalToday,protToday,fatToday){
 function gF(meal,e){e&&e.stopPropagation();sM(meal,document.querySelector(`.tab[onclick*="'${meal}'"]`));gn('food',1);}
 
 /* FOOD */
-function sM(m,b){curMeal=m;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');}
+function sM(m,b){curMeal=m;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');rFoodList();}
 function dS(){clearTimeout(sT);sT=setTimeout(doS,480);}
 async function doS(){
   const q=document.getElementById('sb').value.trim();
