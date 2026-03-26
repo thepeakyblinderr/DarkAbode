@@ -1,5 +1,5 @@
 // Abode Service Worker v4.0
-const CACHE = 'abode-v5';
+const CACHE = 'abode-v6';
 
 const ASSETS = [
   './',
