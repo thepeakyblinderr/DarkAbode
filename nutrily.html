@@ -1450,25 +1450,39 @@ function uP(){
 
 async function cA(){
   if(!selF)return;
-  const qty=parseFloat(document.getElementById('qty').value)||0;
-  const unit=document.getElementById('unt').value;
-  const grams=toGrams(qty,unit,selF);
-  const fac=grams/100;
-  const n=selF.n;
-  const displayQty=qty;
-  const displayUnit=unit==='srv'?'serving':unit;
-  const micros={ca:(n.ca||0)*fac,fe:(n.fe||0)*fac,pot:(n.pot||0)*fac,na:(n.na||0)*fac,vc:(n.vc||0)*fac,vd:(n.vd||0)*fac,b12:(n.b12||0)*fac,fib:(n.fib||0)*fac,sug:(n.sug||0)*fac,mg:(n.mg||0)*fac,sf:(n.sf||0)*fac};
-  await lAd({date:TODAY,meal:curMeal,name:selF.name,qty:displayQty,unit:displayUnit,kcal:n.kcal*fac,protein:n.protein*fac,carbs:n.carbs*fac,fat:n.fat*fac,micros,ts:Date.now()});
-  document.getElementById('ov').classList.remove('open');selF=null;
-  // Clear search so the meal list below is visible
-  const sb = document.getElementById('sb');
-  if (sb) sb.value = '';
-  const res = document.getElementById('res');
-  if (res) res.innerHTML = '';
-  toast('Added to ' + curMeal);
-  // Small delay so IndexedDB write commits before re-read (important on mobile)
-  await new Promise(r => setTimeout(r, 80));
-  await rH();
+  try {
+    const qty=parseFloat(document.getElementById('qty').value)||0;
+    const unit=document.getElementById('unt').value;
+    const grams=toGrams(qty,unit,selF);
+    const fac=grams/100;
+    const n=selF.n;
+    const displayQty=qty;
+    const displayUnit=unit==='srv'?'serving':unit;
+    const entry = {
+      date: TODAY,
+      meal: curMeal,
+      name: selF.name,
+      qty: displayQty,
+      unit: displayUnit,
+      kcal: (n.kcal||0)*fac,
+      protein: (n.protein||0)*fac,
+      carbs: (n.carbs||0)*fac,
+      fat: (n.fat||0)*fac,
+      fib: (n.fib||0)*fac,
+      sug: (n.sug||0)*fac,
+      ts: Date.now()
+    };
+    await lAd(entry);
+    document.getElementById('ov').classList.remove('open'); selF=null;
+    const sb=document.getElementById('sb'); if(sb)sb.value='';
+    const res=document.getElementById('res'); if(res)res.innerHTML='';
+    toast('Added to '+curMeal);
+    await new Promise(r=>setTimeout(r,120));
+    await rH();
+  } catch(err) {
+    toast('Error: '+err.message);
+    console.error('cA error:', err);
+  }
 }
 
 /* WATER */
