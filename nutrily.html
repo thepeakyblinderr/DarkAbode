@@ -1460,7 +1460,13 @@ async function cA(){
   const micros={ca:n.ca*fac,fe:n.fe*fac,pot:n.pot*fac,na:n.na*fac,vc:n.vc*fac,vd:(n.vd||0)*fac,b12:(n.b12||0)*fac,fib:n.fib*fac,sug:n.sug*fac,mg:n.mg*fac,sf:n.sf*fac};
   await lAd({date:TODAY,meal:curMeal,name:selF.name,qty:displayQty,unit:displayUnit,kcal:n.kcal*fac,protein:n.protein*fac,carbs:n.carbs*fac,fat:n.fat*fac,micros,ts:Date.now()});
   document.getElementById('ov').classList.remove('open');selF=null;
-  await rH();toast('Added to '+curMeal);
+  // Clear search so the meal list below is visible
+  const sb = document.getElementById('sb');
+  if (sb) sb.value = '';
+  const res = document.getElementById('res');
+  if (res) res.innerHTML = '';
+  await rH();
+  toast('Added to ' + curMeal);
 }
 
 /* WATER */
@@ -2697,8 +2703,11 @@ async function logManual() {
       loggedAt: new Date().toISOString()
     });
     closeManual();
+    const sb2 = document.getElementById('sb');
+    if (sb2) sb2.value = '';
+    const res2 = document.getElementById('res');
+    if (res2) res2.innerHTML = '';
     await rH();
-    if(document.getElementById('p-food').classList.contains('active')) dS();
     toast('✓ Added ' + displayName);
   }
 }
