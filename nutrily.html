@@ -904,6 +904,13 @@ const lD=d=>new Promise(r=>{try{tx('logs').index('date').getAll(d).onsuccess=e=>
 const lDl=id=>new Promise(r=>{try{tx('logs','readwrite').delete(id).onsuccess=()=>r();}catch{r();}});
 const lAd=o=>new Promise(r=>{try{tx('logs','readwrite').add(o).onsuccess=()=>r();}catch{r();}});
 
+// sL — save a pre-built log entry to IndexedDB
+async function sL(entry) {
+  const { id, ...data } = entry; // strip old id if present (restore/template load)
+  await lAd({ ...data, ts: data.ts || Date.now() });
+}
+
+
 /* STATE */
 const TODAY=new Date().toISOString().split('T')[0];
 let goals={kcal:2000,protein:150,carbs:250,fat:65};
@@ -990,7 +997,13 @@ async function rH(){
     const r=document.createElement('div');r.className='mr';
     r.innerHTML=`<div class="mi">${m.icon}</div><div class="mn"><div class="a">${m.label}</div><div class="b">${ml.length?ml.length+' item'+(ml.length>1?'s':''):'Nothing logged'}</div></div><div class="mk">${ml.length?Math.round(mk)+' kcal':''}</div><button class="mp" onclick="gF('${m.id}',event)">+</button>`;
     md.appendChild(r);
-    ml.forEach(log=>{const li=document.createElement('div');li.className='li';li.innerHTML=`<div class="ln">${log.name} <span style="color:var(--faint);font-size:10.5px">${log.qty}${log.unit}</span></div><div class="lk">${Math.round(log.kcal)} kcal</div><button class="ld" onclick="dL(${log.id})">✕</button>`;md.appendChild(li);});
+    ml.forEach(log=>{
+      const li=document.createElement('div');li.className='li';
+      li.style.cursor = 'pointer';
+      li.onclick = () => openLogAction(log);
+      li.innerHTML = `<div class="ln">${log.name} <span style="color:var(--faint);font-size:10.5px">${log.qty}${log.unit}</span></div><div class="lk">${Math.round(log.kcal)} kcal <span style="color:var(--faint);font-size:10px">···</span></div>`;
+      md.appendChild(li);
+    });
   });
   if(!any)md.innerHTML='<div style="font-size:13px;color:var(--muted);padding:4px 0">No meals logged yet today</div>';
   // sleep & mood home cards
@@ -1005,6 +1018,77 @@ async function rH(){
   }else{document.getElementById('hMoodIcon').textContent='😐';document.getElementById('hMoodLbl').textContent='Tap to log';}
   await rHomeInsights(k,p,f);
 }
+
+let _logAction = null; // current log entry being actioned
+
+function openLogAction(log) {
+  _logAction = log;
+  document.getElementById('logActionName').textContent = log.name;
+  document.getElementById('logActionMeta').textContent =
+    (log.qty||'') + (log.unit||'') + ' · ' + Math.round(log.kcal||0) + ' kcal'
+    + (log.protein ? ' · P:' + Math.round(log.protein) + 'g' : '');
+  document.getElementById('logActionOv').style.display = 'flex';
+}
+
+function closeLogAction() {
+  document.getElementById('logActionOv').style.display = 'none';
+  _logAction = null;
+}
+
+async function doDeleteLog() {
+  if (!_logAction) return;
+  const name = _logAction.name;
+  await lDl(_logAction.id);
+  closeLogAction();
+  await rH();
+  toast('Removed ' + name);
+}
+
+async function doEditLog() {
+  if (!_logAction) return;
+  const log = _logAction;
+  closeLogAction();
+
+  // Try to find in food DB for per-100g data
+  const customFoods = JSON.parse(localStorage.getItem('nutrily_custom_foods') || '[]');
+  const allFoods = [...FOODS, ...customFoods];
+  const baseName = log.name.replace(/\s*\(.*\)\s*$/, '').trim(); // strip "(80g)" suffix
+  const found = allFoods.find(f =>
+    f.n.toLowerCase() === baseName.toLowerCase() ||
+    f.n.toLowerCase() === log.name.toLowerCase()
+  );
+
+  // Delete old entry
+  await lDl(log.id);
+  await rH();
+
+  if (found) {
+    // Open portion sheet — user picks new quantity
+    oS({ name: found.n, brand:'', sq:null, sl:'',
+      _presets: found._presets || null,
+      n:{ kcal:found.kcal, protein:found.p, carbs:found.c, fat:found.f,
+          fib:found.fib||0, sug:found.sug||0, ca:0, fe:0, pot:0, na:0, vc:0, vd:0, b12:0, mg:0, sf:0 }
+    });
+    // Pre-fill original qty
+    setTimeout(() => {
+      document.getElementById('qty').value = log.qty || 100;
+      document.getElementById('unt').value = log.unit || 'g';
+      uP();
+    }, 80);
+  } else {
+    // Manual-only entry — open manual sheet pre-filled
+    openManualAdd(baseName);
+    setTimeout(() => {
+      document.getElementById('manualKcal').value = Math.round(log.kcal || 0);
+      document.getElementById('manualProt').value = Math.round((log.protein||0)*10)/10;
+      document.getElementById('manualCarb').value = Math.round((log.carbs||0)*10)/10;
+      document.getElementById('manualFat').value  = Math.round((log.fat||0)*10)/10;
+      document.getElementById('manualBasis').value = 'serving';
+      updateManualHint();
+    }, 280);
+  }
+}
+
 async function dL(id){await lDl(id);await rH();toast('Removed');}
 
 async function rHomeInsights(kcalToday,protToday,fatToday){
@@ -1190,8 +1274,17 @@ function mOR(p,kc){
 }
 function mBR(f){
   const r=document.createElement('div');r.className='rr';
-  r.innerHTML=`<div style="flex:1"><div class="rr-n">${f.n}</div><div class="rr-m">P:${f.p}g  C:${f.c}g  F:${f.f}g  Fiber:${f.fib}g</div></div><div class="rr-k"><div class="rr-kn">${f.kcal}</div><div class="rr-ku">per 100g</div></div>`;
-  r.onclick=()=>oS({name:f.n,brand:'',sq:null,sl:'',n:{kcal:f.kcal,protein:f.p,carbs:f.c,fat:f.f,fib:f.fib,sug:f.sug,ca:f.ca,fe:f.fe,pot:f.pot,na:f.na,vc:f.vc,vd:f.vd||0,b12:f.b12||0,mg:f.mg,sf:f.sf}});
+  const isCustom = f._unit !== undefined || f._presets !== undefined;
+  const editBtn = isCustom
+    ? `<button class="rr-edit-btn" title="Edit food">✎</button>`
+    : '';
+  r.innerHTML=`<div style="flex:1;min-width:0"><div class="rr-n">${f.n}</div><div class="rr-m">P:${f.p}g  C:${f.c}g  F:${f.f}g  Fiber:${f.fib}g</div></div><div class="rr-k"><div class="rr-kn">${f.kcal}</div><div class="rr-ku">per 100g</div></div>${editBtn}`;
+  // Edit button — stop propagation so it doesn't open portion sheet
+  if(isCustom){
+    const btn = r.querySelector('.rr-edit-btn');
+    if(btn) btn.onclick = (e) => { e.stopPropagation(); openEditCustomFood(f.n); };
+  }
+  r.onclick=()=>oS({name:f.n,brand:'',sq:null,sl:'',_presets:f._presets||null,n:{kcal:f.kcal,protein:f.p,carbs:f.c,fat:f.f,fib:f.fib,sug:f.sug,ca:f.ca,fe:f.fe,pot:f.pot,na:f.na,vc:f.vc,vd:f.vd||0,b12:f.b12||0,mg:f.mg,sf:f.sf}});
   return r;
 }
 
@@ -1266,7 +1359,12 @@ function oS(food){
   // size chips
   const ce=document.getElementById('chips');ce.innerHTML='';
   if(food.sq&&food.sl)aC(ce,`1 serving (${food.sl})`,food.sq,'g');
-  for(const[k,a] of Object.entries(SZ))if(lo.includes(k)){a.forEach(p=>aC(ce,p.l,p.g,'g'));break;}
+  // Custom food presets take priority over SZ keyword lookup
+  if(food._presets&&food._presets.length){
+    food._presets.forEach(p=>aC(ce,p.l,p.g,'g'));
+  } else {
+    for(const[k,a] of Object.entries(SZ))if(lo.includes(k)){a.forEach(p=>aC(ce,p.l,p.g,'g'));break;}
+  }
   // always add a "per 100g" chip
   aC(ce,'100g',100,'g');
   uP();
@@ -2239,6 +2337,7 @@ async function openTplList() {
         </div>
         <div class="tpl-actions">
           <button class="tpl-btn load" onclick="confirmLoadTemplate(${i})">Load</button>
+          <button class="tpl-btn" style="background:var(--bg);border:1.5px solid var(--bdr);color:var(--text)" onclick="renameTpl(${i})">✎</button>
           <button class="tpl-btn del" onclick="deleteTpl(${i})">✕</button>
         </div>
       </div>`;
@@ -2255,7 +2354,7 @@ async function confirmLoadTemplate(idx) {
   const totalKcal = Math.round(t.items.reduce((s, x) => s + (x.kcal || 0), 0));
   document.getElementById('tplSheetTitle').textContent = t.name;
   document.getElementById('tplBody').innerHTML = `
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">${t.items.length} items · ${totalKcal} kcal total</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">${t.items.length} items · ${totalKcal} kcal total — <span style="color:var(--amber);cursor:pointer" onclick="editTplItems(${idx})">✎ Edit items</span></div>
     ${renderMealSections(t.items, idx)}
     <div style="font-size:12px;color:var(--muted);padding:6px 0 2px;line-height:1.6">
       Load individual meals above, or load everything at once below.
@@ -2298,6 +2397,56 @@ async function loadMeal(idx, mealId) {
   toast(`✓ ${label} loaded from "${t.name}"`);
   const fp = document.getElementById('p-food');
   if (fp && fp.classList.contains('active')) dS();
+}
+
+
+
+async function editTplItems(idx) {
+  const templates = await kG('mealTemplates') || [];
+  const t = templates[idx];
+  if (!t) return;
+  document.getElementById('tplSheetTitle').textContent = 'Edit: ' + t.name;
+  const MEAL_ICONS = {breakfast:'🌅',lunch:'☀️',snacks:'🍎',dinner:'🌙'};
+  const renderItems = () => {
+    document.getElementById('tplBody').innerHTML = t.items.map((item, i) =>
+      `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;color:var(--text)">${MEAL_ICONS[item.meal||'breakfast']||''} ${item.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${item.qty||''}${item.unit||''} · ${Math.round(item.kcal||0)} kcal</div>
+        </div>
+        <button onclick="removeTplItem(${idx},${i})" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--faint);padding:4px">✕</button>
+      </div>`
+    ).join('') + (t.items.length === 0 ? '<div style="font-size:13px;color:var(--muted);padding:12px 0">No items left</div>' : '');
+    document.getElementById('tplFooter').innerHTML =
+      `<button class="tpl-save-btn" onclick="saveTplEdits(${idx})">Save changes</button>`;
+  };
+  renderItems();
+  // Store editing state
+  window._editingTpl = { idx, items: [...t.items] };
+}
+
+async function removeTplItem(tplIdx, itemIdx) {
+  const templates = await kG('mealTemplates') || [];
+  templates[tplIdx].items.splice(itemIdx, 1);
+  await kP('mealTemplates', templates);
+  editTplItems(tplIdx);
+}
+
+async function saveTplEdits(idx) {
+  closeTpl();
+  toast('✓ Template saved');
+}
+
+async function renameTpl(idx) {
+  const templates = await kG('mealTemplates') || [];
+  const t = templates[idx];
+  if (!t) return;
+  const newName = prompt('Rename template:', t.name);
+  if (!newName || !newName.trim()) return;
+  templates[idx].name = newName.trim();
+  await kP('mealTemplates', templates);
+  openTplList();
+  toast('✓ Renamed to "' + newName.trim() + '"');
 }
 
 async function deleteTpl(idx) {
@@ -2375,6 +2524,36 @@ function updateManualHint() {
   if (unitLabel) unitLabel.textContent = label;
 }
 
+
+// ── Custom food presets ────────────────────────────────────────────
+let _manualPresets = []; // [{l:'Small', g:120}, ...]
+
+function toggleManualPresets(cb) {
+  document.getElementById('manualPresetSection').style.display = cb.checked ? 'block' : 'none';
+  if (!cb.checked) _manualPresets = [];
+}
+
+function addManualPreset() {
+  const label = document.getElementById('manualPresetLabel').value.trim();
+  const grams = parseFloat(document.getElementById('manualPresetGrams').value);
+  if (!label || !grams) { toast('Enter label and grams'); return; }
+  _manualPresets.push({ l: label, g: grams });
+  document.getElementById('manualPresetLabel').value = '';
+  document.getElementById('manualPresetGrams').value = '';
+  renderManualPresets();
+}
+
+function renderManualPresets() {
+  const el = document.getElementById('manualPresetList');
+  el.innerHTML = '';
+  _manualPresets.forEach((p, i) => {
+    const chip = document.createElement('div');
+    chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--bg);border:1.5px solid var(--bdr);font-size:12px;color:var(--text)';
+    chip.innerHTML = `<span>${p.l} (${p.g}g)</span><button onclick="_manualPresets.splice(${i},1);renderManualPresets()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--faint);padding:0 2px">✕</button>`;
+    el.appendChild(chip);
+  });
+}
+
 function openManualAdd(prefill) {
   document.getElementById('manualName').value  = prefill || '';
   document.getElementById('manualKcal').value  = '';
@@ -2386,6 +2565,11 @@ function openManualAdd(prefill) {
   document.getElementById('manualSave').checked = false;
   document.getElementById('manualQtyRow').style.display = 'none';
   document.getElementById('manualKcalHint').textContent = '— per serving';
+  document.getElementById('manualPresetSection').style.display = 'none';
+  document.getElementById('manualPresetList').innerHTML = '';
+  document.getElementById('manualPresetLabel').value = '';
+  document.getElementById('manualPresetGrams').value = '';
+  _manualPresets = [];
   document.getElementById('manualOv').style.display = 'flex';
   setTimeout(() => document.getElementById(prefill ? 'manualKcal' : 'manualName').focus(), 280);
 }
@@ -2444,7 +2628,8 @@ async function logManual() {
       custom.push({
         n: name, kcal: kcalPer, p: protPer, c: carbPer, f: fatPer,
         fib:0, sug:0, ca:0, fe:0, pot:0, na:0, vc:0, vd:0, b12:0, mg:0, sf:0,
-        _unit: basis  // remember the unit for next time
+        _unit: basis,
+        _presets: _manualPresets.length ? [..._manualPresets] : null
       });
       localStorage.setItem('nutrily_custom_foods', JSON.stringify(custom));
     }
@@ -2452,8 +2637,10 @@ async function logManual() {
 
   if (basis === '100g') {
     // Let user pick quantity via the normal portion sheet
+    // Also carry through any presets user defined
     closeManual();
     oS({ name, brand:'', sq:null, sl:'',
+      _presets: _manualPresets.length ? [..._manualPresets] : null,
       n:{ kcal:kcalPer, protein:protPer, carbs:carbPer, fat:fatPer,
           fib:0, sug:0, ca:0, fe:0, pot:0, na:0, vc:0, vd:0, b12:0, mg:0, sf:0 }
     });
@@ -2471,6 +2658,58 @@ async function logManual() {
     if(document.getElementById('p-food').classList.contains('active')) dS();
     toast('✓ Added ' + displayName);
   }
+}
+
+// ── Edit / delete custom food ──────────────────────────────────────
+let _editFoodOrigName = null;
+
+function openEditCustomFood(name) {
+  const custom = JSON.parse(localStorage.getItem('nutrily_custom_foods') || '[]');
+  const f = custom.find(x => x.n === name);
+  if (!f) { toast('Food not found'); return; }
+  _editFoodOrigName = name;
+  document.getElementById('editFoodSubtitle').textContent = 'Changes apply next time you add this food';
+  document.getElementById('editFoodName').value  = f.n;
+  document.getElementById('editFoodKcal').value  = f.kcal;
+  document.getElementById('editFoodProt').value  = f.p || 0;
+  document.getElementById('editFoodCarb').value  = f.c || 0;
+  document.getElementById('editFoodFat').value   = f.f || 0;
+  document.getElementById('editFoodOv').style.display = 'flex';
+}
+
+function closeEditFood() {
+  document.getElementById('editFoodOv').style.display = 'none';
+  _editFoodOrigName = null;
+}
+
+function saveEditCustomFood() {
+  const name  = document.getElementById('editFoodName').value.trim();
+  const kcal  = parseFloat(document.getElementById('editFoodKcal').value) || 0;
+  const prot  = parseFloat(document.getElementById('editFoodProt').value) || 0;
+  const carb  = parseFloat(document.getElementById('editFoodCarb').value) || 0;
+  const fat   = parseFloat(document.getElementById('editFoodFat').value)  || 0;
+  if (!name)  { toast('Enter a name'); return; }
+  if (!kcal)  { toast('Enter calories'); return; }
+
+  const custom = JSON.parse(localStorage.getItem('nutrily_custom_foods') || '[]');
+  const idx = custom.findIndex(x => x.n === _editFoodOrigName);
+  if (idx === -1) { toast('Food not found'); return; }
+  custom[idx] = { ...custom[idx], n:name, kcal, p:prot, c:carb, f:fat };
+  localStorage.setItem('nutrily_custom_foods', JSON.stringify(custom));
+  closeEditFood();
+  dS(); // refresh search results
+  toast('✓ ' + name + ' updated');
+}
+
+function deleteCustomFood() {
+  if (!_editFoodOrigName) return;
+  const name = _editFoodOrigName;
+  let custom = JSON.parse(localStorage.getItem('nutrily_custom_foods') || '[]');
+  custom = custom.filter(x => x.n !== name);
+  localStorage.setItem('nutrily_custom_foods', JSON.stringify(custom));
+  closeEditFood();
+  dS();
+  toast('Deleted ' + name);
 }
 </script>
 
@@ -2559,11 +2798,84 @@ async function logManual() {
         </div>
       </div>
 
+      <!-- Presets (shown only when saving) -->
+      <div id="manualPresetSection" style="display:none;margin-bottom:14px">
+        <div class="ql">Size presets <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0">(optional — tap + to add)</span></div>
+        <div id="manualPresetList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <input class="qi" id="manualPresetLabel" placeholder="Label e.g. Small / 1 bowl" style="flex:2">
+          <input class="qi" id="manualPresetGrams" type="number" placeholder="g" min="1" style="flex:1;max-width:80px">
+          <button onclick="addManualPreset()" style="padding:8px 12px;border:none;border-radius:var(--rs);background:var(--amber);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer">+</button>
+        </div>
+      </div>
+
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
-        <input type="checkbox" id="manualSave" style="width:16px;height:16px;cursor:pointer">
+        <input type="checkbox" id="manualSave" style="width:16px;height:16px;cursor:pointer" onchange="toggleManualPresets(this)">
         <label for="manualSave" style="font-size:13px;color:var(--text);cursor:pointer">Save to my foods (remember this)</label>
       </div>
       <button class="ab" onclick="logManual()">Add to log</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log entry action sheet -->
+<div class="ov" id="logActionOv" onclick="if(event.target===this)closeLogAction()" style="display:none">
+  <div class="sh" style="max-height:auto">
+    <div class="shd"></div>
+    <div style="padding:14px 20px 6px">
+      <div id="logActionName" style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px"></div>
+      <div id="logActionMeta" style="font-size:12px;color:var(--muted)"></div>
+    </div>
+    <div style="padding:8px 14px 20px;display:flex;flex-direction:column;gap:8px">
+      <button onclick="doEditLog()" style="width:100%;padding:13px;border:none;border-radius:var(--rs);background:var(--amber);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        ✎  Change quantity
+      </button>
+      <button onclick="doDeleteLog()" style="width:100%;padding:13px;border:1.5px solid var(--red);border-radius:var(--rs);background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer">
+        ✕  Delete entry
+      </button>
+      <button onclick="closeLogAction()" style="width:100%;padding:11px;border:1.5px solid var(--bdr);border-radius:var(--rs);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit custom food sheet -->
+<div class="ov" id="editFoodOv" onclick="if(event.target===this)closeEditFood()" style="display:none">
+  <div class="sh">
+    <div class="shd"></div>
+    <div class="shh">
+      <div class="sfn">Edit saved food</div>
+      <div class="sfb" id="editFoodSubtitle"></div>
+      <button class="shc" onclick="closeEditFood()">✕</button>
+    </div>
+    <div class="shb">
+      <div class="ql">Food name</div>
+      <div class="qr" style="margin-bottom:12px">
+        <input class="qi" id="editFoodName" maxlength="40" style="flex:1">
+      </div>
+      <div class="ql">Calories per 100g</div>
+      <div class="qr" style="margin-bottom:8px">
+        <input class="qi" id="editFoodKcal" type="number" min="0" style="flex:1">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+        <div>
+          <div class="ql" style="margin-bottom:4px">Protein (g)</div>
+          <input class="qi" id="editFoodProt" type="number" min="0" step=".1" style="width:100%">
+        </div>
+        <div>
+          <div class="ql" style="margin-bottom:4px">Carbs (g)</div>
+          <input class="qi" id="editFoodCarb" type="number" min="0" step=".1" style="width:100%">
+        </div>
+        <div>
+          <div class="ql" style="margin-bottom:4px">Fat (g)</div>
+          <input class="qi" id="editFoodFat" type="number" min="0" step=".1" style="width:100%">
+        </div>
+      </div>
+      <button class="ab" onclick="saveEditCustomFood()" style="margin-bottom:10px">Save changes</button>
+      <button onclick="deleteCustomFood()" style="width:100%;padding:12px;border:1.5px solid var(--red);border-radius:var(--rs);background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer">
+        Delete this food
+      </button>
     </div>
   </div>
 </div>
