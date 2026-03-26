@@ -151,8 +151,13 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 .ex-info{flex:1;min-width:0}
 .ex-name{font-size:13px;font-weight:500}
 .ex-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.ex-mode-btn{padding:5px 13px;border-radius:16px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s}
+.ex-mode-active{background:var(--text);color:#fff}
+html[data-theme="dark"] .ex-mode-active{background:var(--text);color:var(--bg)}
 .ex-del{background:none;border:none;cursor:pointer;font-size:13px;color:var(--faint);padding:2px 4px;transition:color .15s}
 .ex-del:hover{color:var(--red)}
+.ex-edit-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--faint);padding:2px 4px;transition:color .15s}
+.ex-edit-btn:hover{color:var(--amber)}
 .ex-empty{font-size:13px;color:var(--muted);padding:8px 0}
 .ex-input-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .ex-inp{flex:1;min-width:110px;padding:10px 12px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s}
@@ -194,13 +199,6 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 .pr{display:flex;gap:6px;margin-bottom:14px}
 .pb{padding:5px 14px;border-radius:20px;border:1.5px solid var(--bdr);background:transparent;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s}
 .pb.active{border-color:var(--text);background:var(--text);color:#fff}
-.mir{padding:11px 0;border-bottom:1px solid var(--bdr)}
-.mir:last-child{border-bottom:none}
-.mit{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
-.mim{font-size:12.5px;font-weight:500}
-.miv{font-size:12px;color:var(--muted)}
-.mib{height:4px;background:var(--bdr);border-radius:4px;overflow:hidden}
-.mif{height:100%;border-radius:4px;transition:width .9s ease}
 /* home insight strip */
 .home-ins{margin:0 14px 12px;display:flex;flex-direction:column;gap:8px}
 .hi{display:flex;align-items:center;gap:11px;background:var(--card);border-radius:var(--rs);padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;transition:opacity .15s}
@@ -256,19 +254,7 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 .day-btn.day-done{border-color:var(--green)!important;background:#f0f5f0!important}
 .day-btn.day-done .day-dot{background:var(--green)!important}
 .day-btn.day-skipped .day-dot{background:var(--faint)!important}
-/* food suggestion rows */
-.fsug-row{padding:12px 0;border-bottom:1px solid var(--bdr)}
-.fsug-row:last-child{border-bottom:none}
-.fsug-micro{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.fsug-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.fsug-label{font-size:12.5px;font-weight:500}
-.fsug-pct{font-size:11px;color:var(--muted);margin-left:auto}
-.fsug-chips{display:flex;gap:6px;flex-wrap:wrap}
-.fsug-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:20px;cursor:pointer;transition:all .15s}
-.fsug-chip:hover{border-color:var(--amber);background:#fdf6ee}
-.fsug-chip-icon{font-size:14px}
-.fsug-chip-name{font-size:12px;font-weight:500;color:var(--text)}
-.fsug-chip-val{font-size:10.5px;color:var(--muted)}
+
 /* sleep & mood */
 .wb-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 12px}
 .wb-card{background:var(--card);border-radius:var(--rs);padding:16px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;transition:opacity .15s}
@@ -418,6 +404,8 @@ html[data-theme="dark"] .nb.active { color: var(--text); }
 html[data-theme="dark"] .nb svg { stroke: var(--muted); }
 html[data-theme="dark"] .nb.active svg { stroke: var(--text); }
 html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
+html[data-theme="dark"] .pb.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+html[data-theme="dark"] .toast { background: var(--card); color: var(--text); border: 1px solid var(--bdr); }
 </style>
 
 </head>
@@ -502,7 +490,11 @@ html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
   <div class="tpl-bar" id="tplBar">
     <button class="tpl-chip save-btn" onclick="openTplSave()">💾 Save today</button>
   </div>
-<div class="sw">
+<div style="padding:0 14px 10px;display:flex;gap:8px;align-items:center">
+    <span style="font-size:11px;color:var(--muted);font-family:'DM Sans',sans-serif">Can't find something?</span>
+    <button onclick="openManualAdd('')" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text);cursor:pointer">+ Add manually</button>
+  </div>
+  <div class="sw">
     <input class="si2" id="sb" type="text" placeholder="Search: tea, chai, roti, biryani, dal…" oninput="dS()">
     <span class="sic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
   </div>
@@ -543,8 +535,8 @@ html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
     <div><div class="gr">Train smart</div><div class="ti">Exercise</div></div>
     <!-- plan / log toggle -->
     <div style="display:flex;background:var(--bg);border-radius:20px;padding:3px;gap:2px;border:1.5px solid var(--bdr)">
-      <button id="modeBtn0" onclick="setExMode('plan')" style="padding:5px 13px;border-radius:16px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:var(--text);color:#fff;transition:all .15s">Plan</button>
-      <button id="modeBtn1" onclick="setExMode('log')"  style="padding:5px 13px;border-radius:16px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s">Log</button>
+      <button id="modeBtn0" onclick="setExMode('plan')" class="ex-mode-btn ex-mode-active">Plan</button>
+      <button id="modeBtn1" onclick="setExMode('log')"  class="ex-mode-btn">Log</button>
     </div>
   </div>
   <div class="week-grid" id="weekGrid"></div>
@@ -763,20 +755,7 @@ html[data-theme="dark"] nav .nb[href] svg { stroke: var(--muted); }
     <div id="stepsBars"></div>
   </div>
 
-  <!-- micronutrients today -->
 
-  <div class="card">
-    <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;margin-bottom:14px">Micronutrients Today</div>
-    <div id="miL"></div>
-  </div>
-
-  <!-- food suggestions based on deficiencies -->
-
-  <div class="ins-card" id="foodSugCard" style="display:none">
-    <div class="ins-title">🥗 Eat More Of These</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Based on your micronutrient gaps today</div>
-    <div id="foodSugList"></div>
-  </div>
 
   <!-- wellbeing & sleep in progress -->
 
@@ -940,184 +919,19 @@ let curWbScores={energy:0,stress:0,focus:0,mood:0};
 const MEALS=[{id:'breakfast',label:'Breakfast',icon:'🌅'},{id:'lunch',label:'Lunch',icon:'☀️'},{id:'snacks',label:'Snacks',icon:'🍎'},{id:'dinner',label:'Dinner',icon:'🌙'}];
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-const MICROS=[
-  {k:'ca',label:'Calcium',u:'mg',dv:1300,c:'#c8b4e0'},
-  {k:'fe',label:'Iron',u:'mg',dv:18,c:'#b87333'},
-  {k:'pot',label:'Potassium',u:'mg',dv:4700,c:'#6a8f6e'},
-  {k:'na',label:'Sodium',u:'mg',dv:2300,c:'#b85c44'},
-  {k:'vc',label:'Vitamin C',u:'mg',dv:90,c:'#4a7fa0'},
-  {k:'vd',label:'Vitamin D',u:'µg',dv:20,c:'#c8a060'},
-  {k:'b12',label:'Vitamin B12',u:'µg',dv:2.4,c:'#7c5cbf'},
-  {k:'fib',label:'Fiber',u:'g',dv:28,c:'#7aaa74'},
-  {k:'sug',label:'Sugar',u:'g',dv:50,c:'#c8a060'},
-  {k:'mg',label:'Magnesium',u:'mg',dv:420,c:'#4a7fa0'},
-  {k:'sf',label:'Sat. Fat',u:'g',dv:20,c:'#b85c44'},
-];
 
 const SZ={banana:[{l:'Small',g:81},{l:'Medium',g:118},{l:'Large',g:152}],apple:[{l:'Small',g:149},{l:'Medium',g:182},{l:'Large',g:223}],mango:[{l:'Small',g:200},{l:'Medium',g:300},{l:'Large',g:400}],orange:[{l:'Small',g:96},{l:'Medium',g:131},{l:'Large',g:184}],egg:[{l:'Small',g:38},{l:'Medium',g:44},{l:'Large',g:50},{l:'XL',g:56}],bread:[{l:'1 slice',g:28},{l:'2 slices',g:56}],rice:[{l:'Small bowl',g:100},{l:'Medium bowl',g:150},{l:'Large bowl',g:200}],milk:[{l:'½ cup',g:120},{l:'1 cup',g:240},{l:'1 glass',g:300}],tea:[{l:'1 cup',g:240},{l:'2 cups',g:480}],chai:[{l:'1 cup',g:200},{l:'2 cups',g:400}],coffee:[{l:'1 cup',g:240},{l:'2 cups',g:480}],chicken:[{l:'Small',g:85},{l:'Medium',g:140},{l:'Large',g:200}],potato:[{l:'Small',g:130},{l:'Medium',g:173},{l:'Large',g:299}],oat:[{l:'½ cup',g:40},{l:'1 cup',g:80}],protein:[{l:'1 scoop',g:30},{l:'1.5 scoops',g:45},{l:'2 scoops',g:60}],whey:[{l:'1 scoop',g:30},{l:'1.5 scoops',g:45},{l:'2 scoops',g:60}],shake:[{l:'1 scoop',g:30},{l:'1.5 scoops',g:45},{l:'2 scoops',g:60}],dal:[{l:'Small bowl',g:100},{l:'Medium bowl',g:150},{l:'Large bowl',g:200}],roti:[{l:'1 roti',g:40},{l:'2 rotis',g:80},{l:'3 rotis',g:120}],chapati:[{l:'1 roti',g:40},{l:'2 rotis',g:80},{l:'3 rotis',g:120}],paratha:[{l:'1 paratha',g:80},{l:'2 parathas',g:160}],paneer:[{l:'50g',g:50},{l:'100g',g:100},{l:'150g',g:150}],almond:[{l:'Small handful',g:15},{l:'Handful',g:28},{l:'Large handful',g:40}],tofu:[{l:'Small piece (50g)',g:50},{l:'Medium piece (100g)',g:100},{l:'Large piece (150g)',g:150}],edamame:[{l:'Small bowl',g:100},{l:'Medium bowl',g:150},{l:'Large bowl',g:200}],soya:[{l:'Small bowl (dry)',g:30},{l:'Medium bowl (dry)',g:50},{l:'Large bowl (dry)',g:80}],tempeh:[{l:'50g',g:50},{l:'100g',g:100},{l:'150g',g:150}],oats:[{l:'1 serving (40g)',g:40},{l:'1.5 servings (60g)',g:60},{l:'2 servings (80g)',g:80}],muesli:[{l:'1 serving (50g)',g:50},{l:'1.5 servings (75g)',g:75}],granola:[{l:'1 serving (40g)',g:40},{l:'2 servings (80g)',g:80}],cornflakes:[{l:'1 bowl (40g)',g:40},{l:'Large bowl (60g)',g:60}],samosa:[{l:'1 piece',g:65},{l:'2 pieces',g:130}],idli:[{l:'1 piece',g:40},{l:'2 pieces',g:80},{l:'4 pieces',g:160}],dosa:[{l:'1 dosa',g:100},{l:'2 dosas',g:200}],upma:[{l:'Small bowl',g:150},{l:'Large bowl',g:250}],poha:[{l:'Small bowl',g:150},{l:'Large bowl',g:250}],khichdi:[{l:'Small bowl',g:150},{l:'Large bowl',g:250}]};
 
 /* p=protein c=carbs f=fat fib=fiber sug=sugar ca=calcium fe=iron pot=potassium na=sodium vc=vitC vd=vitD b12=vitB12 mg=magnesium sf=satFat (all per 100g) */
 const FOODS=[
-  {n:'Tea (plain, brewed)',kcal:2,p:0,c:.4,f:0,fib:0,sug:0,ca:0,fe:.04,pot:37,na:7,vc:0,vd:0,b12:0,mg:3,sf:0},
-  {n:'Tea with Milk & Sugar (1 cup)',kcal:56,p:1.8,c:8.5,f:1.6,fib:0,sug:7.5,ca:58,fe:.1,pot:95,na:18,vc:.4,vd:.2,b12:.2,mg:7,sf:1},
   {n:'Masala Chai (1 cup)',kcal:72,p:2,c:10,f:2.5,fib:.2,sug:8,ca:65,fe:.3,pot:110,na:22,vc:.5,vd:.2,b12:.2,mg:8,sf:1.5},
-  {n:'Black Coffee (1 cup)',kcal:2,p:.3,c:0,f:0,fib:0,sug:0,ca:5,fe:.1,pot:116,na:5,vc:0,vd:0,b12:0,mg:7,sf:0},
-  {n:'Coffee with Milk & Sugar',kcal:60,p:2,c:8,f:1.8,fib:0,sug:7,ca:60,fe:.1,pot:120,na:20,vc:0,vd:.2,b12:.2,mg:8,sf:1.1},
-  {n:'Green Tea (1 cup)',kcal:2,p:0,c:.3,f:0,fib:0,sug:0,ca:1,fe:.05,pot:20,na:0,vc:0,vd:0,b12:0,mg:1,sf:0},
-  {n:'Lassi (plain)',kcal:87,p:3.4,c:11.4,f:2.9,fib:0,sug:11,ca:120,fe:.1,pot:188,na:42,vc:.9,vd:.4,b12:.6,mg:12,sf:1.9},
-  {n:'Nimbu Pani (1 glass)',kcal:35,p:.2,c:9.5,f:.1,fib:.2,sug:8,ca:8,fe:.1,pot:60,na:100,vc:19,vd:0,b12:0,mg:5,sf:0},
-  {n:'Banana',kcal:89,p:1.1,c:22.8,f:.3,fib:2.6,sug:12.2,ca:5,fe:.3,pot:358,na:1,vc:8.7,vd:0,b12:0,mg:27,sf:.1},
-  {n:'Apple',kcal:52,p:.3,c:13.8,f:.2,fib:2.4,sug:10.4,ca:6,fe:.1,pot:107,na:1,vc:4.6,vd:0,b12:0,mg:5,sf:0},
-  {n:'Mango',kcal:60,p:.8,c:15,f:.4,fib:1.6,sug:13.7,ca:11,fe:.2,pot:168,na:1,vc:36,vd:0,b12:0,mg:10,sf:.1},
-  {n:'Orange',kcal:47,p:.9,c:11.8,f:.1,fib:2.4,sug:9.4,ca:40,fe:.1,pot:181,na:0,vc:53,vd:0,b12:0,mg:10,sf:0},
-  {n:'Watermelon',kcal:30,p:.6,c:7.6,f:.2,fib:.4,sug:6.2,ca:7,fe:.2,pot:112,na:1,vc:8.1,vd:0,b12:0,mg:10,sf:0},
-  {n:'Papaya',kcal:43,p:.5,c:11,f:.3,fib:1.7,sug:7.8,ca:20,fe:.3,pot:182,na:8,vc:61,vd:0,b12:0,mg:21,sf:.1},
-  {n:'Guava',kcal:68,p:2.6,c:14.3,f:1,fib:5.4,sug:8.9,ca:18,fe:.3,pot:417,na:2,vc:228,vd:0,b12:0,mg:22,sf:.3},
-  {n:'Whole Egg (boiled)',kcal:155,p:12.6,c:1.1,f:10.6,fib:0,sug:1.1,ca:50,fe:1.2,pot:126,na:124,vc:0,vd:2,b12:1.1,mg:10,sf:3.3},
-  {n:'Egg Bhurji (2 eggs)',kcal:220,p:14,c:5,f:15,fib:.5,sug:1,ca:55,fe:1.8,pot:190,na:380,vc:2,vd:2.2,b12:1.2,mg:18,sf:4.5},
-  {n:'Whole Milk (cow)',kcal:61,p:3.2,c:4.8,f:3.3,fib:0,sug:5.1,ca:113,fe:.03,pot:150,na:43,vc:.9,vd:.1,b12:.4,mg:10,sf:2.1},
-  {n:'Curd / Dahi',kcal:60,p:3.5,c:4,f:3.2,fib:0,sug:4,ca:120,fe:.1,pot:150,na:45,vc:0,vd:.1,b12:.4,mg:12,sf:2.1},
-  {n:'Greek Yogurt',kcal:97,p:9,c:3.6,f:5,fib:0,sug:3.6,ca:110,fe:0,pot:141,na:36,vc:0,vd:0,b12:.5,mg:11,sf:3.2},
-  {n:'Paneer (cottage cheese)',kcal:265,p:18.3,c:1.2,f:20.8,fib:0,sug:1.2,ca:480,fe:.2,pot:70,na:28,vc:0,vd:.2,b12:.5,mg:8,sf:13},
-  {n:'Ghee (clarified butter)',kcal:900,p:0,c:0,f:99.5,fib:0,sug:0,ca:0,fe:0,pot:1,na:1,vc:0,vd:.2,b12:0,mg:0,sf:62},
-  {n:'Butter',kcal:717,p:.9,c:.1,f:81,fib:0,sug:.1,ca:24,fe:.02,pot:24,na:643,vc:0,vd:1.5,b12:.1,mg:2,sf:51},
-  {n:'Chicken Breast (cooked)',kcal:165,p:31,c:0,f:3.6,fib:0,sug:0,ca:15,fe:1,pot:256,na:74,vc:0,vd:.1,b12:.3,mg:29,sf:1},
-  {n:'Chicken Curry',kcal:187,p:17,c:5,f:11,fib:.5,sug:1.2,ca:28,fe:1.3,pot:240,na:350,vc:4,vd:.1,b12:.3,mg:22,sf:3},
-  {n:'Mutton Curry',kcal:243,p:20,c:3,f:16,fib:.3,sug:.5,ca:18,fe:2.5,pot:310,na:420,vc:1,vd:.1,b12:2.4,mg:25,sf:6},
-  {n:'Fish Curry (avg)',kcal:153,p:17,c:4,f:7,fib:.3,sug:.5,ca:35,fe:.8,pot:330,na:390,vc:2,vd:4,b12:3,mg:30,sf:1.5},
-  {n:'Salmon (baked)',kcal:208,p:20.4,c:0,f:13.4,fib:0,sug:0,ca:15,fe:.3,pot:363,na:59,vc:0,vd:14.4,b12:3.2,mg:29,sf:3.1},
-  {n:'Tuna (canned)',kcal:116,p:25.5,c:0,f:.8,fib:0,sug:0,ca:10,fe:1.3,pot:237,na:320,vc:0,vd:3.8,b12:2.5,mg:31,sf:.2},
-  {n:'Protein Shake (Whey)',kcal:120,p:24,c:5,f:2,fib:0,sug:3,ca:150,fe:.5,pot:200,na:130,vc:0,vd:1,b12:.8,mg:30,sf:1},
-  {n:'White Rice (cooked)',kcal:130,p:2.7,c:28.2,f:.3,fib:.4,sug:0,ca:10,fe:.2,pot:35,na:1,vc:0,vd:0,b12:0,mg:12,sf:.1},
-  {n:'Brown Rice (cooked)',kcal:111,p:2.6,c:23,f:.9,fib:1.8,sug:0,ca:10,fe:.5,pot:79,na:5,vc:0,vd:0,b12:0,mg:43,sf:.2},
-  {n:'Biryani (chicken)',kcal:210,p:12,c:26,f:6,fib:.8,sug:.5,ca:30,fe:.9,pot:220,na:520,vc:2,vd:.1,b12:.2,mg:20,sf:1.8},
-  {n:'Fried Rice (veg)',kcal:160,p:3.5,c:28,f:4,fib:1.2,sug:.8,ca:15,fe:.5,pot:120,na:420,vc:3,vd:0,b12:0,mg:15,sf:.7},
-  {n:'Pulao (veg)',kcal:150,p:3,c:27,f:3.5,fib:1,sug:.5,ca:12,fe:.6,pot:140,na:340,vc:2,vd:0,b12:0,mg:14,sf:.8},
-  {n:'Oats (dry)',kcal:389,p:16.9,c:66.3,f:6.9,fib:10.6,sug:0,ca:54,fe:4.7,pot:429,na:2,vc:0,vd:0,b12:0,mg:177,sf:1.2},
+  {n:'White Rice (cooked, 1 bowl)',kcal:130,p:2.7,c:28.2,f:.3,fib:.4,sug:0,ca:10,fe:.2,pot:35,na:1,vc:0,vd:0,b12:0,mg:12,sf:.1},
   {n:'Chapati / Roti (1 piece)',kcal:104,p:3.1,c:18,f:2,fib:1.9,sug:0,ca:16,fe:.8,pot:62,na:190,vc:0,vd:0,b12:0,mg:17,sf:.4},
-  {n:'Paratha (plain)',kcal:260,p:4.6,c:30,f:13,fib:2.2,sug:0,ca:20,fe:.9,pot:90,na:280,vc:0,vd:0,b12:0,mg:20,sf:4},
-  {n:'Aloo Paratha',kcal:300,p:5.5,c:38,f:13,fib:2.8,sug:.5,ca:22,fe:1,pot:280,na:310,vc:6,vd:0,b12:0,mg:24,sf:4},
-  {n:'Puri (1 piece)',kcal:150,p:2.5,c:18,f:7.5,fib:1,sug:0,ca:10,fe:.6,pot:48,na:120,vc:0,vd:0,b12:0,mg:10,sf:1.8},
-  {n:'Naan (plain)',kcal:262,p:8.7,c:45,f:5,fib:2.5,sug:1.5,ca:72,fe:2.5,pot:100,na:530,vc:0,vd:0,b12:0,mg:25,sf:1.2},
-  {n:'Bread (whole wheat)',kcal:247,p:13,c:41,f:3.4,fib:6,sug:6,ca:107,fe:3.6,pot:248,na:400,vc:0,vd:0,b12:0,mg:76,sf:.6},
-  {n:'Dal (mixed, cooked)',kcal:116,p:9,c:20,f:.4,fib:7.9,sug:1.8,ca:19,fe:3.3,pot:369,na:2,vc:1.5,vd:0,b12:0,mg:36,sf:.1},
-  {n:'Dal Makhani',kcal:170,p:8,c:20,f:6,fib:5,sug:.5,ca:60,fe:2.8,pot:320,na:480,vc:.5,vd:.1,b12:.1,mg:40,sf:3},
-  {n:'Toor Dal (cooked)',kcal:98,p:5.6,c:18,f:.4,fib:3.8,sug:.3,ca:29,fe:1,pot:338,na:3,vc:0,vd:0,b12:0,mg:30,sf:.1},
-  {n:'Chana Dal (cooked)',kcal:164,p:8.9,c:27,f:2.7,fib:7.6,sug:4.8,ca:42,fe:2.7,pot:291,na:24,vc:1.3,vd:0,b12:0,mg:48,sf:.3},
-  {n:'Rajma (kidney beans)',kcal:127,p:8.7,c:22.8,f:.5,fib:6.4,sug:.3,ca:50,fe:2.2,pot:403,na:2,vc:2.1,vd:0,b12:0,mg:45,sf:.1},
-  {n:'Chole (chickpea curry)',kcal:164,p:8,c:24,f:4,fib:7,sug:1,ca:55,fe:3,pot:350,na:380,vc:4,vd:0,b12:0,mg:50,sf:.5},
-  {n:'Moong Dal (cooked)',kcal:105,p:7.1,c:18.2,f:.4,fib:7.6,sug:1.4,ca:27,fe:1.4,pot:266,na:4,vc:1,vd:0,b12:0,mg:36,sf:.1},
-  {n:'Idli (1 piece)',kcal:39,p:1.8,c:7.9,f:.1,fib:.5,sug:.1,ca:10,fe:.3,pot:40,na:82,vc:0,vd:0,b12:0,mg:7,sf:0},
-  {n:'Dosa (plain)',kcal:133,p:2.9,c:22,f:3.7,fib:.9,sug:.2,ca:16,fe:.8,pot:72,na:279,vc:0,vd:0,b12:0,mg:14,sf:.7},
-  {n:'Masala Dosa',kcal:230,p:4.5,c:34,f:8,fib:2,sug:.5,ca:30,fe:1.2,pot:200,na:360,vc:8,vd:0,b12:0,mg:22,sf:1.5},
-  {n:'Uttapam',kcal:140,p:3.5,c:23,f:3.5,fib:1.2,sug:1,ca:25,fe:.7,pot:100,na:250,vc:2,vd:0,b12:0,mg:15,sf:.7},
-  {n:'Upma (semolina)',kcal:150,p:3.5,c:24,f:4.5,fib:1.5,sug:.5,ca:15,fe:.8,pot:90,na:310,vc:1,vd:0,b12:0,mg:18,sf:.5},
-  {n:'Sambar (1 bowl)',kcal:65,p:3.5,c:10,f:1.5,fib:2.5,sug:1,ca:40,fe:1.2,pot:280,na:420,vc:12,vd:0,b12:0,mg:25,sf:.2},
-  {n:'Poha (1 bowl)',kcal:250,p:4,c:42,f:6,fib:2,sug:1,ca:20,fe:2.8,pot:125,na:250,vc:6,vd:0,b12:0,mg:25,sf:.8},
-  {n:'Khichdi (1 bowl)',kcal:150,p:6.5,c:24,f:2.5,fib:3,sug:.3,ca:25,fe:1.4,pot:200,na:300,vc:0,vd:0,b12:0,mg:30,sf:.5},
-  {n:'Palak Paneer',kcal:180,p:10,c:8,f:12,fib:2.5,sug:1.5,ca:240,fe:3.5,pot:380,na:350,vc:20,vd:.3,b12:.4,mg:55,sf:6},
-  {n:'Butter Chicken',kcal:250,p:22,c:10,f:14,fib:1,sug:4,ca:40,fe:1.5,pot:350,na:620,vc:5,vd:.1,b12:.3,mg:30,sf:5},
-  {n:'Matar Paneer',kcal:185,p:10,c:12,f:11,fib:3,sug:2,ca:220,fe:1.8,pot:280,na:380,vc:15,vd:.2,b12:.4,mg:40,sf:6},
-  {n:'Aloo Gobi',kcal:120,p:3.5,c:18,f:4,fib:3.5,sug:2,ca:35,fe:.8,pot:350,na:280,vc:35,vd:0,b12:0,mg:25,sf:.5},
-  {n:'Bhindi Masala (okra)',kcal:90,p:2.5,c:10,f:4.5,fib:3.5,sug:1.5,ca:80,fe:.7,pot:280,na:220,vc:20,vd:0,b12:0,mg:50,sf:.5},
-  {n:'Baingan Bharta (brinjal)',kcal:90,p:2.5,c:10,f:4.5,fib:3.5,sug:3,ca:18,fe:.5,pot:350,na:240,vc:5,vd:0,b12:0,mg:15,sf:.5},
-  {n:'Samosa (1 piece)',kcal:262,p:4,c:30,f:14,fib:2.5,sug:1,ca:18,fe:1.5,pot:170,na:380,vc:5,vd:0,b12:0,mg:18,sf:3},
-  {n:'Almonds',kcal:579,p:21.2,c:21.7,f:49.9,fib:12.5,sug:4.4,ca:264,fe:3.7,pot:733,na:1,vc:0,vd:0,b12:0,mg:270,sf:3.8},
-  {n:'Cashews',kcal:553,p:18,c:30.2,f:43.8,fib:3.3,sug:5.9,ca:37,fe:6.7,pot:660,na:12,vc:.5,vd:0,b12:0,mg:292,sf:7.8},
-  {n:'Walnuts',kcal:654,p:15.2,c:13.7,f:65.2,fib:6.7,sug:2.6,ca:98,fe:2.9,pot:441,na:2,vc:1.3,vd:0,b12:0,mg:158,sf:6.1},
-  {n:'Peanuts (roasted)',kcal:567,p:25.8,c:16.1,f:49.2,fib:8.5,sug:4,ca:54,fe:2.3,pot:634,na:6,vc:0,vd:0,b12:0,mg:168,sf:6.9},
-  {n:'Peanut Butter',kcal:588,p:25,c:20,f:50,fib:6,sug:9,ca:49,fe:1.9,pot:558,na:459,vc:0,vd:0,b12:0,mg:168,sf:10},
-  {n:'Spinach (raw)',kcal:23,p:2.9,c:3.6,f:.4,fib:2.2,sug:.4,ca:99,fe:2.7,pot:558,na:79,vc:28,vd:0,b12:0,mg:79,sf:.1},
-  {n:'Broccoli',kcal:34,p:2.8,c:6.6,f:.4,fib:2.6,sug:1.7,ca:47,fe:.7,pot:316,na:33,vc:89,vd:0,b12:0,mg:21,sf:.1},
-  {n:'Sweet Potato',kcal:90,p:2,c:20.7,f:.1,fib:3.3,sug:6.5,ca:38,fe:.7,pot:475,na:36,vc:19.6,vd:0,b12:0,mg:27,sf:0},
-  {n:'Potato (boiled)',kcal:77,p:2,c:17,f:.1,fib:2.1,sug:.8,ca:12,fe:.3,pot:328,na:6,vc:19.7,vd:0,b12:0,mg:22,sf:0},
-  {n:'Tomato',kcal:18,p:.9,c:3.9,f:.2,fib:1.2,sug:2.6,ca:10,fe:.3,pot:237,na:5,vc:14,vd:0,b12:0,mg:11,sf:0},
-  {n:'Avocado',kcal:160,p:2,c:8.5,f:14.7,fib:6.7,sug:.7,ca:12,fe:.6,pot:485,na:7,vc:10,vd:0,b12:0,mg:29,sf:2.1},
-  /* tofu & soy */
-  {n:'Tofu (firm)',kcal:76,p:8,c:1.9,f:4.8,fib:.3,sug:.7,ca:350,fe:5.4,pot:121,na:7,vc:.1,vd:0,b12:0,mg:30,sf:.7},
-  {n:'Tofu (silken / soft)',kcal:55,p:5,c:2.5,f:2.8,fib:0,sug:1,ca:120,fe:.8,pot:100,na:12,vc:.1,vd:0,b12:0,mg:22,sf:.4},
-  {n:'Tofu (scrambled / bhurji style)',kcal:90,p:8.5,c:4,f:5,fib:.5,sug:1,ca:200,fe:2,pot:130,na:180,vc:3,vd:0,b12:0,mg:28,sf:.7},
-  {n:'Paneer vs Tofu (tofu)',kcal:76,p:8,c:1.9,f:4.8,fib:.3,sug:.7,ca:350,fe:5.4,pot:121,na:7,vc:.1,vd:0,b12:0,mg:30,sf:.7},
-  {n:'Soy Milk (unsweetened)',kcal:33,p:3.3,c:1.6,f:1.8,fib:.4,sug:.5,ca:123,fe:.4,pot:118,na:51,vc:0,vd:1,b12:.6,mg:18,sf:.2},
-  {n:'Edamame (boiled)',kcal:121,p:11.9,c:8.9,f:5.2,fib:5.2,sug:2.2,ca:63,fe:2.3,pot:436,na:6,vc:6.1,vd:0,b12:0,mg:64,sf:.7},
-  {n:'Tempeh',kcal:193,p:19,c:9.4,f:11,fib:0,sug:0,ca:111,fe:2.7,pot:412,na:9,vc:0,vd:0,b12:0,mg:81,sf:2.2},
-  {n:'Soya Chunks (dry)',kcal:345,p:52,c:33,f:0.5,fib:13,sug:0,ca:180,fe:10,pot:0,na:10,vc:0,vd:0,b12:0,mg:0,sf:.1},
-  {n:'Soya Chunks (cooked)',kcal:112,p:17,c:10,f:.2,fib:4,sug:0,ca:60,fe:3.5,pot:180,na:4,vc:0,vd:0,b12:0,mg:40,sf:.05},
-  {n:'Soya Milk (sweetened)',kcal:54,p:3.3,c:6.3,f:1.8,fib:.4,sug:5,ca:123,fe:.4,pot:118,na:51,vc:0,vd:1,b12:.6,mg:18,sf:.2},
-  {n:'Chicken Tandoori (2 pieces)',kcal:190,p:28,c:4,f:6,fib:.5,sug:1,ca:25,fe:1.4,pot:380,na:480,vc:3,vd:.2,b12:.4,mg:28,sf:1.5},
-  {n:'Chicken Tikka (6 pieces)',kcal:220,p:30,c:5,f:8,fib:.3,sug:2,ca:20,fe:1.2,pot:420,na:510,vc:2,vd:.2,b12:.4,mg:25,sf:2},
-  {n:'Seekh Kebab (2 pieces)',kcal:180,p:22,c:4,f:9,fib:.5,sug:.5,ca:18,fe:2.1,pot:340,na:440,vc:1,vd:.1,b12:2,mg:22,sf:3},
-  {n:'Paneer Tikka (6 pieces)',kcal:230,p:14,c:6,f:17,fib:.5,sug:2,ca:310,fe:.5,pot:120,na:380,vc:3,vd:.2,b12:.4,mg:20,sf:10},
-  {n:'Tandoori Roti',kcal:120,p:3.5,c:22,f:2.5,fib:2,sug:0,ca:18,fe:.9,pot:70,na:210,vc:0,vd:0,b12:0,mg:18,sf:.5},
-  {n:'Tandoori Fish',kcal:160,p:24,c:3,f:5,fib:.2,sug:1,ca:30,fe:.8,pot:400,na:360,vc:2,vd:5,b12:3,mg:32,sf:1},
-  {n:'Shahi Paneer',kcal:245,p:12,c:11,f:18,fib:1,sug:4,ca:290,fe:.8,pot:200,na:420,vc:4,vd:.2,b12:.4,mg:25,sf:11},
-  {n:'Dal Tadka',kcal:130,p:7.5,c:18,f:3.5,fib:5,sug:.5,ca:35,fe:2.5,pot:320,na:360,vc:2,vd:0,b12:0,mg:38,sf:.8},
-  {n:'Kadai Chicken',kcal:210,p:20,c:7,f:12,fib:1.5,sug:2,ca:30,fe:1.6,pot:380,na:480,vc:8,vd:.1,b12:.3,mg:28,sf:3.5},
-  {n:'Pav Bhaji (2 pav)',kcal:380,p:8,c:58,f:13,fib:5,sug:4,ca:60,fe:2.2,pot:450,na:680,vc:18,vd:0,b12:0,mg:40,sf:6},
-  {n:'Chhole Bhature',kcal:520,p:14,c:70,f:20,fib:8,sug:2,ca:90,fe:4,pot:480,na:720,vc:5,vd:0,b12:0,mg:60,sf:7},
-  {n:'Kadhi Pakora',kcal:160,p:5,c:20,f:7,fib:2,sug:2,ca:100,fe:1,pot:200,na:480,vc:2,vd:.1,b12:.2,mg:20,sf:3},
-  {n:'Saag (Sarson ka)',kcal:110,p:4.5,c:10,f:6,fib:4,sug:1.5,ca:120,fe:3,pot:350,na:280,vc:25,vd:0,b12:0,mg:45,sf:3},
-  {n:'Makki di Roti',kcal:140,p:3,c:26,f:2.5,fib:2.5,sug:0,ca:10,fe:.8,pot:80,na:180,vc:0,vd:0,b12:0,mg:20,sf:.5},
-  {n:'Veg Korma',kcal:175,p:5,c:14,f:12,fib:3,sug:3,ca:55,fe:1.2,pot:300,na:360,vc:10,vd:.1,b12:0,mg:30,sf:5},
-  {n:'Rava Dosa',kcal:120,p:3,c:20,f:3.5,fib:.8,sug:.3,ca:12,fe:.5,pot:60,na:240,vc:0,vd:0,b12:0,mg:10,sf:.7},
-  {n:'Medu Vada (2 pieces)',kcal:200,p:6,c:22,f:10,fib:2.5,sug:.5,ca:30,fe:1.5,pot:180,na:340,vc:0,vd:0,b12:0,mg:25,sf:1.5},
-  {n:'Pongal',kcal:165,p:4.5,c:26,f:5,fib:2,sug:.5,ca:20,fe:.8,pot:120,na:300,vc:0,vd:0,b12:0,mg:25,sf:2},
-  {n:'Rasam',kcal:40,p:1.5,c:7,f:.8,fib:1,sug:1,ca:20,fe:.6,pot:200,na:380,vc:8,vd:0,b12:0,mg:15,sf:.1},
-  {n:'Vada Pav',kcal:290,p:6,c:42,f:11,fib:3,sug:2,ca:25,fe:1.5,pot:220,na:480,vc:4,vd:0,b12:0,mg:20,sf:2},
-  {n:'Pani Puri (6 pieces)',kcal:180,p:3,c:32,f:5,fib:2,sug:2,ca:20,fe:.8,pot:150,na:360,vc:2,vd:0,b12:0,mg:15,sf:.8},
-  {n:'Bhel Puri',kcal:160,p:4,c:28,f:4,fib:2.5,sug:3,ca:25,fe:1.2,pot:200,na:340,vc:5,vd:0,b12:0,mg:20,sf:.5},
-  {n:'Dhokla (4 pieces)',kcal:160,p:6.5,c:25,f:3.5,fib:1.5,sug:1,ca:35,fe:1,pot:180,na:480,vc:0,vd:0,b12:0,mg:18,sf:.5},
-  {n:'Jalebi (2 pieces)',kcal:200,p:1.5,c:40,f:5,fib:.2,sug:30,ca:12,fe:.5,pot:30,na:10,vc:0,vd:0,b12:0,mg:5,sf:1.2},
-  {n:'Gulab Jamun (2 pieces)',kcal:200,p:3,c:34,f:7,fib:.2,sug:28,ca:50,fe:.4,pot:80,na:80,vc:0,vd:.1,b12:.2,mg:8,sf:3.5},
-  {n:'Halwa (suji)',kcal:260,p:3.5,c:38,f:11,fib:.5,sug:22,ca:20,fe:.8,pot:70,na:90,vc:0,vd:.1,b12:0,mg:12,sf:5},
-  {n:'Veg Biryani',kcal:190,p:4.5,c:30,f:6,fib:2.5,sug:1,ca:25,fe:1,pot:200,na:480,vc:5,vd:0,b12:0,mg:22,sf:1.5},
-  {n:'Mutton Biryani',kcal:240,p:15,c:28,f:8,fib:1,sug:.5,ca:30,fe:2,pot:280,na:560,vc:2,vd:.1,b12:2,mg:25,sf:2.5},
-  {n:'Egg Biryani',kcal:215,p:11,c:27,f:7,fib:.8,sug:.5,ca:32,fe:1.5,pot:230,na:520,vc:2,vd:1.2,b12:.8,mg:22,sf:2},
-  {n:'Curd Rice',kcal:140,p:4.5,c:22,f:3.5,fib:.5,sug:3,ca:110,fe:.2,pot:140,na:200,vc:.5,vd:.1,b12:.3,mg:12,sf:2},
-  {n:'Besan Chilla (2 pieces)',kcal:180,p:9,c:22,f:6,fib:4,sug:1,ca:30,fe:2.5,pot:220,na:300,vc:3,vd:0,b12:0,mg:40,sf:.8},
-  {n:'Sprouts Salad',kcal:90,p:6.5,c:14,f:1,fib:4.5,sug:1.5,ca:25,fe:1.8,pot:280,na:60,vc:8,vd:0,b12:0,mg:30,sf:.1},
-  {n:'Anda Bhurji Toast',kcal:320,p:17,c:30,f:14,fib:2,sug:3,ca:60,fe:2,pot:260,na:560,vc:2,vd:2,b12:1,mg:22,sf:4.5},
-  /* ── Dr. Choice range ── */
-  {n:'Dr. Choice Chocolate Berry Oats (50g)',kcal:190,p:6.5,c:32,f:3.5,fib:4.2,sug:8,ca:40,fe:3.5,pot:180,na:65,vc:0,vd:0,b12:0,mg:40,sf:1.2},
-  {n:'Dr. Choice Strawberry Oats (50g)',kcal:185,p:6,c:33,f:3,fib:4,sug:7.5,ca:38,fe:3.2,pot:170,na:60,vc:0,vd:0,b12:0,mg:38,sf:.9},
-  {n:'Dr. Choice Masala Oats (50g)',kcal:175,p:6,c:30,f:3.5,fib:4,sug:1.5,ca:30,fe:3,pot:160,na:380,vc:0,vd:0,b12:0,mg:36,sf:.8},
-  {n:'Dr. Choice Mango Oats (50g)',kcal:188,p:6,c:33.5,f:3,fib:4,sug:8.5,ca:35,fe:3,pot:165,na:55,vc:.5,vd:0,b12:0,mg:36,sf:.8},
-  {n:'Dr. Choice Protein Oats (50g)',kcal:195,p:10,c:28,f:4,fib:4.5,sug:3,ca:45,fe:3.5,pot:200,na:70,vc:0,vd:0,b12:.2,mg:45,sf:1},
-  /* ── Saffola Oats range ── */
-  {n:'Saffola Oats (plain, 40g)',kcal:148,p:5,c:25,f:2.8,fib:3.8,sug:0,ca:16,fe:1.8,pot:120,na:2,vc:0,vd:0,b12:0,mg:50,sf:.6},
-  {n:'Saffola Masala Oats (40g)',kcal:155,p:4.5,c:26,f:3,fib:3.5,sug:1,ca:18,fe:1.8,pot:110,na:350,vc:0,vd:0,b12:0,mg:40,sf:.7},
-  {n:'Saffola Chocolate Oats (40g)',kcal:162,p:5,c:28,f:3.2,fib:3.5,sug:6,ca:20,fe:2,pot:115,na:50,vc:0,vd:0,b12:0,mg:42,sf:1},
-  /* ── Quaker Oats range ── */
-  {n:'Quaker Oats (plain, 40g)',kcal:148,p:5.4,c:25.5,f:2.6,fib:4,sug:0,ca:17,fe:1.9,pot:130,na:2,vc:0,vd:0,b12:0,mg:52,sf:.5},
-  {n:'Quaker Oats Chocolate (40g)',kcal:160,p:4.8,c:28,f:3,fib:3.6,sug:6.5,ca:20,fe:2,pot:120,na:48,vc:0,vd:0,b12:0,mg:40,sf:1},
-  {n:'Quaker Oats Banana (40g)',kcal:158,p:4.5,c:28,f:2.8,fib:3.5,sug:5.5,ca:18,fe:1.8,pot:130,na:45,vc:.3,vd:0,b12:0,mg:38,sf:.6},
-  /* ── Muesli & granola ── */
-  {n:'Bagrrys Muesli Fruit & Nut (50g)',kcal:188,p:4.5,c:34,f:4,fib:3.5,sug:10,ca:25,fe:2.5,pot:180,na:40,vc:.5,vd:0,b12:0,mg:35,sf:.8},
-  {n:'Kelloggs Muesli Fruit (50g)',kcal:185,p:4,c:34,f:3.5,fib:3.5,sug:11,ca:28,fe:2.8,pot:175,na:45,vc:.5,vd:0,b12:0,mg:32,sf:.7},
-  {n:'Yoga Bar Muesli (50g)',kcal:195,p:5,c:33,f:5,fib:4,sug:8,ca:30,fe:2.5,pot:200,na:35,vc:0,vd:0,b12:0,mg:40,sf:1},
-  {n:'True Elements Granola (40g)',kcal:178,p:4.5,c:28,f:5.5,fib:3,sug:7,ca:22,fe:2,pot:160,na:30,vc:0,vd:0,b12:0,mg:35,sf:1},
-  {n:'Homemade Granola (40g)',kcal:190,p:4,c:28,f:7,fib:2.5,sug:6,ca:20,fe:1.5,pot:140,na:25,vc:0,vd:0,b12:0,mg:30,sf:1.5},
-  /* ── Overnight oats ── */
-  {n:'Overnight Oats with Milk (1 jar)',kcal:280,p:10,c:44,f:6,fib:5,sug:12,ca:140,fe:2.5,pot:320,na:80,vc:.5,vd:.4,b12:.5,mg:55,sf:2.5},
-  {n:'Overnight Oats with Curd (1 jar)',kcal:265,p:10.5,c:42,f:5.5,fib:5,sug:10,ca:145,fe:2.4,pot:300,na:75,vc:.5,vd:.2,b12:.4,mg:52,sf:2},
-  {n:'Protein Overnight Oats (1 jar)',kcal:310,p:18,c:40,f:6,fib:5.5,sug:8,ca:160,fe:3,pot:350,na:90,vc:0,vd:.5,b12:.8,mg:65,sf:1.8},
-  /* ── Breakfast cereals ── */
-  {n:'Kelloggs Corn Flakes (40g)',kcal:152,p:2.8,c:33,f:.4,fib:.8,sug:2.8,ca:4,fe:3.2,pot:42,na:300,vc:0,vd:.8,b12:.6,mg:6,sf:.1},
-  {n:'Kelloggs Special K (40g)',kcal:151,p:6,c:29,f:.8,fib:1,sug:4.4,ca:32,fe:4.2,pot:96,na:280,vc:0,vd:.8,b12:.6,mg:20,sf:.1},
-  {n:'Kelloggs Chocos (40g)',kcal:162,p:2.8,c:33,f:1.8,fib:1.2,sug:14,ca:40,fe:3.5,pot:80,na:120,vc:0,vd:.8,b12:.6,mg:15,sf:.7},
-  {n:'Kelloggs Oats (40g)',kcal:148,p:5.2,c:25,f:2.8,fib:3.8,sug:.5,ca:16,fe:2,pot:128,na:3,vc:0,vd:0,b12:0,mg:50,sf:.5},
-  {n:'Kelloggs Cornflakes with Milk (1 bowl)',kcal:230,p:7.5,c:40,f:4,fib:1,sug:9,ca:130,fe:3.2,pot:240,na:310,vc:.5,vd:1,b12:.8,mg:18,sf:2},
-  /* ── Protein bars popular in India ── */
-  {n:'RiteBite Max Protein Bar (67g)',kcal:230,p:20,c:24,f:6,fib:3,sug:8,ca:50,fe:1.5,pot:180,na:180,vc:0,vd:0,b12:.2,mg:20,sf:2},
-  {n:'Yoga Bar Protein Bar (50g)',kcal:195,p:10,c:22,f:7,fib:3,sug:6,ca:60,fe:1,pot:150,na:100,vc:0,vd:0,b12:0,mg:25,sf:2.5},
-  {n:'OZiva Protein Bar (60g)',kcal:210,p:15,c:22,f:7,fib:2.5,sug:7,ca:55,fe:1,pot:140,na:120,vc:0,vd:0,b12:.2,mg:22,sf:2},
-  {n:'MuscleBlaze Protein Bar (68g)',kcal:235,p:20,c:26,f:6,fib:2.5,sug:8,ca:40,fe:1,pot:160,na:200,vc:0,vd:0,b12:.2,mg:18,sf:2},
-  {n:'CLIF Bar (68g)',kcal:250,p:10,c:43,f:5,fib:5,sug:21,ca:250,fe:1.1,pot:200,na:140,vc:0,vd:0,b12:0,mg:35,sf:.5},
-  /* ── Indian health drinks ── */
-  {n:'Horlicks (3 tsp in milk)',kcal:180,p:6.5,c:28,f:4.5,fib:0,sug:14,ca:280,fe:3.5,pot:220,na:85,vc:10,vd:1.5,b12:1,mg:28,sf:2},
-  {n:'Bournvita (2 tsp in milk)',kcal:175,p:5.5,c:28,f:4.5,fib:.5,sug:16,ca:260,fe:3,pot:210,na:80,vc:8,vd:1.5,b12:.8,mg:22,sf:2},
-  {n:'Complan (3 tsp in milk)',kcal:195,p:8,c:27,f:5.5,fib:0,sug:12,ca:350,fe:4,pot:280,na:90,vc:12,vd:2,b12:1.2,mg:35,sf:2.5},
-
+  {n:'Dal (mixed, cooked, 1 bowl)',kcal:116,p:9,c:20,f:.4,fib:7.9,sug:1.8,ca:19,fe:3.3,pot:369,na:2,vc:1.5,vd:0,b12:0,mg:36,sf:.1},
+  {n:'Whole Egg (boiled)',kcal:155,p:12.6,c:1.1,f:10.6,fib:0,sug:1.1,ca:50,fe:1.2,pot:126,na:124,vc:0,vd:2,b12:1.1,mg:10,sf:3.3},
+  {n:'Banana',kcal:89,p:1.1,c:22.8,f:.3,fib:2.6,sug:12.2,ca:5,fe:.3,pot:358,na:1,vc:8.7,vd:0,b12:0,mg:27,sf:.1},
+  {n:'Chicken Breast (cooked)',kcal:165,p:31,c:0,f:3.6,fib:0,sug:0,ca:15,fe:1,pot:256,na:74,vc:0,vd:.1,b12:.3,mg:29,sf:1},
+  {n:'Paneer (cottage cheese)',kcal:265,p:18.3,c:1.2,f:20.8,fib:0,sug:1.2,ca:480,fe:.2,pot:70,na:28,vc:0,vd:.2,b12:.5,mg:8,sf:13},
 ];
 
 /* INIT */
@@ -1287,18 +1101,84 @@ async function doS(){
   if(q.length<2){out.innerHTML='';return;}
   out.innerHTML='<div class="sp">Searching<span class="sr"></span></div>';
   const ql=q.toLowerCase();
-  const hits=FOODS.filter(f=>f.n.toLowerCase().includes(ql));
+  // Load saved custom foods and merge with built-in
+  const customFoods = JSON.parse(localStorage.getItem('nutrily_custom_foods') || '[]');
+  const allFoods = [...FOODS, ...customFoods];
+  const hits=allFoods.filter(f=>f.n.toLowerCase().includes(ql));
+
+  // Show local results immediately while online search runs
+  if(hits.length){
+    out.innerHTML='';
+    lbl(out,'📦 Indian & Common Foods');
+    hits.forEach(f=>out.appendChild(mBR(f)));
+  }
+
+  // Online search — try Open Food Facts directly (CORS-enabled, no proxy needed)
   let online=false;
   try{
-    const url=`https://corsproxy.io/?url=${encodeURIComponent('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&action=process&json=1&page_size=20&fields=product_name,brands,nutriments,serving_size,serving_quantity')}`;
-    const ac=new AbortController();setTimeout(()=>ac.abort(),7000);
-    const res=await fetch(url,{signal:ac.signal});
+    const ac=new AbortController();
+    setTimeout(()=>ac.abort(),8000);
+    // Use OFF v2 search API — direct, no proxy, CORS supported
+    const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='
+      +encodeURIComponent(q)
+      +'&action=process&json=1&page_size=24'
+      +'&fields=product_name,brands,nutriments,serving_size,serving_quantity'
+      +'&sort_by=unique_scans_n';
+    const res=await fetch(url,{signal:ac.signal,headers:{'Accept':'application/json'}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
-    const prods=(data.products||[]).filter(p=>p.product_name&&p.nutriments&&(p.nutriments['energy-kcal_100g']||p.nutriments['energy_100g']));
-    if(prods.length){online=true;out.innerHTML='';lbl(out,'🌐 Online');prods.slice(0,18).forEach(p=>{const n=p.nutriments,kc=n['energy-kcal_100g']||(n['energy_100g']||0)/4.184;out.appendChild(mOR(p,kc));});}
-  }catch{}
-  if(hits.length){lbl(out,'📦 Indian & Common Foods');hits.forEach(f=>out.appendChild(mBR(f)));}
-  if(!online&&!hits.length)out.innerHTML=`<div class="nr">No results for "<strong>${q}</strong>"<br>Try: tea, chai, roti, biryani, dal, idli, paratha…</div>`;
+    const prods=(data.products||[]).filter(p=>
+      p.product_name &&
+      p.nutriments &&
+      (p.nutriments['energy-kcal_100g']||p.nutriments['energy_100g'])
+    );
+    if(prods.length){
+      online=true;
+      // Re-render: online results first, then local
+      out.innerHTML='';
+      lbl(out,'🌐 Online Results');
+      prods.slice(0,18).forEach(p=>{
+        const n=p.nutriments;
+        const kc=n['energy-kcal_100g']||(n['energy_100g']||0)/4.184;
+        out.appendChild(mOR(p,kc));
+      });
+      if(hits.length){
+        lbl(out,'📦 Indian & Common Foods');
+        hits.forEach(f=>out.appendChild(mBR(f)));
+      }
+    }
+  }catch(err){
+    // Network error or timeout — just show local results with a note
+    if(!hits.length){
+      out.innerHTML='';
+      const d=document.createElement('div');d.className='nr';
+      d.innerHTML='No results for <strong>'+q+'</strong><br><span style="font-size:11px;color:var(--faint)">Offline — showing local database only</span>';
+      const btn=document.createElement('button');
+      btn.textContent='+ Add "'+q+'" manually';
+      btn.style.cssText='display:block;margin:12px auto 0;padding:8px 18px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;color:var(--text);cursor:pointer';
+      btn.onclick=()=>openManualAdd(q);
+      d.appendChild(btn);
+      out.appendChild(d);
+    } else {
+      // Already showing local hits — add offline note at top
+      const note=document.createElement('div');
+      note.style.cssText='font-size:11px;color:var(--faint);padding:4px 0 10px;text-align:center';
+      note.textContent='Online search unavailable — showing local database';
+      out.insertBefore(note,out.firstChild);
+    }
+  }
+
+  if(!online&&!hits.length){
+    out.innerHTML='';
+    const d2=document.createElement('div');d2.className='nr';
+    d2.innerHTML='No results for <strong>'+q+'</strong>';
+    const btn2=document.createElement('button');
+    btn2.textContent='+ Add "'+q+'" manually';
+    btn2.style.cssText='display:block;margin:12px auto 0;padding:8px 18px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;color:var(--text);cursor:pointer';
+    btn2.onclick=()=>openManualAdd(q);
+    d2.appendChild(btn2);
+    out.appendChild(d2);
+  }
 }
 function lbl(c,t){const d=document.createElement('div');d.className='rl';d.textContent=t;c.appendChild(d);}
 function mOR(p,kc){
@@ -1470,9 +1350,8 @@ let exMode='plan';
 function setExMode(m){
   exMode=m;
   const pBtn=document.getElementById('modeBtn0'),lBtn=document.getElementById('modeBtn1');
-  const base='padding:5px 13px;border-radius:16px;border:none;font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;';
-  pBtn.style.cssText=base+(m==='plan'?'background:var(--text);color:#fff':'background:transparent;color:var(--muted)');
-  lBtn.style.cssText=base+(m==='log'?'background:var(--text);color:#fff':'background:transparent;color:var(--muted)');
+  pBtn.classList.toggle('ex-mode-active', m==='plan');
+  lBtn.classList.toggle('ex-mode-active', m==='log');
   renderExCard();
 }
 function getWeekDates(){
@@ -1536,8 +1415,8 @@ function renderExCard(){
     else plan.forEach((ex,i)=>{
       const row=document.createElement('div');row.className='ex-row';
       const meta=[ex.sets?ex.sets+' sets':'',ex.reps?ex.reps+' reps':'',ex.weight?ex.weight+'kg':''].filter(Boolean).join(' · ');
-      const ytBtn=ex.ytUrl?`<a class="ex-yt-btn" href="${ex.ytUrl}" target="_blank" rel="noopener">▶ Watch</a>`:'';
-      row.innerHTML=`<div class="ex-icon">${exIcon(ex.name)}</div><div class="ex-info"><div class="ex-name">${ex.name}</div>${meta?`<div class="ex-meta">${meta}</div>`:''}</div>${ytBtn}<button class="ex-del" onclick="delPlanned(${i})">✕</button>`;
+      const ytBtn=ex.ytUrl?`<button class="ex-yt-btn" onclick="window.open('${ex.ytUrl.replace(/'/g,"\\'")}','_blank')">▶ Watch</button>`:'';
+      row.innerHTML=`<div class="ex-icon">${exIcon(ex.name)}</div><div class="ex-info"><div class="ex-name">${ex.name}</div>${meta?`<div class="ex-meta">${meta}</div>`:''}</div>${ytBtn}<button class="ex-edit-btn" onclick="editPlanned(${i})" title="Edit">✎</button><button class="ex-del" onclick="delPlanned(${i})">✕</button>`;
       pl.appendChild(row);
     });
   }
@@ -1559,7 +1438,7 @@ function renderExCard(){
         const row=document.createElement('div');
         row.className='ex-check-row'+(ex.done?' done-ex':'');
         const meta=[ex.sets?ex.sets+' sets':'',ex.reps?ex.reps+' reps':'',ex.weight?ex.weight+'kg':''].filter(Boolean).join(' · ');
-        const ytBtn2=ex.ytUrl?`<a class="ex-yt-btn" href="${ex.ytUrl}" target="_blank" rel="noopener">▶ Watch</a>`:'';
+        const ytBtn2=ex.ytUrl?`<button class="ex-yt-btn" onclick="window.open('${ex.ytUrl.replace(/'/g,"\\'")}','_blank')">▶ Watch</button>`:'';
         row.innerHTML=`<div class="ex-cb${ex.done?' checked':''}" onclick="toggleLogEx(${i})">${ex.done?'✓':''}</div><div class="ex-icon">${exIcon(ex.name)}</div><div class="ex-info"><div class="ex-name">${ex.name}</div>${meta?`<div class="ex-meta">${meta}</div>`:''}</div>${ytBtn2}`;
         ll.appendChild(row);
       });
@@ -1613,9 +1492,32 @@ async function delPlanned(i){
   if(!exWeek[exSelDay]||!exWeek[exSelDay].plan)return;
   exWeek[exSelDay].plan.splice(i,1);
   if(!exWeek[exSelDay].status){
-    exWeek[exSelDay].log=exWeek[exSelDay].plan.map(e=>({name:e.name,sets:e.sets,reps:e.reps,weight:e.weight,done:false}));
+    exWeek[exSelDay].log=exWeek[exSelDay].plan.map(e=>({name:e.name,sets:e.sets,reps:e.reps,weight:e.weight,ytUrl:e.ytUrl||null,done:false}));
   }
   await kP('exWeek',exWeek);renderExPage();toast('Removed from plan');
+}
+
+function editPlanned(i){
+  if(!exWeek[exSelDay]||!exWeek[exSelDay].plan)return;
+  const ex=exWeek[exSelDay].plan[i];
+  if(!ex)return;
+  // Fill the input fields with existing values
+  document.getElementById('exName').value=ex.name||'';
+  document.getElementById('exSets').value=ex.sets||'';
+  document.getElementById('exReps').value=ex.reps||'';
+  document.getElementById('exWeight').value=ex.weight||'';
+  const ytInp=document.getElementById('exYtUrl');
+  if(ytInp)ytInp.value=ex.ytUrl||'';
+  // Remove the existing entry so saving via + Add replaces it
+  exWeek[exSelDay].plan.splice(i,1);
+  if(!exWeek[exSelDay].status){
+    exWeek[exSelDay].log=exWeek[exSelDay].plan.map(e=>({name:e.name,sets:e.sets,reps:e.reps,weight:e.weight,ytUrl:e.ytUrl||null,done:false}));
+  }
+  kP('exWeek',exWeek);
+  renderExCard();
+  // Focus the name field
+  setTimeout(()=>document.getElementById('exName').focus(),100);
+  toast('Edit the fields and tap + Add');
 }
 async function addLogExtra(){
   const name=document.getElementById('logExName').value.trim();
@@ -1967,10 +1869,9 @@ async function rPg(){
   const all=await lA();
   const bd={};
   all.forEach(l=>{
-    if(!bd[l.date])bd[l.date]={kcal:0,protein:0,carbs:0,fat:0,micros:{}};
+    if(!bd[l.date])bd[l.date]={kcal:0,protein:0,carbs:0,fat:0};
     bd[l.date].kcal+=l.kcal||0;bd[l.date].protein+=l.protein||0;
     bd[l.date].carbs+=l.carbs||0;bd[l.date].fat+=l.fat||0;
-    if(l.micros)MICROS.forEach(m=>{bd[l.date].micros[m.k]=(bd[l.date].micros[m.k]||0)+(l.micros[m.k]||0);});
   });
   const days=Object.keys(bd).sort();
   document.getElementById('pgL').textContent=days.length;
@@ -2038,7 +1939,7 @@ async function rPg(){
   // insights
   rInsights(bd,last7,avgW,avgS,streak,stepsDays);
 
-  dC(bd);dMac(bd);rMi(bd[TODAY]?.micros||{});rWellbeingProgress();
+  dC(bd);dMac(bd);rWellbeingProgress();
 }
 
 function rExHeatmap(){
@@ -2174,183 +2075,9 @@ function dMac(bd){
   if(chM)chM.destroy();
   chM=new Chart(ctx,{type:'line',data:{labels:lbs,datasets:[{label:'Protein',data:mk('protein'),borderColor:'#b87333',backgroundColor:'rgba(184,115,51,.07)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#b87333'},{label:'Carbs',data:mk('carbs'),borderColor:'#6a8f6e',backgroundColor:'rgba(106,143,110,.07)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#6a8f6e'},{label:'Fat',data:mk('fat'),borderColor:'#4a7fa0',backgroundColor:'rgba(74,127,160,.07)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#4a7fa0'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},color:'#9a9189',boxWidth:10,padding:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#9a9189'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Sans',size:10},color:'#9a9189'},beginAtZero:true}}}});
 }
-function rMi(m){
-  const el=document.getElementById('miL');el.innerHTML='';
-  MICROS.forEach(mi=>{const v=m[mi.k]||0,pct=Math.min(v/mi.dv*100,100);const row=document.createElement('div');row.className='mir';row.innerHTML=`<div class="mit"><span class="mim">${mi.label}</span><span class="miv">${v<1?v.toFixed(2):Math.round(v)} ${mi.u} <span style="font-size:10px">(${Math.round(pct)}% DV)</span></span></div><div class="mib"><div class="mif" style="width:${pct}%;background:${mi.c}"></div></div>`;el.appendChild(row);});
-  rFoodSuggestions(m);
-}
 
-/* food → nutrient lookup: top sources per micro key */
-const MICRO_FOODS={
-  ca:{label:'Calcium',color:'#c8b4e0',unit:'mg',dv:1300,sources:[
-    {icon:'🧀',name:'Paneer',q:'paneer',val:'480mg/100g'},
-    {icon:'🫘',name:'Tofu (firm)',q:'tofu',val:'350mg/100g'},
-    {icon:'🥛',name:'Whole Milk',q:'milk',val:'113mg/100g'},
-    {icon:'🍦',name:'Curd / Dahi',q:'curd',val:'120mg/100g'},
-    {icon:'🥗',name:'Spinach',q:'spinach',val:'99mg/100g'},
-    {icon:'🥦',name:'Broccoli',q:'broccoli',val:'47mg/100g'},
-    {icon:'🍦',name:'Greek Yogurt',q:'yogurt',val:'110mg/100g'},
-    {icon:'🫘',name:'Chana Dal',q:'chana dal',val:'42mg/100g'},
-    {icon:'🥛',name:'Lassi',q:'lassi',val:'120mg/100g'},
-    {icon:'🍛',name:'Palak Paneer',q:'palak paneer',val:'240mg/100g'},
-  ]},
-  fe:{label:'Iron',color:'#b87333',unit:'mg',dv:18,sources:[
-    {icon:'🫘',name:'Soya Chunks',q:'soya chunks',val:'10mg/100g'},
-    {icon:'🥜',name:'Cashews',q:'cashews',val:'6.7mg/100g'},
-    {icon:'🌾',name:'Oats',q:'oats',val:'4.7mg/100g'},
-    {icon:'🧀',name:'Tofu (firm)',q:'tofu',val:'5.4mg/100g'},
-    {icon:'🌿',name:'Spinach',q:'spinach',val:'2.7mg/100g'},
-    {icon:'🍛',name:'Dal (mixed)',q:'dal',val:'3.3mg/100g'},
-    {icon:'🍛',name:'Toor Dal',q:'toor dal',val:'1.0mg/100g'},
-    {icon:'🥜',name:'Almonds',q:'almonds',val:'3.7mg/100g'},
-    {icon:'🍞',name:'Whole Wheat Bread',q:'bread',val:'3.6mg/100g'},
-    {icon:'🌾',name:'Poha',q:'poha',val:'2.8mg/100g'},
-  ]},
-  pot:{label:'Potassium',color:'#6a8f6e',unit:'mg',dv:4700,sources:[
-    {icon:'🥬',name:'Spinach',q:'spinach',val:'558mg/100g'},
-    {icon:'🥜',name:'Almonds',q:'almonds',val:'733mg/100g'},
-    {icon:'🥑',name:'Avocado',q:'avocado',val:'485mg/100g'},
-    {icon:'🍠',name:'Sweet Potato',q:'sweet potato',val:'475mg/100g'},
-    {icon:'🍌',name:'Banana',q:'banana',val:'358mg/100g'},
-    {icon:'🍛',name:'Dal (mixed)',q:'dal',val:'369mg/100g'},
-    {icon:'🥜',name:'Peanuts',q:'peanuts',val:'634mg/100g'},
-    {icon:'🫘',name:'Rajma',q:'rajma',val:'403mg/100g'},
-    {icon:'🍈',name:'Guava',q:'guava',val:'417mg/100g'},
-    {icon:'🥔',name:'Potato',q:'potato',val:'328mg/100g'},
-  ]},
-  na:{label:'Sodium',color:'#b85c44',unit:'mg',dv:2300,sources:[
-    {icon:'💡',name:'Tip: Add salt',q:'',val:'Add a pinch of salt to home-cooked meals'},
-    {icon:'🍛',name:'Sambar',q:'sambar',val:'420mg/bowl'},
-    {icon:'🧀',name:'Butter',q:'butter',val:'643mg/100g'},
-    {icon:'🥜',name:'Peanut Butter',q:'peanut butter',val:'459mg/100g'},
-  ]},
-  vc:{label:'Vitamin C',color:'#4a7fa0',unit:'mg',dv:90,sources:[
-    {icon:'🍈',name:'Guava',q:'guava',val:'228mg/100g'},
-    {icon:'🥦',name:'Broccoli',q:'broccoli',val:'89mg/100g'},
-    {icon:'🍊',name:'Orange',q:'orange',val:'53mg/100g'},
-    {icon:'🍋',name:'Nimbu Pani',q:'nimbu pani',val:'19mg/glass'},
-    {icon:'🥝',name:'Papaya',q:'papaya',val:'61mg/100g'},
-    {icon:'🍅',name:'Tomato',q:'tomato',val:'14mg/100g'},
-    {icon:'🥬',name:'Spinach',q:'spinach',val:'28mg/100g'},
-    {icon:'🫑',name:'Aloo Gobi',q:'aloo gobi',val:'35mg/100g'},
-    {icon:'🍊',name:'Mango',q:'mango',val:'36mg/100g'},
-    {icon:'🍓',name:'Watermelon',q:'watermelon',val:'8mg/100g'},
-  ]},
-  vd:{label:'Vitamin D',color:'#c8a060',unit:'µg',dv:20,sources:[
-    {icon:'🐟',name:'Salmon',q:'salmon',val:'14.4µg/100g'},
-    {icon:'🐟',name:'Fish Curry',q:'fish curry',val:'4µg/100g'},
-    {icon:'🐟',name:'Tuna',q:'tuna',val:'3.8µg/100g'},
-    {icon:'🥚',name:'Whole Egg',q:'egg',val:'2µg/100g'},
-    {icon:'🍳',name:'Egg Bhurji',q:'egg bhurji',val:'2.2µg/100g'},
-    {icon:'🥛',name:'Soy Milk',q:'soy milk',val:'1µg/100g'},
-    {icon:'🧈',name:'Butter',q:'butter',val:'1.5µg/100g'},
-    {icon:'🥛',name:'Whole Milk',q:'milk',val:'0.1µg/100g'},
-    {icon:'☀️',name:'Sunlight',q:'',val:'15 min morning sun daily'},
-  ]},
-  b12:{label:'Vitamin B12',color:'#7c5cbf',unit:'µg',dv:2.4,sources:[
-    {icon:'🐟',name:'Salmon',q:'salmon',val:'3.2µg/100g'},
-    {icon:'🐟',name:'Tuna',q:'tuna',val:'2.5µg/100g'},
-    {icon:'🥩',name:'Mutton Curry',q:'mutton',val:'2.4µg/100g'},
-    {icon:'🐟',name:'Fish Curry',q:'fish curry',val:'3µg/100g'},
-    {icon:'🍳',name:'Egg Bhurji',q:'egg bhurji',val:'1.2µg/100g'},
-    {icon:'🥚',name:'Whole Egg',q:'egg',val:'1.1µg/100g'},
-    {icon:'🥛',name:'Lassi',q:'lassi',val:'0.6µg/100g'},
-    {icon:'🥛',name:'Soy Milk',q:'soy milk',val:'0.6µg/100g'},
-    {icon:'🥛',name:'Whole Milk',q:'milk',val:'0.4µg/100g'},
-    {icon:'🍦',name:'Curd / Dahi',q:'curd',val:'0.4µg/100g'},
-  ]},
-  fib:{label:'Fiber',color:'#7aaa74',unit:'g',dv:28,sources:[
-    {icon:'🥜',name:'Almonds',q:'almonds',val:'12.5g/100g'},
-    {icon:'🌾',name:'Oats',q:'oats',val:'10.6g/100g'},
-    {icon:'🍛',name:'Dal (mixed)',q:'dal',val:'7.9g/100g'},
-    {icon:'🥑',name:'Avocado',q:'avocado',val:'6.7g/100g'},
-    {icon:'🫘',name:'Rajma',q:'rajma',val:'6.4g/100g'},
-    {icon:'🍈',name:'Guava',q:'guava',val:'5.4g/100g'},
-    {icon:'🍠',name:'Sweet Potato',q:'sweet potato',val:'3.3g/100g'},
-    {icon:'🍌',name:'Banana',q:'banana',val:'2.6g/100g'},
-    {icon:'🥦',name:'Broccoli',q:'broccoli',val:'2.6g/100g'},
-    {icon:'🫘',name:'Soya Chunks',q:'soya chunks',val:'4g/100g'},
-  ]},
-  sug:{label:'Sugar',color:'#c8a060',unit:'g',dv:50,sources:[
-    {icon:'💡',name:'High sugar today',q:'',val:'Cut back on sweets, juices & packaged foods'},
-    {icon:'🍌',name:'Natural sugars OK',q:'',val:'Fruit sugars are fine — avoid added sugars'},
-  ]},
-  mg:{label:'Magnesium',color:'#4a7fa0',unit:'mg',dv:420,sources:[
-    {icon:'🥜',name:'Cashews',q:'cashews',val:'292mg/100g'},
-    {icon:'🥜',name:'Almonds',q:'almonds',val:'270mg/100g'},
-    {icon:'🌾',name:'Oats',q:'oats',val:'177mg/100g'},
-    {icon:'🥬',name:'Spinach',q:'spinach',val:'79mg/100g'},
-    {icon:'🫘',name:'Soya Chunks',q:'soya chunks',val:'40mg/100g'},
-    {icon:'🍌',name:'Banana',q:'banana',val:'27mg/100g'},
-    {icon:'🫘',name:'Edamame',q:'edamame',val:'64mg/100g'},
-    {icon:'🍛',name:'Chana Dal',q:'chana dal',val:'48mg/100g'},
-    {icon:'🥜',name:'Peanut Butter',q:'peanut butter',val:'168mg/100g'},
-    {icon:'🍫',name:'Dark Chocolate',q:'dark chocolate',val:'228mg/100g'},
-  ]},
-  sf:{label:'Sat. Fat',color:'#b85c44',unit:'g',dv:20,sources:[
-    {icon:'💡',name:'Already high',q:'',val:'Reduce ghee, butter & full-fat dairy today'},
-    {icon:'✅',name:'Better fats',q:'avocado',val:'Try avocado, nuts & olive oil instead'},
-  ]},
-};
 
-function rFoodSuggestions(micros){
-  const card=document.getElementById('foodSugCard');
-  const list=document.getElementById('foodSugList');
-  list.innerHTML='';
 
-  // if no food logged at all today, hide card
-  const totalLogged=Object.values(micros).reduce((a,b)=>a+(b||0),0);
-  if(totalLogged===0){card.style.display='none';return;}
-
-  // find deficient micros (below 60% DV), skip na/sug/sf from suggestions
-  const skipKeys=new Set(['na','sug','sf']);
-  const deficient=MICROS
-    .filter(mi=>!skipKeys.has(mi.k))
-    .map(mi=>({...mi,v:micros[mi.k]||0,pct:(micros[mi.k]||0)/mi.dv*100}))
-    .filter(mi=>mi.pct<60)
-    .sort((a,b)=>a.pct-b.pct)
-    .slice(0,6);
-
-  card.style.display='block';
-
-  if(!deficient.length){
-    list.innerHTML='<div style="font-size:13px;color:var(--green);padding:8px 0">🌟 Great job! All key micronutrients are above 60% DV today. Keep it up!</div>';
-    return;
-  }
-
-  deficient.forEach(mi=>{
-    const mf=MICRO_FOODS[mi.k];
-    if(!mf)return;
-    const row=document.createElement('div');row.className='fsug-row';
-    const pct=Math.round(mi.pct);
-    const urgency=pct<20?'🔴':pct<40?'🟠':'🟡';
-    row.innerHTML=`<div class="fsug-micro">
-      <div class="fsug-dot" style="background:${mf.color}"></div>
-      <span class="fsug-label">${urgency} Low ${mf.label}</span>
-      <span class="fsug-pct">${pct}% DV · ${mi.v<1?mi.v.toFixed(2):Math.round(mi.v)}${mf.unit}</span>
-    </div>
-    <div class="fsug-chips" id="chips_${mi.k}"></div>`;
-    list.appendChild(row);
-
-    const chipsEl=row.querySelector('.fsug-chips');
-    mf.sources.forEach(src=>{
-      const chip=document.createElement('div');chip.className='fsug-chip';
-      chip.innerHTML=`<span class="fsug-chip-icon">${src.icon}</span><div><div class="fsug-chip-name">${src.name}</div><div class="fsug-chip-val">${src.val}</div></div>`;
-      if(src.q){
-        chip.onclick=()=>{
-          gn('food',1);
-          const sb=document.getElementById('sb');
-          sb.value=src.q;
-          sb.dispatchEvent(new Event('input'));
-        };
-      } else {
-        chip.style.cursor='default';
-        chip.style.opacity='0.75';
-      }
-      chipsEl.appendChild(chip);
-    });
-  });
-}
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200);}
 function r1(n){return Math.round(n*10)/10;}
@@ -2625,6 +2352,126 @@ async function addPlanned() {
   renderExPage();
   toast('Added to plan!');
 }
+
+// ── Manual food add ────────────────────────────────────────────────
+// Basis unit → grams multiplier (for per-100g normalisation)
+const UNIT_GRAMS = {
+  g:1, kg:1000, oz:28.35, ml:1, l:1000,
+  cup:240, tbsp:15, tsp:5,
+  serving:null, scoop:30, piece:null, slice:null,
+  bowl:200, plate:350, handful:30, '100g':100
+};
+
+function updateManualHint() {
+  const basis = document.getElementById('manualBasis').value;
+  const label = document.getElementById('manualBasis').options[document.getElementById('manualBasis').selectedIndex].text;
+  const hint  = document.getElementById('manualKcalHint');
+  const qtyRow = document.getElementById('manualQtyRow');
+  const unitLabel = document.getElementById('manualUnitLabel');
+  if (hint) hint.textContent = '— per ' + label;
+  // Show qty row only for countable units where user may want multiple
+  const showQty = ['g','ml','piece','slice','scoop','bowl','cup','tbsp','tsp','handful'].includes(basis);
+  if (qtyRow) qtyRow.style.display = showQty ? 'block' : 'none';
+  if (unitLabel) unitLabel.textContent = label;
+}
+
+function openManualAdd(prefill) {
+  document.getElementById('manualName').value  = prefill || '';
+  document.getElementById('manualKcal').value  = '';
+  document.getElementById('manualProt').value  = '';
+  document.getElementById('manualCarb').value  = '';
+  document.getElementById('manualFat').value   = '';
+  document.getElementById('manualQty').value   = '1';
+  document.getElementById('manualBasis').value = 'serving';
+  document.getElementById('manualSave').checked = false;
+  document.getElementById('manualQtyRow').style.display = 'none';
+  document.getElementById('manualKcalHint').textContent = '— per serving';
+  document.getElementById('manualOv').style.display = 'flex';
+  setTimeout(() => document.getElementById(prefill ? 'manualKcal' : 'manualName').focus(), 280);
+}
+
+function closeManual() {
+  document.getElementById('manualOv').style.display = 'none';
+}
+
+async function logManual() {
+  const name  = document.getElementById('manualName').value.trim();
+  const kcalPer = parseFloat(document.getElementById('manualKcal').value) || 0;
+  const protPer = parseFloat(document.getElementById('manualProt').value) || 0;
+  const carbPer = parseFloat(document.getElementById('manualCarb').value) || 0;
+  const fatPer  = parseFloat(document.getElementById('manualFat').value)  || 0;
+  const basis   = document.getElementById('manualBasis').value;
+  const qty     = parseFloat(document.getElementById('manualQty').value) || 1;
+  const save    = document.getElementById('manualSave').checked;
+
+  if (!name)    { toast('Enter a food name'); return; }
+  if (!kcalPer) { toast('Enter calories'); return; }
+
+  // Calculate actual calories based on unit and quantity
+  const gramsPerUnit = UNIT_GRAMS[basis];
+  let finalKcal, finalProt, finalCarb, finalFat, gramsTotal, unitLabel;
+
+  if (basis === '100g') {
+    // Values are per 100g — pass through to portion sheet for quantity picking
+    gramsTotal = 100;
+    finalKcal = kcalPer; finalProt = protPer; finalCarb = carbPer; finalFat = fatPer;
+    unitLabel = '100g';
+  } else if (gramsPerUnit) {
+    // Known gram equivalent — multiply by quantity
+    gramsTotal = gramsPerUnit * qty;
+    const ratio = gramsTotal / 100;
+    finalKcal = Math.round(kcalPer * qty);
+    finalProt = Math.round(protPer * qty * 10) / 10;
+    finalCarb = Math.round(carbPer * qty * 10) / 10;
+    finalFat  = Math.round(fatPer  * qty * 10) / 10;
+    const basisLabel = document.getElementById('manualBasis').options[document.getElementById('manualBasis').selectedIndex].text;
+    unitLabel = qty === 1 ? basisLabel : qty + ' ' + basisLabel;
+  } else {
+    // Countable unit (piece, slice, serving) — multiply by qty directly
+    finalKcal = Math.round(kcalPer * qty);
+    finalProt = Math.round(protPer * qty * 10) / 10;
+    finalCarb = Math.round(carbPer * qty * 10) / 10;
+    finalFat  = Math.round(fatPer  * qty * 10) / 10;
+    gramsTotal = qty * 100; // estimate for storage
+    const basisLabel = document.getElementById('manualBasis').options[document.getElementById('manualBasis').selectedIndex].text;
+    unitLabel = qty === 1 ? basisLabel : qty + 'x ' + basisLabel;
+  }
+
+  // Save to custom foods DB if ticked (save per-unit values for reuse)
+  if (save) {
+    const custom = JSON.parse(localStorage.getItem('nutrily_custom_foods') || '[]');
+    if (!custom.find(f => f.n.toLowerCase() === name.toLowerCase())) {
+      custom.push({
+        n: name, kcal: kcalPer, p: protPer, c: carbPer, f: fatPer,
+        fib:0, sug:0, ca:0, fe:0, pot:0, na:0, vc:0, vd:0, b12:0, mg:0, sf:0,
+        _unit: basis  // remember the unit for next time
+      });
+      localStorage.setItem('nutrily_custom_foods', JSON.stringify(custom));
+    }
+  }
+
+  if (basis === '100g') {
+    // Let user pick quantity via the normal portion sheet
+    closeManual();
+    oS({ name, brand:'', sq:null, sl:'',
+      n:{ kcal:kcalPer, protein:protPer, carbs:carbPer, fat:fatPer,
+          fib:0, sug:0, ca:0, fe:0, pot:0, na:0, vc:0, vd:0, b12:0, mg:0, sf:0 }
+    });
+  } else {
+    // Log directly with calculated values
+    const displayName = name + (unitLabel ? ' (' + unitLabel + ')' : '');
+    await sL({
+      name: displayName, meal: curMeal, date: TODAY,
+      kcal: finalKcal, protein: finalProt, carbs: finalCarb, fat: finalFat,
+      fiber:0, sugar:0, grams: gramsTotal, unit: basis,
+      loggedAt: new Date().toISOString()
+    });
+    closeManual();
+    await rH();
+    if(document.getElementById('p-food').classList.contains('active')) dS();
+    toast('✓ Added ' + displayName);
+  }
+}
 </script>
 
 
@@ -2638,6 +2485,86 @@ async function addPlanned() {
     </div>
     <div class="tpl-body" id="tplBody"></div>
     <div class="tpl-footer" id="tplFooter"></div>
+  </div>
+</div>
+
+<!-- Manual food add sheet -->
+<div class="ov" id="manualOv" onclick="if(event.target===this)closeManual()" style="display:none">
+  <div class="sh">
+    <div class="shd"></div>
+    <div class="shh">
+      <div class="sfn" id="manualTitle">Add food manually</div>
+      <div class="sfb">Enter nutrition info from packet label or your estimate</div>
+      <button class="shc" onclick="closeManual()">✕</button>
+    </div>
+    <div class="shb">
+
+      <div class="ql">Food name</div>
+      <div class="qr" style="margin-bottom:12px">
+        <input class="qi" id="manualName" placeholder="e.g. Apple, Maggi, Dal rice..." style="flex:1">
+      </div>
+
+      <div class="ql">Nutrition values are per</div>
+      <div style="margin-bottom:12px">
+        <select class="us" id="manualBasis" onchange="updateManualHint()" style="width:100%">
+          <optgroup label="Weight">
+            <option value="g">grams (g)</option>
+            <option value="kg">kilograms (kg)</option>
+            <option value="oz">ounces (oz)</option>
+          </optgroup>
+          <optgroup label="Volume">
+            <option value="ml">ml</option>
+            <option value="l">litres (L)</option>
+            <option value="cup">cup (~240ml)</option>
+            <option value="tbsp">tablespoon (tbsp)</option>
+            <option value="tsp">teaspoon (tsp)</option>
+          </optgroup>
+          <optgroup label="Serving">
+            <option value="serving" selected>serving</option>
+            <option value="scoop">scoop (~30g)</option>
+            <option value="piece">piece / count</option>
+            <option value="slice">slice</option>
+            <option value="bowl">bowl (~200g)</option>
+            <option value="plate">plate (~350g)</option>
+            <option value="handful">handful (~30g)</option>
+          </optgroup>
+          <optgroup label="Standard">
+            <option value="100g">per 100g (label standard)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div id="manualQtyRow" style="display:none;margin-bottom:12px">
+        <div class="ql">How many <span id="manualUnitLabel">servings</span>?</div>
+        <input class="qi" id="manualQty" type="number" placeholder="1" min="0.1" step="0.1" value="1" style="width:100%">
+      </div>
+
+      <div class="ql">Calories (kcal) <span id="manualKcalHint" style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">per serving</span></div>
+      <div class="qr" style="margin-bottom:8px">
+        <input class="qi" id="manualKcal" type="number" placeholder="e.g. 95" min="0" style="flex:1">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+        <div>
+          <div class="ql" style="margin-bottom:4px">Protein (g)</div>
+          <input class="qi" id="manualProt" type="number" placeholder="0" min="0" step=".1" style="width:100%">
+        </div>
+        <div>
+          <div class="ql" style="margin-bottom:4px">Carbs (g)</div>
+          <input class="qi" id="manualCarb" type="number" placeholder="0" min="0" step=".1" style="width:100%">
+        </div>
+        <div>
+          <div class="ql" style="margin-bottom:4px">Fat (g)</div>
+          <input class="qi" id="manualFat" type="number" placeholder="0" min="0" step=".1" style="width:100%">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+        <input type="checkbox" id="manualSave" style="width:16px;height:16px;cursor:pointer">
+        <label for="manualSave" style="font-size:13px;color:var(--text);cursor:pointer">Save to my foods (remember this)</label>
+      </div>
+      <button class="ab" onclick="logManual()">Add to log</button>
+    </div>
   </div>
 </div>
 </body>
