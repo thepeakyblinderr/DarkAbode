@@ -891,9 +891,9 @@ html[data-theme="dark"] .toast { background: var(--card); color: var(--text); bo
       </div>
       <button class="prof-save" onclick="saveProf()">Save Profile</button>
 
-  <div class="prof-sec">Food Search — Nutritionix API</div>
+  <div class="prof-sec">Food Search — Nutritionix API (Optional)</div>
   <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
-    Get a free key at <strong style="color:var(--text)">developer.nutritionix.com</strong> for better search — Indian dishes, branded foods, Dr. Choice Oats etc. Keys stay on your device only.
+    <span style="color:var(--amber);font-weight:500">Note:</span> Nutritionix discontinued their free tier. Food search now uses <strong style="color:var(--text)">Open Food Facts</strong> by default (no key needed). If you have a paid Nutritionix plan, enter your keys below to enable branded food search.
   </div>
   <div class="prof-field">
     <div class="prof-label">App ID</div>
@@ -1305,7 +1305,7 @@ async function doS(){
     hits.forEach(f=>out.appendChild(mBR(f)));
   }
 
-  // Online search — Nutritionix if keys saved, else Open Food Facts
+  // Online search — Open Food Facts (default); Nutritionix if paid keys saved
   let online=false;
   const nixId=localStorage.getItem('nutrily_nix_id');
   const nixKey=localStorage.getItem('nutrily_nix_key');
@@ -1314,25 +1314,30 @@ async function doS(){
     const ac=new AbortController();
     setTimeout(()=>ac.abort(),8000);
 
+    let nixOk=false;
     if(nixId&&nixKey){
-      // ── Nutritionix ──────────────────────────────────────────────
-      const res=await fetch(
-        'https://trackapi.nutritionix.com/v2/search/instant?query='+encodeURIComponent(q)+'&detailed=true',
-        {signal:ac.signal,headers:{'x-app-id':nixId,'x-app-key':nixKey,'x-remote-user-id':'0'}}
-      );
-      if(!res.ok) throw new Error('Nutritionix HTTP '+res.status);
-      const data=await res.json();
-      const common=(data.common||[]).slice(0,10);
-      const branded=(data.branded||[]).slice(0,10);
-      if(common.length||branded.length){
-        online=true;
-        out.innerHTML='';
-        if(common.length){lbl(out,'🍽 Common Foods');common.forEach(f=>out.appendChild(mNix(f,'')));}
-        if(branded.length){lbl(out,'🏷 Branded Foods');branded.forEach(f=>out.appendChild(mNix(f,f.brand_name||'')));}
-        if(hits.length){lbl(out,'📦 Local Database');hits.forEach(f=>out.appendChild(mBR(f)));}
-      }
-    } else {
-      // ── Open Food Facts fallback (no keys needed) ─────────────────
+      // ── Nutritionix (paid plan only) ──────────────────────────────
+      try{
+        const res=await fetch(
+          'https://trackapi.nutritionix.com/v2/search/instant?query='+encodeURIComponent(q)+'&detailed=true',
+          {signal:ac.signal,headers:{'x-app-id':nixId,'x-app-key':nixKey,'x-remote-user-id':'0'}}
+        );
+        if(res.ok){
+          const data=await res.json();
+          const common=(data.common||[]).slice(0,10);
+          const branded=(data.branded||[]).slice(0,10);
+          if(common.length||branded.length){
+            online=true;nixOk=true;
+            out.innerHTML='';
+            if(common.length){lbl(out,'🍽 Common Foods');common.forEach(f=>out.appendChild(mNix(f,'')));}
+            if(branded.length){lbl(out,'🏷 Branded Foods');branded.forEach(f=>out.appendChild(mNix(f,f.brand_name||'')));}
+            if(hits.length){lbl(out,'📦 Local Database');hits.forEach(f=>out.appendChild(mBR(f)));}
+          }
+        }
+      }catch(e){/* Nix unavailable — fall through to Open Food Facts */}
+    }
+    if(!nixOk){
+      // ── Open Food Facts (default, no key needed) ──────────────────
       const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='
         +encodeURIComponent(q)
         +'&action=process&json=1&page_size=20'
@@ -2069,7 +2074,7 @@ function loadNixKeys(){
   const st=document.getElementById('nixStatus');
   if(idEl)idEl.value=id;
   if(keyEl)keyEl.value=key;
-  if(st)st.textContent=id&&key?'✓ Keys saved — Nutritionix search active':'No keys saved — using Open Food Facts';
+  if(st)st.textContent=id&&key?'✓ Keys saved — Nutritionix (paid) active':'Using Open Food Facts (no key required)';
 }
 function saveNixKeys(){
   const id=(document.getElementById('nixAppId').value||'').trim();
@@ -2077,7 +2082,7 @@ function saveNixKeys(){
   if(!id||!key){toast('Enter both App ID and App Key');return;}
   localStorage.setItem('nutrily_nix_id',id);
   localStorage.setItem('nutrily_nix_key',key);
-  document.getElementById('nixStatus').textContent='✓ Keys saved — Nutritionix search active';
+  document.getElementById('nixStatus').textContent='✓ Keys saved — Nutritionix (paid) active';
   toast('✓ Nutritionix keys saved');
 }
 function clearNixKeys(){
@@ -2085,7 +2090,7 @@ function clearNixKeys(){
   localStorage.removeItem('nutrily_nix_key');
   document.getElementById('nixAppId').value='';
   document.getElementById('nixAppKey').value='';
-  document.getElementById('nixStatus').textContent='No keys saved — using Open Food Facts';
+  document.getElementById('nixStatus').textContent='Using Open Food Facts (no key required)';
   toast('Keys cleared');
 }
 function toggleNixKeyVis(){
