@@ -144,6 +144,7 @@ html, body {
 .stat-card.c-yellow::after { background:var(--yellow); }
 .stat-card.c-green::after  { background:var(--green); }
 .stat-card.c-purple::after { background:var(--purple); }
+.stat-card.c-blue::after   { background:var(--blue); }
 .stat-label { font-size:10px; color:var(--ink4); letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; font-family:var(--mono); }
 .stat-value { font-family:var(--mono); font-size:17px; font-weight:500; color:var(--ink); }
 .stat-value.red    { color:var(--red); }
@@ -401,7 +402,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
         <div style="display:flex;align-items:center;gap:8px"><button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button><div class="header-sync" id="sync-time">Tap ↻ to sync</div></div>
       </div>
       <div class="portfolio-total" id="d-total">₹4,75,237</div>
-      <div class="portfolio-sub">Core Portfolio</div>
+      <div class="portfolio-sub">Net Worth · <span id="d-nw-breakdown" style="font-family:var(--mono);font-size:11px"></span></div>
       <div class="health-row">
         <div class="health-label">Portfolio Health</div>
         <div class="health-bar-bg"><div class="health-bar-fill" id="health-bar" style="width:87%"></div></div>
@@ -427,7 +428,12 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
           <div class="stat-value red" id="d-underweight">-₹12,768</div>
           <div class="stat-sub2" id="d-alert-count">2 funds need attention</div>
         </div>
-<div class="stat-card c-green">
+        <div class="stat-card c-blue" onclick="switchTab('assets')" style="cursor:pointer">
+          <div class="stat-label">Other Assets</div>
+          <div class="stat-value" id="d-other-assets" style="color:var(--blue)">₹0</div>
+          <div class="stat-sub2">FD · NPS · PF · Other</div>
+        </div>
+        <div class="stat-card c-green">
           <div class="stat-label">Core Portfolio</div>
           <div class="stat-value green" id="d-core">₹4,58,639</div>
           <div class="stat-sub2">Mutual funds</div>
@@ -517,6 +523,27 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   <div class="scroll-area">
     <div class="content">
       <div class="fund-list" id="lumpsum-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ASSETS SCREEN ══════════════ -->
+<div class="screen" id="screen-assets">
+  <div class="simple-header">
+    <h1>Assets</h1>
+    <p>FD · NPS · PF · Other holdings</p>
+  </div>
+  <div class="scroll-area">
+    <div class="content">
+      <div class="action-card">
+        <div>
+          <div class="action-tag">Total Other Assets</div>
+          <div class="action-text">Non-Portfolio Holdings</div>
+          <div class="action-sub">FD · NPS · PF · Other</div>
+        </div>
+        <div class="action-amount" id="a-total">₹0</div>
+      </div>
+      <div id="assets-list"></div>
     </div>
   </div>
 </div>
@@ -640,7 +667,12 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
     <div class="nav-label">Lumpsum</div>
     <div class="nav-pip"></div>
   </button>
-<button class="nav-btn" id="nav-settings" onclick="switchTab('settings')">
+  <button class="nav-btn" id="nav-assets" onclick="switchTab('assets')">
+    <div class="nav-icon-wrap">🏦</div>
+    <div class="nav-label">Assets</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="switchTab('settings')">
     <div class="nav-icon-wrap">⚙️</div>
     <div class="nav-label">More</div>
     <div class="nav-pip"></div>
@@ -732,6 +764,37 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </div>
 </div>
 
+<!-- Add/Edit Asset Modal -->
+<div class="modal-overlay" id="modal-asset">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-asset-title">Add Asset</div>
+    <div class="modal-sub" id="modal-asset-sub">Track FD, NPS, PF or other holdings</div>
+    <div class="field-group">
+      <div class="field-label">Asset Name</div>
+      <input class="field-input" id="input-asset-name" type="text" placeholder="e.g. HDFC FD, EPF, NPS Tier 1">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Category</div>
+        <select class="field-input" id="input-asset-category">
+          <option value="FD">FD</option>
+          <option value="NPS">NPS</option>
+          <option value="PF">PF</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Current Value (₹)</div>
+        <input class="field-input" id="input-asset-current" type="number" inputmode="decimal" placeholder="0">
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveAsset()">Save Asset</button>
+    <button class="btn-cancel" id="btn-delete-asset" onclick="deleteAsset()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">🗑 Remove This Asset</button>
+    <button class="btn-cancel" onclick="closeModal('modal-asset')">Cancel</button>
+  </div>
+</div>
+
 <!-- Confirm Reset Modal -->
 <div class="modal-overlay" id="modal-reset">
   <div class="modal-sheet">
@@ -802,6 +865,7 @@ let state = JSON.parse(localStorage.getItem('wm_state') || 'null') || {
     { name:'Gold',               target:0.07, current:37159  },
     { name:'Debt',               target:0.06, current:29721  },
   ],
+  assets: [],
   sip: 30000,
   cash: 10000,
   reviewDate: '2027-03-01',
@@ -817,6 +881,12 @@ function save() {
 
 // ══ COMPUTED ══
 function getTotal() { return state.funds.reduce((s,f)=>s+f.current,0); }
+function getAssetsTotal() { return (state.assets||[]).reduce((s,a)=>s+a.current,0); }
+function getNetWorth() { return getTotal() + getAssetsTotal(); }
+function getCategoryTotal(cat) { return (state.assets||[]).filter(a=>a.category===cat).reduce((s,a)=>s+a.current,0); }
+
+const ASSET_CATEGORIES = ['FD','NPS','PF','Other'];
+const ASSET_COLORS = { FD:'var(--blue)', NPS:'var(--green)', PF:'var(--yellow)', Other:'var(--purple)' };
 
 function getDeviation(f) {
   const total = getTotal();
@@ -914,7 +984,49 @@ function renderAll() {
   renderDecision();
   renderSIP();
   renderLumpsum();
+  renderAssets();
   renderSettings();
+}
+
+function renderAssets() {
+  if (!state.assets) state.assets = [];
+  document.getElementById('a-total').textContent = fmt(getAssetsTotal());
+  let html = '';
+  ASSET_CATEGORIES.forEach(cat => {
+    const items = state.assets.filter(a => a.category === cat);
+    if (!items.length) return;
+    const catTotal = items.reduce((s,a)=>s+a.current,0);
+    const color = ASSET_COLORS[cat];
+    html += `<div style="margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px;margin-bottom:6px">
+        <div style="font-size:10px;font-weight:700;color:${color};letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)">${cat}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink3)">${fmt(catTotal)}</div>
+      </div>
+      <div class="fund-list">`;
+    items.forEach(asset => {
+      const idx = state.assets.indexOf(asset);
+      html += `<div class="fund-row" onclick="openEditAsset(${idx})">
+        <div class="fund-dot" style="background:${color}"></div>
+        <div class="fund-info">
+          <div class="fund-name">${asset.name}</div>
+          <div class="fund-val" style="color:${color}">${cat}</div>
+        </div>
+        <div class="fund-right">
+          <div class="fund-pct">${fmt(asset.current)}</div>
+          <div class="fund-action">Tap to edit</div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  if (!state.assets.length) {
+    html = `<div style="text-align:center;padding:40px 20px;color:var(--ink4)">
+      <div style="font-size:36px;margin-bottom:12px">🏦</div>
+      <div style="font-family:var(--sans);font-size:15px;font-weight:700;color:var(--ink3);margin-bottom:6px">No assets yet</div>
+      <div style="font-size:12px">Tap ＋ to add FD, NPS, PF or other holdings</div>
+    </div>`;
+  }
+  document.getElementById('assets-list').innerHTML = html;
 }
 
 function renderDashboard() {
@@ -927,7 +1039,10 @@ function renderDashboard() {
     return diff < 0 ? s + diff : s;
   }, 0);
 
-  document.getElementById('d-total').textContent = fmt(total);
+  document.getElementById('d-total').textContent = fmt(getNetWorth());
+  const bkd = ASSET_CATEGORIES.filter(c=>getCategoryTotal(c)>0).map(c=>`${c} ${fmt(getCategoryTotal(c))}`).join(' · ');
+  document.getElementById('d-nw-breakdown').textContent = bkd ? `MF ${fmt(total)} · ${bkd}` : `MF ${fmt(total)}`;
+  document.getElementById('d-other-assets').textContent = fmt(getAssetsTotal());
   document.getElementById('d-sip').textContent = fmt(state.sip);
   const mode = getMode();
   document.getElementById('d-mode-label').textContent = mode + ' mode · ' + state.funds.length + ' funds';
@@ -1133,11 +1248,12 @@ function switchTab(tab) {
   currentTab = tab;
   // Update FAB
   const fab = document.getElementById('main-fab');
-  fab.style.display = (tab === 'dashboard') ? 'flex' : 'none';
+  fab.style.display = (tab === 'dashboard' || tab === 'assets') ? 'flex' : 'none';
 }
 
 function handleFAB() {
   if (currentTab === 'dashboard') openPortfolioEdit();
+  else if (currentTab === 'assets') openAddAsset();
   else openFundEdit(0);
 }
 
@@ -1274,6 +1390,58 @@ function deleteFund() {
 }
 
 
+// ══ CRUD: ASSETS ══
+let managingAssetIndex = null;
+
+function openAddAsset() {
+  managingAssetIndex = null;
+  document.getElementById('modal-asset-title').textContent = 'Add Asset';
+  document.getElementById('modal-asset-sub').textContent = 'Track FD, NPS, PF or other holdings';
+  document.getElementById('input-asset-name').value = '';
+  document.getElementById('input-asset-category').value = 'FD';
+  document.getElementById('input-asset-current').value = '';
+  document.getElementById('btn-delete-asset').style.display = 'none';
+  openModal('modal-asset');
+  setTimeout(() => document.getElementById('input-asset-name').focus(), 300);
+}
+
+function openEditAsset(i) {
+  managingAssetIndex = i;
+  const a = state.assets[i];
+  document.getElementById('modal-asset-title').textContent = a.name;
+  document.getElementById('modal-asset-sub').textContent = a.category;
+  document.getElementById('input-asset-name').value = a.name;
+  document.getElementById('input-asset-category').value = a.category;
+  document.getElementById('input-asset-current').value = a.current;
+  document.getElementById('btn-delete-asset').style.display = 'block';
+  openModal('modal-asset');
+  setTimeout(() => document.getElementById('input-asset-current').focus(), 300);
+}
+
+function saveAsset() {
+  const name = document.getElementById('input-asset-name').value.trim();
+  const category = document.getElementById('input-asset-category').value;
+  const current = parseFloat(document.getElementById('input-asset-current').value) || 0;
+  if (!name) { alert('Please enter an asset name'); return; }
+  if (!state.assets) state.assets = [];
+  if (managingAssetIndex === null) {
+    state.assets.push({ name, category, current });
+  } else {
+    state.assets[managingAssetIndex] = { name, category, current };
+  }
+  save(); renderAll();
+  closeModal('modal-asset');
+}
+
+function deleteAsset() {
+  if (managingAssetIndex === null) return;
+  state.assets.splice(managingAssetIndex, 1);
+  managingAssetIndex = null;
+  save(); renderAll();
+  closeModal('modal-asset');
+  showToast('🗑 Asset removed');
+}
+
 // ══ RESET ══
 function confirmReset() { openModal('modal-reset'); }
 function doReset() {
@@ -1354,6 +1522,7 @@ async function syncFromSheet() {
       }));
     }
 
+    if (data.assets && Array.isArray(data.assets)) state.assets = data.assets;
     if (data.sip !== undefined)  state.sip        = data.sip;
     if (data.cash !== undefined) state.cash       = data.cash;
     if (data.reviewDate)         state.reviewDate = data.reviewDate;
@@ -1377,6 +1546,7 @@ async function syncToSheet() {
     const payload = {
       action: 'write',
       funds: state.funds,
+      assets: state.assets || [],
       sip: state.sip,
       cash: state.cash,
       reviewDate: state.reviewDate
