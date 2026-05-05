@@ -144,6 +144,7 @@ html, body {
 .stat-card.c-yellow::after { background:var(--yellow); }
 .stat-card.c-green::after  { background:var(--green); }
 .stat-card.c-purple::after { background:var(--purple); }
+.stat-card.c-blue::after   { background:var(--blue); }
 .stat-label { font-size:10px; color:var(--ink4); letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; font-family:var(--mono); }
 .stat-value { font-family:var(--mono); font-size:17px; font-weight:500; color:var(--ink); }
 .stat-value.red    { color:var(--red); }
@@ -401,7 +402,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
         <div style="display:flex;align-items:center;gap:8px"><button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button><div class="header-sync" id="sync-time">Tap ↻ to sync</div></div>
       </div>
       <div class="portfolio-total" id="d-total">₹4,75,237</div>
-      <div class="portfolio-sub">Core Portfolio + Dividend Bucket</div>
+      <div class="portfolio-sub">Net Worth · <span id="d-nw-breakdown" style="font-family:var(--mono);font-size:11px"></span></div>
       <div class="health-row">
         <div class="health-label">Portfolio Health</div>
         <div class="health-bar-bg"><div class="health-bar-fill" id="health-bar" style="width:87%"></div></div>
@@ -427,10 +428,10 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
           <div class="stat-value red" id="d-underweight">-₹12,768</div>
           <div class="stat-sub2" id="d-alert-count">2 funds need attention</div>
         </div>
-        <div class="stat-card c-yellow">
-          <div class="stat-label">Dividend Bucket</div>
-          <div class="stat-value yellow" id="d-dividend">₹16,598</div>
-          <div class="stat-sub2">Stocks portfolio</div>
+        <div class="stat-card c-blue" onclick="switchTab('assets')" style="cursor:pointer">
+          <div class="stat-label">Other Assets</div>
+          <div class="stat-value" id="d-other-assets" style="color:var(--blue)">₹0</div>
+          <div class="stat-sub2">FD · NPS · PF · Other</div>
         </div>
         <div class="stat-card c-green">
           <div class="stat-label">Core Portfolio</div>
@@ -526,24 +527,23 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </div>
 </div>
 
-<!-- ══════════════ STOCKS SCREEN ══════════════ -->
-<div class="screen" id="screen-stocks">
+<!-- ══════════════ ASSETS SCREEN ══════════════ -->
+<div class="screen" id="screen-assets">
   <div class="simple-header">
-    <h1>Dividend Stocks</h1>
-    <p>Ranked by most underweight · tap to edit</p>
+    <h1>Assets</h1>
+    <p>FD · NPS · PF · Other holdings</p>
   </div>
   <div class="scroll-area">
     <div class="content">
-      <!-- Stock summary card -->
-      <div class="action-card" style="background:var(--surface);border-color:var(--line)">
+      <div class="action-card">
         <div>
-          <div class="action-tag" style="color:var(--yellow)">Dividend Bucket</div>
-          <div class="action-text">Buy by Rank</div>
-          <div class="action-sub">Rank 1 = most underweight</div>
+          <div class="action-tag">Total Other Assets</div>
+          <div class="action-text">Non-Portfolio Holdings</div>
+          <div class="action-sub">FD · NPS · PF · Other</div>
         </div>
-        <div class="action-amount" style="color:var(--yellow)" id="s-div-total">₹16,594</div>
+        <div class="action-amount" id="a-total">₹0</div>
       </div>
-      <div class="fund-list" id="stocks-list"></div>
+      <div id="assets-list"></div>
     </div>
   </div>
 </div>
@@ -552,7 +552,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
 <div class="screen" id="screen-settings">
   <div class="simple-header">
     <h1>Manage</h1>
-    <p>Add, edit, or remove funds & stocks</p>
+    <p>Add, edit, or remove funds</p>
   </div>
   <div class="scroll-area">
     <div class="content">
@@ -598,18 +598,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
         <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:0 4px" id="funds-total-pct"></div>
       </div>
 
-      <!-- Dividend Stocks -->
-      <div class="settings-section">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="settings-label" style="margin-bottom:0">Dividend Stocks</div>
-          <div id="stocks-target-warning" style="font-size:10px;color:var(--red);display:none">⚠ Targets ≠ 100%</div>
-        </div>
-        <div class="settings-card" id="stock-settings-list"></div>
-        <button onclick="openAddStock()" style="width:100%;margin-top:8px;background:var(--surface2);border:1px dashed var(--line2);border-radius:12px;padding:13px;font-size:13px;color:var(--purple);cursor:pointer;font-family:var(--body)">＋ Add Stock</button>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:0 4px" id="stocks-total-pct"></div>
-      </div>
-
-      <!-- Google Sheets Sync -->
+<!-- Google Sheets Sync -->
       <div class="settings-section">
         <div class="settings-label">Google Sheets Sync</div>
         <div class="settings-card">
@@ -678,9 +667,9 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
     <div class="nav-label">Lumpsum</div>
     <div class="nav-pip"></div>
   </button>
-  <button class="nav-btn" id="nav-stocks" onclick="switchTab('stocks')">
-    <div class="nav-icon-wrap">📈</div>
-    <div class="nav-label">Stocks</div>
+  <button class="nav-btn" id="nav-assets" onclick="switchTab('assets')">
+    <div class="nav-icon-wrap">🏦</div>
+    <div class="nav-label">Assets</div>
     <div class="nav-pip"></div>
   </button>
   <button class="nav-btn" id="nav-settings" onclick="switchTab('settings')">
@@ -748,21 +737,6 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </div>
 </div>
 
-<!-- Stock Edit Modal -->
-<div class="modal-overlay" id="modal-stock">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modal-stock-title">Edit Stock</div>
-    <div class="modal-sub">Update current investment value</div>
-    <div class="field-group">
-      <div class="field-label">Current Value (₹)</div>
-      <input class="field-input" id="input-stock-value" type="number" inputmode="decimal" placeholder="0">
-    </div>
-    <button class="btn-save" onclick="saveStockEdit()">Save Changes</button>
-    <button class="btn-cancel" onclick="closeModal('modal-stock')">Cancel</button>
-  </div>
-</div>
-
 <!-- Add/Edit Fund Modal -->
 <div class="modal-overlay" id="modal-manage-fund">
   <div class="modal-sheet">
@@ -790,30 +764,34 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </div>
 </div>
 
-<!-- Add/Edit Stock Modal -->
-<div class="modal-overlay" id="modal-manage-stock">
+<!-- Add/Edit Asset Modal -->
+<div class="modal-overlay" id="modal-asset">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modal-manage-stock-title">Add Stock</div>
-    <div class="modal-sub" id="modal-manage-stock-sub">New dividend stock</div>
+    <div class="modal-title" id="modal-asset-title">Add Asset</div>
+    <div class="modal-sub" id="modal-asset-sub">Track FD, NPS, PF or other holdings</div>
     <div class="field-group">
-      <div class="field-label">Stock Name</div>
-      <input class="field-input" id="input-st-name" type="text" placeholder="e.g. HDFC Bank">
+      <div class="field-label">Asset Name</div>
+      <input class="field-input" id="input-asset-name" type="text" placeholder="e.g. HDFC FD, EPF, NPS Tier 1">
     </div>
     <div class="field-row">
       <div class="field-group">
-        <div class="field-label">Target % (0–1)</div>
-        <input class="field-input" id="input-st-target" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.08">
+        <div class="field-label">Category</div>
+        <select class="field-input" id="input-asset-category">
+          <option value="FD">FD</option>
+          <option value="NPS">NPS</option>
+          <option value="PF">PF</option>
+          <option value="Other">Other</option>
+        </select>
       </div>
       <div class="field-group">
         <div class="field-label">Current Value (₹)</div>
-        <input class="field-input" id="input-st-current" type="number" inputmode="decimal" placeholder="0">
+        <input class="field-input" id="input-asset-current" type="number" inputmode="decimal" placeholder="0">
       </div>
     </div>
-    <div id="st-target-hint" style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:0 2px"></div>
-    <button class="btn-save" onclick="saveManageStock()">Save Stock</button>
-    <button class="btn-cancel" id="btn-delete-stock" onclick="deleteStock()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">🗑 Remove This Stock</button>
-    <button class="btn-cancel" onclick="closeModal('modal-manage-stock')">Cancel</button>
+    <button class="btn-save" onclick="saveAsset()">Save Asset</button>
+    <button class="btn-cancel" id="btn-delete-asset" onclick="deleteAsset()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">🗑 Remove This Asset</button>
+    <button class="btn-cancel" onclick="closeModal('modal-asset')">Cancel</button>
   </div>
 </div>
 
@@ -822,7 +800,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" style="color:var(--red)">Reset All Data?</div>
-    <div class="modal-sub">This will permanently delete all your funds, stocks and settings. Cannot be undone.</div>
+    <div class="modal-sub">This will permanently delete all your funds and settings. Cannot be undone.</div>
     <button class="btn-save" onclick="doReset()" style="background:var(--red)">Yes, Reset Everything</button>
     <button class="btn-cancel" onclick="closeModal('modal-reset')">Cancel</button>
   </div>
@@ -887,24 +865,9 @@ let state = JSON.parse(localStorage.getItem('wm_state') || 'null') || {
     { name:'Gold',               target:0.07, current:37159  },
     { name:'Debt',               target:0.06, current:29721  },
   ],
-  stocks: [
-    { name:'IOCL',         target:0.07, current:514    },
-    { name:'ONGC',         target:0.08, current:846    },
-    { name:'Power Grid',   target:0.08, current:870    },
-    { name:'NTPC',         target:0.07, current:1100   },
-    { name:'Coal India',   target:0.08, current:861    },
-    { name:'HDFC Bank',    target:0.06, current:879.4  },
-    { name:'ICICI Bank',   target:0.06, current:1374   },
-    { name:'REC',          target:0.06, current:666    },
-    { name:'ITC',          target:0.10, current:1250   },
-    { name:'Infosys',      target:0.10, current:1288.9 },
-    { name:'Sun Pharma',   target:0.08, current:1752.5 },
-    { name:'L&T',          target:0.08, current:4066.7 },
-    { name:'Tata Consumer',target:0.08, current:1125.2 },
-  ],
+  assets: [],
   sip: 30000,
   cash: 10000,
-  dividend: 16593.7,
   reviewDate: '2027-03-01',
   lastUpdated: null
 };
@@ -918,8 +881,12 @@ function save() {
 
 // ══ COMPUTED ══
 function getTotal() { return state.funds.reduce((s,f)=>s+f.current,0); }
-function getDividendTotal() { return state.stocks.reduce((s,x)=>s+x.current,0); }
-function getTotalWithDividend() { return getTotal() + getDividendTotal(); }
+function getAssetsTotal() { return (state.assets||[]).reduce((s,a)=>s+a.current,0); }
+function getNetWorth() { return getTotal() + getAssetsTotal(); }
+function getCategoryTotal(cat) { return (state.assets||[]).filter(a=>a.category===cat).reduce((s,a)=>s+a.current,0); }
+
+const ASSET_CATEGORIES = ['FD','NPS','PF','Other'];
+const ASSET_COLORS = { FD:'var(--blue)', NPS:'var(--green)', PF:'var(--yellow)', Other:'var(--purple)' };
 
 function getDeviation(f) {
   const total = getTotal();
@@ -998,16 +965,6 @@ function getHealthScore() {
   return Math.max(0, Math.min(100, Math.round((1 - avgDev / 0.05) * 100)));
 }
 
-// Stock rank logic: sort by Gap% descending (most underweight first)
-function getStockRank(stock) {
-  const total = state.stocks.reduce((s, x) => s + x.current, 0);
-  const currentPct = total > 0 ? stock.current / total : 0;
-  return stock.target - currentPct; // positive = underweight
-}
-function getRankedStocks() {
-  return [...state.stocks].sort((a, b) => getStockRank(b) - getStockRank(a));
-}
-
 function getDaysToReview() {
   const review = new Date(state.reviewDate);
   const now = new Date();
@@ -1022,44 +979,58 @@ function fmt(n) {
 function fmtPct(n) { return (n*100).toFixed(1)+'%'; }
 
 // ══ RENDER ══
-function renderStocks() {
-  const total = state.stocks.reduce((s, x) => s + x.current, 0);
-  document.getElementById('s-div-total').textContent = fmt(total);
-  const ranked = getRankedStocks();
-  let html = '';
-  ranked.forEach((stock, rankIdx) => {
-    const currentPct = total > 0 ? stock.current / total : 0;
-    const targetAmt = total * stock.target;
-    const gap = stock.target - currentPct;
-    const gapColor = gap > 0.01 ? 'var(--green)' : (gap < -0.01 ? 'var(--red)' : 'var(--muted)');
-    const origIdx = state.stocks.indexOf(stock);
-    html += `<div class="fund-row" onclick="openStockEdit(${origIdx})" style="animation-delay:${rankIdx*0.04}s">
-      <div style="width:22px;height:22px;border-radius:8px;background:#fff8ed;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--yellow);flex-shrink:0">${rankIdx+1}</div>
-      <div class="fund-info">
-        <div class="fund-name">${stock.name}</div>
-        <div class="fund-val">${fmt(stock.current)} · Target ${fmtPct(stock.target)}</div>
-      </div>
-      <div class="fund-right">
-        <div class="fund-pct" style="color:${gapColor}">${gap > 0 ? '+' : ''}${fmtPct(gap)}</div>
-        <div class="fund-action">${gap > 0.005 ? 'Buy' : (gap < -0.005 ? 'Overweight' : 'On track')}</div>
-      </div>
-    </div>`;
-  });
-  document.getElementById('stocks-list').innerHTML = html;
-}
-
 function renderAll() {
   renderDashboard();
   renderDecision();
   renderSIP();
   renderLumpsum();
-  renderStocks();
+  renderAssets();
   renderSettings();
+}
+
+function renderAssets() {
+  if (!state.assets) state.assets = [];
+  document.getElementById('a-total').textContent = fmt(getAssetsTotal());
+  let html = '';
+  ASSET_CATEGORIES.forEach(cat => {
+    const items = state.assets.filter(a => a.category === cat);
+    if (!items.length) return;
+    const catTotal = items.reduce((s,a)=>s+a.current,0);
+    const color = ASSET_COLORS[cat];
+    html += `<div style="margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px;margin-bottom:6px">
+        <div style="font-size:10px;font-weight:700;color:${color};letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)">${cat}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink3)">${fmt(catTotal)}</div>
+      </div>
+      <div class="fund-list">`;
+    items.forEach(asset => {
+      const idx = state.assets.indexOf(asset);
+      html += `<div class="fund-row" onclick="openEditAsset(${idx})">
+        <div class="fund-dot" style="background:${color}"></div>
+        <div class="fund-info">
+          <div class="fund-name">${asset.name}</div>
+          <div class="fund-val" style="color:${color}">${cat}</div>
+        </div>
+        <div class="fund-right">
+          <div class="fund-pct">${fmt(asset.current)}</div>
+          <div class="fund-action">Tap to edit</div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+  if (!state.assets.length) {
+    html = `<div style="text-align:center;padding:40px 20px;color:var(--ink4)">
+      <div style="font-size:36px;margin-bottom:12px">🏦</div>
+      <div style="font-family:var(--sans);font-size:15px;font-weight:700;color:var(--ink3);margin-bottom:6px">No assets yet</div>
+      <div style="font-size:12px">Tap ＋ to add FD, NPS, PF or other holdings</div>
+    </div>`;
+  }
+  document.getElementById('assets-list').innerHTML = html;
 }
 
 function renderDashboard() {
   const total = getTotal();
-  const totalWithDiv = getTotalWithDividend();
   const health = getHealthScore();
   // Always show actual underweight amount — sum of negative differences, matches Excel Dashboard B2
   const actionFunds = state.funds.filter(f => getAction(f) !== 'Do Nothing');
@@ -1068,7 +1039,10 @@ function renderDashboard() {
     return diff < 0 ? s + diff : s;
   }, 0);
 
-  document.getElementById('d-total').textContent = fmt(totalWithDiv);
+  document.getElementById('d-total').textContent = fmt(getNetWorth());
+  const bkd = ASSET_CATEGORIES.filter(c=>getCategoryTotal(c)>0).map(c=>`${c} ${fmt(getCategoryTotal(c))}`).join(' · ');
+  document.getElementById('d-nw-breakdown').textContent = bkd ? `MF ${fmt(total)} · ${bkd}` : `MF ${fmt(total)}`;
+  document.getElementById('d-other-assets').textContent = fmt(getAssetsTotal());
   document.getElementById('d-sip').textContent = fmt(state.sip);
   const mode = getMode();
   document.getElementById('d-mode-label').textContent = mode + ' mode · ' + state.funds.length + ' funds';
@@ -1076,7 +1050,6 @@ function renderDashboard() {
   document.getElementById('d-alert-count').textContent = actionFunds.length > 0
     ? actionFunds.length + ' fund' + (actionFunds.length!==1?'s':'') + ' need attention'
     : 'All funds on track';
-  document.getElementById('d-dividend').textContent = fmt(getDividendTotal());
   document.getElementById('d-core').textContent = fmt(total);
   document.getElementById('d-cash').textContent = fmt(state.cash);
   document.getElementById('health-bar').style.width = health + '%';
@@ -1263,25 +1236,6 @@ function renderSettings() {
   });
   document.getElementById('fund-settings-list').innerHTML = fundHTML;
 
-  // Stocks list with edit + target total
-  const stockTotal = state.stocks.reduce((s,x) => s+x.target, 0);
-  const stocksOk = Math.abs(stockTotal - 1) < 0.001;
-  document.getElementById('stocks-target-warning').style.display = stocksOk ? 'none' : 'block';
-  document.getElementById('stocks-total-pct').textContent = `Total target: ${fmtPct(stockTotal)} ${stocksOk ? '✓' : '← should be 100%'}`;
-  document.getElementById('stocks-total-pct').style.color = stocksOk ? 'var(--green)' : 'var(--yellow)';
-
-  let stockHTML = '';
-  state.stocks.forEach((s, i) => {
-    stockHTML += `<div class="settings-row" onclick="openEditStock(${i})">
-      <div class="settings-icon" style="font-size:11px;color:var(--yellow)">●</div>
-      <div class="settings-text">
-        <div class="settings-name">${s.name}</div>
-        <div class="settings-desc">Target: ${fmtPct(s.target)} · Current: ${fmt(s.current)}</div>
-      </div>
-      <div class="settings-chevron" style="color:var(--yellow)">Edit ›</div>
-    </div>`;
-  });
-  document.getElementById('stock-settings-list').innerHTML = stockHTML;
 }
 
 // ══ NAVIGATION ══
@@ -1294,11 +1248,12 @@ function switchTab(tab) {
   currentTab = tab;
   // Update FAB
   const fab = document.getElementById('main-fab');
-  fab.style.display = (tab === 'dashboard') ? 'flex' : 'none';
+  fab.style.display = (tab === 'dashboard' || tab === 'assets') ? 'flex' : 'none';
 }
 
 function handleFAB() {
   if (currentTab === 'dashboard') openPortfolioEdit();
+  else if (currentTab === 'assets') openAddAsset();
   else openFundEdit(0);
 }
 
@@ -1366,25 +1321,6 @@ function saveReviewDate() {
   closeModal('modal-review');
 }
 
-let editingStockIndex = null;
-
-function openStockEdit(i) {
-  editingStockIndex = i;
-  document.getElementById('modal-stock-title').textContent = state.stocks[i].name;
-  document.getElementById('input-stock-value').value = state.stocks[i].current;
-  openModal('modal-stock');
-  setTimeout(() => document.getElementById('input-stock-value').focus(), 300);
-}
-
-function saveStockEdit() {
-  if (editingStockIndex === null) return;
-  const val = parseFloat(document.getElementById('input-stock-value').value);
-  if (!isNaN(val) && val >= 0) {
-    state.stocks[editingStockIndex].current = val;
-    save(); renderAll();
-  }
-  closeModal('modal-stock');
-}
 
 // ══ CRUD: FUNDS ══
 let managingFundIndex = null;
@@ -1453,70 +1389,57 @@ function deleteFund() {
   showToast('🗑 Fund removed');
 }
 
-// ══ CRUD: STOCKS ══
-let managingStockIndex = null;
 
-function openAddStock() {
-  managingStockIndex = null;
-  document.getElementById('modal-manage-stock-title').textContent = 'Add Stock';
-  document.getElementById('modal-manage-stock-sub').textContent = 'New dividend stock';
-  document.getElementById('input-st-name').value = '';
-  document.getElementById('input-st-target').value = '';
-  document.getElementById('input-st-current').value = '';
-  document.getElementById('btn-delete-stock').style.display = 'none';
-  updateSTTargetHint();
-  openModal('modal-manage-stock');
+// ══ CRUD: ASSETS ══
+let managingAssetIndex = null;
+
+function openAddAsset() {
+  managingAssetIndex = null;
+  document.getElementById('modal-asset-title').textContent = 'Add Asset';
+  document.getElementById('modal-asset-sub').textContent = 'Track FD, NPS, PF or other holdings';
+  document.getElementById('input-asset-name').value = '';
+  document.getElementById('input-asset-category').value = 'FD';
+  document.getElementById('input-asset-current').value = '';
+  document.getElementById('btn-delete-asset').style.display = 'none';
+  openModal('modal-asset');
+  setTimeout(() => document.getElementById('input-asset-name').focus(), 300);
 }
 
-function openEditStock(i) {
-  managingStockIndex = i;
-  const s = state.stocks[i];
-  document.getElementById('modal-manage-stock-title').textContent = 'Edit Stock';
-  document.getElementById('modal-manage-stock-sub').textContent = s.name;
-  document.getElementById('input-st-name').value = s.name;
-  document.getElementById('input-st-target').value = s.target;
-  document.getElementById('input-st-current').value = s.current;
-  document.getElementById('btn-delete-stock').style.display = 'block';
-  updateSTTargetHint();
-  openModal('modal-manage-stock');
+function openEditAsset(i) {
+  managingAssetIndex = i;
+  const a = state.assets[i];
+  document.getElementById('modal-asset-title').textContent = a.name;
+  document.getElementById('modal-asset-sub').textContent = a.category;
+  document.getElementById('input-asset-name').value = a.name;
+  document.getElementById('input-asset-category').value = a.category;
+  document.getElementById('input-asset-current').value = a.current;
+  document.getElementById('btn-delete-asset').style.display = 'block';
+  openModal('modal-asset');
+  setTimeout(() => document.getElementById('input-asset-current').focus(), 300);
 }
 
-function updateSTTargetHint() {
-  const currentTotal = state.stocks.reduce((s, x, i) => {
-    if (i === managingStockIndex) return s;
-    return s + x.target;
-  }, 0);
-  const inputVal = parseFloat(document.getElementById('input-st-target').value) || 0;
-  const newTotal = currentTotal + inputVal;
-  const hint = document.getElementById('st-target-hint');
-  hint.textContent = `Other stocks use ${fmtPct(currentTotal)} · Remaining: ${fmtPct(1-currentTotal)} · New total: ${fmtPct(newTotal)}`;
-  hint.style.color = Math.abs(newTotal - 1) < 0.001 ? 'var(--green)' : 'var(--yellow)';
-}
-
-function saveManageStock() {
-  const name = document.getElementById('input-st-name').value.trim();
-  const target = parseFloat(document.getElementById('input-st-target').value);
-  const current = parseFloat(document.getElementById('input-st-current').value) || 0;
-  if (!name || isNaN(target) || target <= 0 || target > 1) {
-    alert('Please enter a valid name and target % between 0 and 1');
-    return;
-  }
-  if (managingStockIndex === null) {
-    state.stocks.push({ name, target, current });
+function saveAsset() {
+  const name = document.getElementById('input-asset-name').value.trim();
+  const category = document.getElementById('input-asset-category').value;
+  const current = parseFloat(document.getElementById('input-asset-current').value) || 0;
+  if (!name) { alert('Please enter an asset name'); return; }
+  if (!state.assets) state.assets = [];
+  if (managingAssetIndex === null) {
+    state.assets.push({ name, category, current });
   } else {
-    state.stocks[managingStockIndex] = { name, target, current };
+    state.assets[managingAssetIndex] = { name, category, current };
   }
   save(); renderAll();
-  closeModal('modal-manage-stock');
+  closeModal('modal-asset');
 }
 
-function deleteStock() {
-  if (managingStockIndex === null) return;
-  state.stocks.splice(managingStockIndex, 1);
-  managingStockIndex = null;
+function deleteAsset() {
+  if (managingAssetIndex === null) return;
+  state.assets.splice(managingAssetIndex, 1);
+  managingAssetIndex = null;
   save(); renderAll();
-  closeModal('modal-manage-stock');
-  showToast('🗑 Stock removed');
+  closeModal('modal-asset');
+  showToast('🗑 Asset removed');
 }
 
 // ══ RESET ══
@@ -1528,7 +1451,6 @@ function doReset() {
 
 // Hook up live target hints
 document.getElementById('input-mf-target').addEventListener('input', updateMFTargetHint);
-document.getElementById('input-st-target').addEventListener('input', updateSTTargetHint);
 
 function openModal(id) {
   document.getElementById(id).classList.add('open');
@@ -1592,7 +1514,6 @@ async function syncFromSheet() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    // Full replace — adds/removes/renames funds and stocks to match Sheet exactly
     if (data.funds && data.funds.length > 0) {
       state.funds = data.funds.map(f => ({
         name:    f.name,
@@ -1600,25 +1521,16 @@ async function syncFromSheet() {
         current: f.current
       }));
     }
-    if (data.stocks && data.stocks.length > 0) {
-      state.stocks = data.stocks.map(s => ({
-        name:    s.name,
-        target:  s.target,
-        current: s.current
-      }));
-    }
 
-    if (data.sip !== undefined)      state.sip        = data.sip;
-    if (data.cash !== undefined)     state.cash       = data.cash;
-    if (data.dividend !== undefined) state.dividend   = data.dividend;
-    if (data.reviewDate)             state.reviewDate = data.reviewDate;
+    if (data.assets && Array.isArray(data.assets)) state.assets = data.assets;
+    if (data.sip !== undefined)  state.sip        = data.sip;
+    if (data.cash !== undefined) state.cash       = data.cash;
+    if (data.reviewDate)         state.reviewDate = data.reviewDate;
 
     save();
     renderAll();
     el.textContent = '›';
-    const fundCount = state.funds.length;
-    const stockCount = state.stocks.length;
-    showToast(`✅ Synced — ${fundCount} funds, ${stockCount} stocks`);
+    showToast(`✅ Synced — ${state.funds.length} funds`);
   } catch (err) {
     el.textContent = '›';
     showToast('❌ Pull failed: ' + err.message);
@@ -1633,8 +1545,8 @@ async function syncToSheet() {
   try {
     const payload = {
       action: 'write',
-      funds: state.funds,   // full array — name, target, current
-      stocks: state.stocks, // full array — name, target, current
+      funds: state.funds,
+      assets: state.assets || [],
       sip: state.sip,
       cash: state.cash,
       reviewDate: state.reviewDate
@@ -1643,7 +1555,7 @@ async function syncToSheet() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     el.textContent = '›';
-    showToast(`✅ Pushed — ${state.funds.length} funds, ${state.stocks.length} stocks`);
+    showToast(`✅ Pushed — ${state.funds.length} funds`);
   } catch (err) {
     el.textContent = '›';
     showToast('❌ Push failed: ' + err.message);
