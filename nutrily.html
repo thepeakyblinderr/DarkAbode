@@ -339,6 +339,20 @@ html[data-theme="dark"] .ex-yt-btn{background:rgba(204,0,0,.15);border-color:rgb
 .tpl-save-btn{width:100%;padding:13px;background:var(--text);color:#fff;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s}
 .tpl-save-btn:hover{opacity:.85}
 .tpl-empty{padding:24px 0;text-align:center;font-size:13px;color:var(--muted);line-height:1.7}
+/* ── Food Meal List ── */
+.fml-empty{padding:24px 14px;text-align:center;font-size:13px;color:var(--muted)}
+.fml-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 6px}
+.fml-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.fml-kcal{font-size:11.5px;font-weight:600;color:var(--amber)}
+.fml-item{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .15s;gap:8px}
+.fml-item:last-child{border-bottom:none}
+.fml-item:hover,.fml-item:active{background:var(--bg)}
+.fml-name{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fml-qty{font-size:11px;color:var(--muted);margin-top:1px}
+.fml-k{font-size:13px;font-weight:500;color:var(--amber);flex-shrink:0;white-space:nowrap}
+.fml-dot{font-size:16px;color:var(--faint);flex-shrink:0;letter-spacing:-2px;line-height:1}
+.rr-edit-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--faint);padding:2px 6px;transition:color .15s;flex-shrink:0}
+.rr-edit-btn:hover{color:var(--amber)}
 </style>
 
 <style>
@@ -1000,7 +1014,7 @@ function gn(p,i){
   if(p==='progress')rPg();
   if(p==='home')rH();
   if(p==='exercise')renderExPage();
-  if(p==='food')renderTplBar();
+  if(p==='food'){renderTplBar();rFoodList();}
   if(p==='sleep')renderSlpPage();
   if(p==='mood')renderMoodPage();
 }
@@ -1037,7 +1051,7 @@ async function rH(){
       const li=document.createElement('div');li.className='li';
       li.style.cursor = 'pointer';
       li.onclick = () => openLogAction(log);
-      li.innerHTML = `<div class="ln">${log.name} <span style="color:var(--faint);font-size:10.5px">${log.qty}${log.unit}</span></div><div class="lk">${Math.round(log.kcal)} kcal <span style="color:var(--faint);font-size:10px">···</span></div>`;
+      li.innerHTML = `<div class="ln">${log.name} <span style="color:var(--faint);font-size:10.5px">${log.qty||''}${log.unit||''}</span></div><div class="lk">${Math.round(log.kcal)} kcal <span style="color:var(--faint);font-size:10px">···</span></div>`;
       md.appendChild(li);
     });
   });
@@ -2402,7 +2416,7 @@ async function saveTemplate() {
   if (!logs.length) { toast('No meals to save'); return; }
   const templates = await kG('mealTemplates') || [];
   // strip IDs so they re-insert fresh
-  const items = logs.map(l => ({ name: l.name, kcal: l.kcal, protein: l.protein, carbs: l.carbs, fat: l.fat, fiber: l.fiber, sugar: l.sugar, grams: l.grams, unit: l.unit, meal: l.meal }));
+  const items = logs.map(l => ({ name: l.name, kcal: l.kcal, protein: l.protein, carbs: l.carbs, fat: l.fat, fib: l.fib, sug: l.sug, grams: l.grams, qty: l.qty, unit: l.unit, meal: l.meal }));
   templates.push({ name, items, savedAt: new Date().toISOString() });
   await kP('mealTemplates', templates);
   closeTpl();
@@ -2747,8 +2761,9 @@ async function logManual() {
     const displayName = name + (unitLabel ? ' (' + unitLabel + ')' : '');
     await sL({
       name: displayName, meal: curMeal, date: TODAY,
+      qty: qty, unit: basis,
       kcal: finalKcal, protein: finalProt, carbs: finalCarb, fat: finalFat,
-      fiber:0, sugar:0, grams: gramsTotal, unit: basis,
+      fib:0, sug:0, grams: gramsTotal,
       loggedAt: new Date().toISOString()
     });
     closeManual();
