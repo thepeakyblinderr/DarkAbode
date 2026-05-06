@@ -452,10 +452,6 @@ html[data-theme="dark"] .pill.active,.tag-pill.active{background:var(--ink);colo
       DocVault
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <button class="gsync-btn" id="gsync-btn" onclick="openSyncSheet()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="gsync-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <span id="gsync-label">Backup</span>
-      </button>
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
       <button class="bar-add" onclick="openAdd()" aria-label="Add document">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -613,21 +609,6 @@ html[data-theme="dark"] .pill.active,.tag-pill.active{background:var(--ink);colo
   </div>
 </div>
 
-<!-- ── Backup Sheet ── -->
-<div class="overlay" id="sync-ov">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="mh">
-      <div class="mh-t">Backup & Restore</div>
-      <button class="mhc" onclick="closeSyncSheet()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="mb" id="sync-sheet-body"></div>
-    <div class="mf" id="sync-sheet-footer"></div>
-  </div>
-</div>
-
-<!-- hidden file input for import -->
-<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
 
 <div class="toast" id="toast"></div>
 
@@ -1127,132 +1108,8 @@ function closeAdd(){document.getElementById('add-ov').classList.remove('on');cle
   });
 });
 
-// ── Export / Import Backup ─────────────────────────────────────────
 const save = ()=>{localStorage.setItem('dv3b_docs', JSON.stringify(docs));FBSync.schedulePush();};
 
-function exportBackup(){
-  localStorage.setItem('dv_last_export', new Date().toISOString());
-  const data = JSON.stringify({ version:4, exported: new Date().toISOString(), docs }, null, 2);
-  const blob = new Blob([data], { type:'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const date = new Date().toISOString().split('T')[0];
-  a.href = url;
-  a.download = `docvault-backup-${date}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  updateSyncBtn();
-  toast(`Exported ${docs.length} documents ✓`);
-  closeSyncSheet();
-}
-
-function triggerImport(){
-  document.getElementById('import-file').value = '';
-  document.getElementById('import-file').click();
-}
-
-function handleImport(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if(!data.docs || !Array.isArray(data.docs)) throw new Error('Invalid file');
-      const count = data.docs.length;
-      if(!confirm(`This will replace your ${docs.length} current document${docs.length!==1?'s':''} with ${count} from the backup.\n\nContinue?`)) return;
-      docs = data.docs;
-      save();
-      renderDash(); renderAll();
-      closeSyncSheet();
-      toast(`Restored ${count} document${count!==1?'s':''} ✓`);
-    } catch(err){
-      toast('Invalid backup file');
-    }
-  };
-  reader.readAsText(file);
-}
-
-// ── Backup Sheet UI ────────────────────────────────────────────────
-function openSyncSheet(){
-  const lastExport = localStorage.getItem('dv_last_export');
-  document.getElementById('sync-sheet-body').innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:4px">
-
-      <div style="background:var(--surface2);border-radius:var(--rlg);padding:18px 18px 14px;border:1px solid var(--line)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div style="width:36px;height:36px;background:var(--ink);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:600;color:var(--ink)">Export Backup</div>
-            <div style="font-size:12px;color:var(--ink3);margin-top:1px">Download all your documents as a file</div>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--ink3);line-height:1.7;margin-bottom:12px">
-          Downloads <code style="font-family:var(--fm);font-size:11px;background:var(--surface);padding:2px 5px;border-radius:4px">docvault-backup.json</code> to your device. Save it to Google Drive, WhatsApp Saved Messages, or email it to yourself — then you can restore from any device.
-        </div>
-        ${lastExport ? `<div style="font-size:11px;color:var(--ink3);margin-bottom:10px">Last exported: ${new Date(lastExport).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>` : ''}
-        <button class="btn btn-dk btn-sm" style="width:100%;justify-content:center" onclick="exportBackup()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export ${docs.length} Document${docs.length!==1?'s':''}
-        </button>
-      </div>
-
-      <div style="background:var(--surface2);border-radius:var(--rlg);padding:18px 18px 14px;border:1px solid var(--line)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div style="width:36px;height:36px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:600;color:var(--ink)">Restore from Backup</div>
-            <div style="font-size:12px;color:var(--ink3);margin-top:1px">Import a previously exported file</div>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--ink3);line-height:1.7;margin-bottom:12px">
-          Pick your backup file from wherever you saved it. This will replace your current data with the backup — make sure to export first if you have new documents.
-        </div>
-        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;background:var(--surface);border-color:var(--line2)" onclick="triggerImport()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Choose Backup File
-        </button>
-      </div>
-
-      <div style="background:var(--amber-bg);border-radius:var(--r);padding:11px 13px;font-size:12px;color:var(--amber);line-height:1.7">
-        💡 <strong>Tip:</strong> Export after every session and save to Google Drive or WhatsApp Saved Messages. That way your backup is always one tap away on any device.
-      </div>
-
-    </div>`;
-  document.getElementById('sync-sheet-footer').innerHTML=`
-    <button class="btn btn-gh btn-sm" onclick="closeSyncSheet()">Close</button>`;
-  document.getElementById('sync-ov').classList.add('on');
-}
-
-function closeSyncSheet(){ document.getElementById('sync-ov').classList.remove('on'); }
-
-document.getElementById('sync-ov').addEventListener('click', e=>{
-  if(e.target===e.currentTarget) closeSyncSheet();
-});
-
-// ── Update backup button appearance ───────────────────────────────
-function updateSyncBtn(){
-  const btn = document.getElementById('gsync-btn');
-  if(!btn) return;
-  const last = localStorage.getItem('dv_last_export');
-  if(last){
-    const diffDays = Math.floor((Date.now()-new Date(last))/86400000);
-    if(diffDays > 7){
-      btn.className='gsync-btn';
-      btn.style.cssText='border-color:var(--amber-line);background:var(--amber-bg);color:var(--amber)';
-      btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Backup!</span>`;
-    } else {
-      btn.className='gsync-btn signed-in';
-      btn.style.cssText='';
-      btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Backed up</span>`;
-    }
-  }
-}
-updateSyncBtn();
 
 
 
