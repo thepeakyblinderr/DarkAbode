@@ -505,6 +505,10 @@ html[data-theme="dark"] .rec-badge{background:rgba(77,128,230,.2);color:#7da8f0;
 .theme-btn:hover{background:var(--bg4);}
 .theme-btn:active{opacity:.7;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="firebase-sync.js"></script>
 </head>
 <body>
 <div id="app">
@@ -729,7 +733,7 @@ html[data-theme="dark"] .rec-badge{background:rgba(77,128,230,.2);color:#7da8f0;
 <div class="modal">
   <div class="mhd"><div class="mtl">Settings</div><button class="mclose" onclick="closeMod('m-cfg')">×</button></div>
   <div class="mbd">
-    <div class="fmg">
+    <div id="fbSyncPanel"></div><div class="fmg">
       <div class="fg"><label class="fl">Your Name</label><input type="text" class="fi" id="cfg-name" placeholder="Your name" maxlength="30"></div>
       <div class="fg"><label class="fl">Default Currency</label>
         <select class="fs" id="cfg-cur">
@@ -1002,7 +1006,7 @@ function loadDB() {
   } catch(_){}
   return {user:'You',groups:[],personal:[],currency:'₹',budget:0,lendHistory:[],recurring:[],maintenance:[],version:4};
 }
-function saveDB() { localStorage.setItem(KEY, JSON.stringify(DB)); }
+function saveDB() { FBSync.schedulePush(); localStorage.setItem(KEY, JSON.stringify(DB)); }
 
 // ── UTILS ────────────────────────────────────
 const uid   = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
@@ -3270,6 +3274,7 @@ function openMaintHistory(id) {
 // ═══════════════════════════════════════════════
 function init() {
   DB = loadDB();
+  FBSync.init('moneymate', _fbGetData, _fbSetData);
   // ── Service Worker registration + update check ──────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -3318,6 +3323,16 @@ function toggleTheme() {
   const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   applyTheme(saved || sys);
 })();
+
+function _fbGetData() {
+  return { sv4: localStorage.getItem('sv4') };
+}
+function _fbSetData(data) {
+  if (data && data.sv4 != null) {
+    localStorage.setItem('sv4', data.sv4);
+    location.reload();
+  }
+}
 </script>
 </body>
 </html>

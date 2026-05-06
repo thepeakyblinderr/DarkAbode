@@ -390,6 +390,10 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
 .theme-btn:hover{background:var(--line);}
 .theme-btn:active{opacity:.7;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="firebase-sync.js"></script>
 </head>
 <body>
 
@@ -598,36 +602,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
         <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:0 4px" id="funds-total-pct"></div>
       </div>
 
-<!-- Google Sheets Sync -->
-      <div class="settings-section">
-        <div class="settings-label">Google Sheets Sync</div>
-        <div class="settings-card">
-          <div class="settings-row" onclick="openSyncSetup()">
-            <div class="settings-icon">🔗</div>
-            <div class="settings-text">
-              <div class="settings-name">Script URL</div>
-              <div class="settings-desc" id="sync-url-desc">Not connected</div>
-            </div>
-            <div class="settings-chevron">›</div>
-          </div>
-          <div class="settings-row" onclick="syncFromSheet()">
-            <div class="settings-icon">⬇️</div>
-            <div class="settings-text">
-              <div class="settings-name">Pull from Sheet</div>
-              <div class="settings-desc">Overwrite app data with Sheet values</div>
-            </div>
-            <div class="settings-chevron" id="pull-status">›</div>
-          </div>
-          <div class="settings-row" onclick="syncToSheet()">
-            <div class="settings-icon">⬆️</div>
-            <div class="settings-text">
-              <div class="settings-name">Push to Sheet</div>
-              <div class="settings-desc">Save app data back to Google Sheet</div>
-            </div>
-            <div class="settings-chevron" id="push-status">›</div>
-          </div>
-        </div>
-      </div>
+      <div id="fbSyncPanel"></div>
 
       <!-- Danger Zone -->
       <div class="settings-section">
@@ -820,28 +795,6 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-sync">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Connect Google Sheet</div>
-    <div class="modal-sub">Paste your Apps Script Web App URL below</div>
-    <div class="field-group">
-      <div class="field-label">Script URL</div>
-      <input class="field-input" id="input-sync-url" type="url" placeholder="https://script.google.com/macros/s/...">
-    </div>
-    <div style="background:rgba(123,47,190,0.08);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.8">
-      <div style="color:var(--text);font-weight:600;margin-bottom:6px">How to get the URL:</div>
-      1. Open your Google Sheet<br>
-      2. Extensions → Apps Script<br>
-      3. Paste the GoogleAppsScript.js code<br>
-      4. Deploy → New Deployment → Web App<br>
-      5. Set access to <span style="color:var(--yellow);font-weight:600">"Anyone"</span><br>
-      6. Copy the URL and paste above
-    </div>
-    <button class="btn-save" onclick="saveSyncUrl()">Save & Connect</button>
-    <button class="btn-cancel" onclick="closeModal('modal-sync')">Cancel</button>
-  </div>
-</div>
 
 <script>
 const CIRC = 2 * Math.PI * 40; // 251.2
@@ -874,10 +827,7 @@ let state = JSON.parse(localStorage.getItem('wm_state') || 'null') || {
 
 let editingFundIndex = null;
 
-function save() {
-  state.lastUpdated = new Date().toISOString();
-  localStorage.setItem('wm_state', JSON.stringify(state));
-}
+function save() { FBSync.schedulePush(); state.lastUpdated = new Date().toISOString(); localStorage.setItem('wm_state', JSON.stringify(state)); }
 
 // ══ COMPUTED ══
 function getTotal() { return state.funds.reduce((s,f)=>s+f.current,0); }
@@ -1466,30 +1416,6 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   });
 });
 
-// ══ GOOGLE SHEETS SYNC ══
-function getSyncUrl() {
-  return localStorage.getItem('wm_sync_url') || '';
-}
-
-function openSyncSetup() {
-  document.getElementById('input-sync-url').value = getSyncUrl();
-  openModal('modal-sync');
-}
-
-function saveSyncUrl() {
-  const url = document.getElementById('input-sync-url').value.trim();
-  localStorage.setItem('wm_sync_url', url);
-  updateSyncStatus();
-  closeModal('modal-sync');
-  if (url) showToast('✅ Connected! Try Pull from Sheet.');
-}
-
-function updateSyncStatus() {
-  const url = getSyncUrl();
-  const desc = document.getElementById('sync-url-desc');
-  if (desc) desc.textContent = url ? '✅ Connected' : 'Not connected';
-}
-
 function showToast(msg) {
   let toast = document.getElementById('toast');
   if (!toast) {
@@ -1504,67 +1430,9 @@ function showToast(msg) {
   toast._timer = setTimeout(() => toast.style.opacity = '0', 3000);
 }
 
-async function syncFromSheet() {
-  const url = getSyncUrl();
-  if (!url) { showToast('⚠️ No Sheet connected. Go to Settings.'); return; }
-  const el = document.getElementById('pull-status');
-  el.textContent = '⏳';
-  try {
-    const res = await fetch(url + '?action=read');
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-
-    if (data.funds && data.funds.length > 0) {
-      state.funds = data.funds.map(f => ({
-        name:    f.name,
-        target:  f.target,
-        current: f.current
-      }));
-    }
-
-    if (data.assets && Array.isArray(data.assets)) state.assets = data.assets;
-    if (data.sip !== undefined)  state.sip        = data.sip;
-    if (data.cash !== undefined) state.cash       = data.cash;
-    if (data.reviewDate)         state.reviewDate = data.reviewDate;
-
-    save();
-    renderAll();
-    el.textContent = '›';
-    showToast(`✅ Synced — ${state.funds.length} funds`);
-  } catch (err) {
-    el.textContent = '›';
-    showToast('❌ Pull failed: ' + err.message);
-  }
-}
-
-async function syncToSheet() {
-  const url = getSyncUrl();
-  if (!url) { showToast('⚠️ No Sheet connected. Go to Settings.'); return; }
-  const el = document.getElementById('push-status');
-  el.textContent = '⏳';
-  try {
-    const payload = {
-      action: 'write',
-      funds: state.funds,
-      assets: state.assets || [],
-      sip: state.sip,
-      cash: state.cash,
-      reviewDate: state.reviewDate
-    };
-    const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    el.textContent = '›';
-    showToast(`✅ Pushed — ${state.funds.length} funds`);
-  } catch (err) {
-    el.textContent = '›';
-    showToast('❌ Push failed: ' + err.message);
-  }
-}
-
 // ══ INIT ══
 renderAll();
-updateSyncStatus();
+FBSync.init('wealth', _fbGetData, _fbSetData);
 
 // ── Theme ────────────────────────────────────────────────────
 const THEME_KEY = 'abode_theme';
@@ -1608,6 +1476,17 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     window.location.reload();
   });
+}
+
+function _fbGetData() {
+  return { wm_state: localStorage.getItem('wm_state') };
+}
+function _fbSetData(data) {
+  if (data && data.wm_state != null) {
+    localStorage.setItem('wm_state', data.wm_state);
+    try { state = JSON.parse(data.wm_state); } catch(e) {}
+    renderAll();
+  }
 }
 </script>
 </body>
