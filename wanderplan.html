@@ -405,6 +405,10 @@ html[data-theme="dark"] hr{border-color:var(--gray-200);}
 .theme-btn:hover{background:var(--gray-200);}
 .theme-btn:active{opacity:.7;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="firebase-sync.js"></script>
 </head>
 <body>
 <div id="app">
@@ -561,6 +565,7 @@ html[data-theme="dark"] hr{border-color:var(--gray-200);}
     <div style="background:var(--black);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px">
       <div style="font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Backup All Trips</div>
       <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:16px;line-height:1.5">All trips, itineraries, packing lists, expenses and travellers in one file. No documents.</div>
+      <div id="fbSyncPanel"></div>
       <button class="btn" style="background:white;color:black;width:100%;font-weight:600;font-size:15px;padding:13px" onclick="backupAll()">⬇ Download Backup</button>
     </div>
 
@@ -807,11 +812,12 @@ async function loadAll() {
   state.trips = (await dbGet('trips')) || [];
 }
 async function saveTrip_db(trip) {
+  FBSync.schedulePush();
   await dbPut('trips', trip);
   const idx = state.trips.findIndex(t => t.id === trip.id);
   if (idx >= 0) state.trips[idx] = trip; else state.trips.push(trip);
 }
-async function saveDoc(doc) { await dbPut('docs', doc); }
+async function saveDoc(doc) { FBSync.schedulePush(); await dbPut('docs', doc); }
 async function getDoc(id) { return await dbGet('docs', id); }
 async function delDoc(id) { await dbDel('docs', id); }
 
@@ -2113,7 +2119,7 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 });
 
 // ── INIT ──
-openDB().then(() => { loadAll().then(renderList); });
+openDB().then(function() { loadAll().then(renderList); FBSync.init('wanderplan', _fbGetData, _fbSetData); });
 
 // ── Service Worker registration + update check ──────────────────
 if ('serviceWorker' in navigator) {
@@ -2158,6 +2164,34 @@ function toggleTheme() {
   const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   applyTheme(saved || sys);
 })();
+
+async function _fbGetData() {
+  return new Promise(function(resolve, reject) {
+    var stores = ['trips', 'docs'];
+    var result = { trips: [], docs: [] };
+    var t = db.transaction(stores, 'readonly');
+    t.objectStore('trips').getAll().onsuccess = function(e) { result.trips = e.target.result; };
+    t.objectStore('docs').getAll().onsuccess = function(e) { result.docs = e.target.result; };
+    t.oncomplete = function() { resolve(result); };
+    t.onerror = function() { reject(t.error); };
+  });
+}
+async function _fbSetData(data) {
+  if (!data) return;
+  await new Promise(function(resolve, reject) {
+    var stores = ['trips', 'docs'];
+    var t = db.transaction(stores, 'readwrite');
+    var ts = t.objectStore('trips');
+    var ds = t.objectStore('docs');
+    ts.clear();
+    ds.clear();
+    (data.trips || []).forEach(function(r) { ts.put(r); });
+    (data.docs  || []).forEach(function(r) { ds.put(r); });
+    t.oncomplete = resolve;
+    t.onerror = function() { reject(t.error); };
+  });
+  location.reload();
+}
 </script>
 </body>
 </html>

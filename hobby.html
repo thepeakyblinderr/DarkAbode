@@ -618,6 +618,10 @@ html[data-theme="dark"] .hm-cell.lvl-4 { background:rgba(139,111,240,1); }
 .hobby-pin-btn:hover { color:var(--accent); }
 .hobby-pin-btn.pinned { color:var(--accent); }
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="firebase-sync.js"></script>
 </head>
 <body>
 
@@ -861,9 +865,9 @@ function loadHobbies() {
   ];
 }
 
-function saveHobbies(h) { localStorage.setItem(HOBBY_KEY, JSON.stringify(h)); }
+function saveHobbies(h) { FBSync.schedulePush(); localStorage.setItem(HOBBY_KEY, JSON.stringify(h)); }
 function loadHistory()  { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}'); }
-function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+function saveHistory(h) { FBSync.schedulePush(); localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
 function loadToday() {
   const t = JSON.parse(localStorage.getItem(TODAY_KEY) || '{}');
   const today = new Date().toDateString();
@@ -875,7 +879,7 @@ function loadToday() {
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function loadLog() { return JSON.parse(localStorage.getItem(LOG_KEY) || '{}'); }
-function saveLog(l) { localStorage.setItem(LOG_KEY, JSON.stringify(l)); }
+function saveLog(l) { FBSync.schedulePush(); localStorage.setItem(LOG_KEY, JSON.stringify(l)); }
 
 function logSession(hobbyId, mood) {
   const log = loadLog();
@@ -904,7 +908,7 @@ function getSessionsLast7(hobbyId) {
 
 // ── Streak ─────────────────────────────────────────────────────────
 function loadStreak() { return JSON.parse(localStorage.getItem(STREAK_KEY) || '{"current":0,"best":0,"lastDate":""}'); }
-function saveStreak(s) { localStorage.setItem(STREAK_KEY, JSON.stringify(s)); }
+function saveStreak(s) { FBSync.schedulePush(); localStorage.setItem(STREAK_KEY, JSON.stringify(s)); }
 
 function updateStreak() {
   const streak = loadStreak();
@@ -1222,7 +1226,7 @@ function renderHeatmap() {
 
 // ── Pin helpers ────────────────────────────────────────────────────
 function loadPin()    { const v = localStorage.getItem(PIN_KEY); return v ? JSON.parse(v) : null; }
-function savePin(id)  { localStorage.setItem(PIN_KEY, JSON.stringify(id)); }
+function savePin(id)  { FBSync.schedulePush(); localStorage.setItem(PIN_KEY, JSON.stringify(id)); }
 function clearPin()   { localStorage.removeItem(PIN_KEY); }
 
 function pinHobby(id) {
@@ -1544,6 +1548,19 @@ if ('serviceWorker' in navigator) {
     reg.update();
   }).catch(() => {});
 }
+
+var _HOBBY_KEYS = ['hobbyspace_hobbies','hobbyspace_history','hobbyspace_today','hobbyspace_log','hobbyspace_streak','hobbyspace_pin'];
+function _fbGetData() {
+  var d = {};
+  _HOBBY_KEYS.forEach(function(k) { d[k] = localStorage.getItem(k); });
+  return d;
+}
+function _fbSetData(data) {
+  if (!data) return;
+  _HOBBY_KEYS.forEach(function(k) { if (data[k] != null) localStorage.setItem(k, data[k]); });
+  location.reload();
+}
+FBSync.init('hobby', _fbGetData, _fbSetData);
 </script>
 
 <!-- Mood overlay -->
@@ -1611,5 +1628,6 @@ if ('serviceWorker' in navigator) {
     </div>
   </div>
 </div>
+<div id="fbSyncPanel"></div>
 </body>
 </html>

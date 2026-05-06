@@ -437,6 +437,10 @@ html[data-theme="dark"] .pill.active,.tag-pill.active{background:var(--ink);colo
 .theme-btn:hover{background:var(--line);}
 .theme-btn:active{opacity:.7;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="firebase-sync.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -716,6 +720,7 @@ const ICONS={
 
 // ── State ──────────────────────────────────────────────────────────
 let docs=JSON.parse(localStorage.getItem('dv3b_docs')||'[]');
+FBSync.init('docvault', _fbGetData, _fbSetData);
 let editId=null,step=1,selType=null,activeCat='All',curPage=0;
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
@@ -1123,7 +1128,7 @@ function closeAdd(){document.getElementById('add-ov').classList.remove('on');cle
 });
 
 // ── Export / Import Backup ─────────────────────────────────────────
-const save = ()=>localStorage.setItem('dv3b_docs', JSON.stringify(docs));
+const save = ()=>{localStorage.setItem('dv3b_docs', JSON.stringify(docs));FBSync.schedulePush();};
 
 function exportBackup(){
   localStorage.setItem('dv_last_export', new Date().toISOString());
@@ -1351,6 +1356,16 @@ if ('serviceWorker' in navigator) {
     window.location.reload();
   });
 }
+
+function _fbGetData() {
+  return { docs: localStorage.getItem('dv3b_docs') };
+}
+function _fbSetData(data) {
+  if (data && data.docs != null) localStorage.setItem('dv3b_docs', data.docs);
+  try { docs = JSON.parse(localStorage.getItem('dv3b_docs') || '[]'); } catch(e) { docs = []; }
+  renderAll();
+}
 </script>
+<div id="fbSyncPanel"></div>
 </body>
 </html>
