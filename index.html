@@ -597,6 +597,10 @@ html[data-theme="dark"] .modal-note{background:var(--surface2);border-color:var(
 .theme-btn:hover{background:var(--line);}
 .theme-btn:active{opacity:.7;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="firebase-sync.js"></script>
 </head>
 <body>
 
@@ -725,6 +729,18 @@ html[data-theme="dark"] .modal-note{background:var(--surface2);border-color:var(
 
   <!-- Backup -->
   <div class="backup-section" style="animation:fade-up .4s .36s ease both;padding-bottom:4px">
+
+    <!-- Cloud Sync -->
+    <div class="backup-card" style="margin-bottom:8px">
+      <div class="backup-body" style="padding:14px 16px">
+        <div id="fbSyncPanel" style="
+          --bg:var(--surface2);--card:var(--surface);--bdr:var(--line);
+          --text:var(--ink);--muted:var(--ink3);--rs:var(--rl);--red:#c0392b;
+        "></div>
+      </div>
+    </div>
+
+    <!-- Manual backup -->
     <div class="backup-card">
       <div class="backup-body">
         <div class="backup-row">
@@ -834,6 +850,58 @@ function renderBackupDate() {
   el.className   = `backup-meta ${days <= 7 ? 'fresh' : 'stale'}`;
 }
 renderBackupDate();
+
+// ── Firebase sync (all apps from home) ───────────────────────
+async function _fbGetAllData() {
+  const payload = { version: 1, exported: new Date().toISOString(), apps: {} };
+  try { const sv = localStorage.getItem('sv4'); if (sv) payload.apps.splitvault = { key:'sv4', data: JSON.parse(sv) }; } catch(e) {}
+  try {
+    const dv = localStorage.getItem('dv3b_docs');
+    if (dv) payload.apps.docvault = { key:'dv3b_docs', data: JSON.parse(dv) };
+    const le = localStorage.getItem('dv_last_export'), wc = localStorage.getItem('dv3b_welcomed');
+    if (le || wc) payload.apps.docvault_meta = { dv_last_export: le, dv3b_welcomed: wc };
+  } catch(e) {}
+  try { const wm = localStorage.getItem('wm_state'); if (wm) payload.apps.wealth = { key:'wm_state', data: JSON.parse(wm) }; } catch(e) {}
+  try {
+    const trips = await readIDB('wanderplan_db', 2, 'trips');
+    if (trips?.length) payload.apps.wanderplan = { version:2, exported: new Date().toISOString(),
+      trips: trips.map(t => { const c={...t}; delete c.documents; return c; }) };
+  } catch(e) {}
+  try {
+    const nutrilyKv = await readNutrilyKv();
+    if (nutrilyKv?.length) payload.apps.nutrily = { version:2, exported: new Date().toISOString(), logs:[], kv: nutrilyKv };
+  } catch(e) {}
+  try {
+    const hH = localStorage.getItem('hobbyspace_hobbies'), hT = localStorage.getItem('hobbyspace_history');
+    const hL = localStorage.getItem('hobbyspace_log'),     hS = localStorage.getItem('hobbyspace_streak');
+    if (hH || hT) payload.apps.hobby = { hobbies: hH ? JSON.parse(hH) : [], history: hT ? JSON.parse(hT) : {},
+      log: hL ? JSON.parse(hL) : {}, streak: hS ? JSON.parse(hS) : {} };
+  } catch(e) {}
+  return payload;
+}
+
+async function _fbSetAllData(payload) {
+  if (!payload || !payload.apps) return;
+  const apps = payload.apps;
+  try {
+    if (apps.splitvault) localStorage.setItem('sv4', JSON.stringify(apps.splitvault.data));
+    if (apps.docvault)   localStorage.setItem('dv3b_docs', JSON.stringify(apps.docvault.data));
+    if (apps.docvault_meta?.dv_last_export) localStorage.setItem('dv_last_export', apps.docvault_meta.dv_last_export);
+    if (apps.docvault_meta?.dv3b_welcomed)  localStorage.setItem('dv3b_welcomed',   apps.docvault_meta.dv3b_welcomed);
+    if (apps.wealth)     localStorage.setItem('wm_state', JSON.stringify(apps.wealth.data));
+    if (apps.wanderplan?.trips?.length) await writeIDB('wanderplan_db', 2, 'trips', apps.wanderplan.trips);
+    if (apps.hobby) {
+      if (apps.hobby.hobbies) localStorage.setItem('hobbyspace_hobbies', JSON.stringify(apps.hobby.hobbies));
+      if (apps.hobby.history) localStorage.setItem('hobbyspace_history', JSON.stringify(apps.hobby.history));
+      if (apps.hobby.log)     localStorage.setItem('hobbyspace_log',     JSON.stringify(apps.hobby.log));
+      if (apps.hobby.streak)  localStorage.setItem('hobbyspace_streak',  JSON.stringify(apps.hobby.streak));
+    }
+    if (apps.nutrily?.kv?.length) await writeNutrilyData([], apps.nutrily.kv);
+    loadStats();
+  } catch(e) { console.error('[FBSync] restore error:', e); }
+}
+
+FBSync.init('abode', _fbGetAllData, _fbSetAllData);
 
 // ── Export all ───────────────────────────────────────────────
 async function doExport() {
