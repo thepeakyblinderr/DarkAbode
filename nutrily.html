@@ -1512,10 +1512,19 @@ async function _fbSetData(entries) {
     t.oncomplete = resolve;
     t.onerror = function() { reject(t.error); };
   });
-  water = 0; steps = 0;
-  profile = {name:'',age:'',weight:'',height:''};
-  exWeek = {}; sleepData = {}; moodData = {};
-  init();
+  // Don't re-init while user is actively typing — defer to next backgrounding
+  const tag = document.activeElement?.tagName?.toLowerCase();
+  const typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+  if (!typing) {
+    water = 0; steps = 0;
+    profile = {name:'',age:'',weight:'',height:''};
+    exWeek = {}; sleepData = {}; moodData = {};
+    init();
+  } else {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') location.reload();
+    }, { once: true });
+  }
 }
 
 </script>
