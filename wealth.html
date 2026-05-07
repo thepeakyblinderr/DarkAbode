@@ -616,17 +616,10 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
       </div>
 
 
-      <!-- Stocks & API Key -->
+      <!-- Stocks info -->
       <div class="settings-section">
         <div class="settings-label">Stocks &amp; ETFs (NSE/BSE)</div>
-        <div class="settings-card">
-          <div class="settings-row" onclick="openTDKeySetup()">
-            <div class="settings-icon">🔑</div>
-            <div class="settings-text"><div class="settings-name">Twelve Data API Key</div><div class="settings-desc" id="td-key-desc">Not set — tap to configure</div></div>
-            <div class="settings-chevron">›</div>
-          </div>
-        </div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:0 4px">Free at twelvedata.com — 800 calls/day, no credit card needed</div>
+        <div style="font-size:12px;color:var(--muted);padding:4px;line-height:1.6">Prices fetched automatically from Yahoo Finance — no API key needed. Use NSE/BSE symbols (e.g. RELIANCE, TCS, GOLDBEES).</div>
       </div>
 
       <!-- Danger Zone -->
@@ -685,28 +678,6 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </div>
 </div>
 
-<!-- Twelve Data API Key Modal -->
-<div class="modal-overlay" id="modal-td-key">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Twelve Data API Key</div>
-    <div class="modal-sub">Free at twelvedata.com · 800 calls/day</div>
-    <div class="field-group">
-      <div class="field-label">API Key</div>
-      <input class="field-input" id="input-td-key" type="text" placeholder="Paste your key here" autocomplete="off">
-    </div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      1. Go to <strong>twelvedata.com</strong> → Sign up free<br>
-      2. Dashboard → API Keys → copy your key<br>
-      3. Paste above and tap Save
-    </div>
-    <div id="td-test-result" style="font-size:12px;padding:8px 10px;border-radius:10px;display:none;margin-bottom:12px"></div>
-    <button class="btn-save" onclick="saveTDKey()">Save Key</button>
-    <button class="btn-cancel" onclick="testTDKey()" style="border-color:var(--blue);color:var(--blue)">Test Connection</button>
-    <button class="btn-cancel" id="btn-clear-td-key" onclick="clearTDKey()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">Remove Key</button>
-    <button class="btn-cancel" onclick="closeModal('modal-td-key')">Cancel</button>
-  </div>
-</div>
 
 <!-- ══════════════ BOTTOM NAV ══════════════ -->
 <nav class="bottom-nav">
@@ -1294,7 +1265,6 @@ function renderSettings() {
     </div>`;
   });
   document.getElementById('fund-settings-list').innerHTML = fundHTML;
-  updateTDKeyDesc();
 }
 
 // ══ NAVIGATION ══
@@ -1572,7 +1542,6 @@ function showToast(msg) {
 
 // ══ STOCKS CRUD ══
 let managingStockIndex = null;
-const TD_KEY = 'wm_td_key';
 
 function openAddStock() {
   managingStockIndex = null;
@@ -1663,54 +1632,6 @@ function renderStocks() {
   }).join('');
 }
 
-// ══ TWELVE DATA API KEY ══
-function openTDKeySetup() {
-  const key = localStorage.getItem(TD_KEY) || '';
-  document.getElementById('input-td-key').value = key;
-  document.getElementById('btn-clear-td-key').style.display = key ? 'block' : 'none';
-  openModal('modal-td-key');
-}
-function saveTDKey() {
-  const key = document.getElementById('input-td-key').value.trim();
-  if (!key) { alert('Please paste a valid API key'); return; }
-  localStorage.setItem(TD_KEY, key);
-  updateTDKeyDesc();
-  closeModal('modal-td-key');
-  showToast('✓ API key saved');
-}
-function clearTDKey() {
-  if (!confirm('Remove API key?')) return;
-  localStorage.removeItem(TD_KEY);
-  updateTDKeyDesc();
-  closeModal('modal-td-key');
-  showToast('API key removed');
-}
-async function testTDKey() {
-  const key = document.getElementById('input-td-key').value.trim();
-  const box = document.getElementById('td-test-result');
-  if (!key) { box.textContent = '⚠ Enter a key first'; box.style.background = 'rgba(180,83,9,0.1)'; box.style.color = 'var(--yellow)'; box.style.display = 'block'; return; }
-  box.textContent = 'Testing…'; box.style.background = 'var(--surface2)'; box.style.color = 'var(--muted)'; box.style.display = 'block';
-  try {
-    const res = await fetch(`https://api.twelvedata.com/price?symbol=RELIANCE&exchange=NSE&apikey=${key}`);
-    const data = await res.json();
-    if (data.price) {
-      box.textContent = `✓ Connected! RELIANCE = ₹${parseFloat(data.price).toLocaleString('en-IN')}`;
-      box.style.background = 'rgba(4,120,87,0.1)'; box.style.color = 'var(--green)';
-    } else {
-      box.textContent = `✗ ${data.message || 'No price returned — key may be invalid'}`;
-      box.style.background = 'rgba(192,57,43,0.1)'; box.style.color = 'var(--red)';
-    }
-  } catch(e) {
-    box.textContent = `✗ Network error: ${e.message}`;
-    box.style.background = 'rgba(192,57,43,0.1)'; box.style.color = 'var(--red)';
-  }
-}
-
-function updateTDKeyDesc() {
-  const key = localStorage.getItem(TD_KEY);
-  const el = document.getElementById('td-key-desc');
-  if (el) el.textContent = key ? `Key set (…${key.slice(-6)})` : 'Not set — tap to configure';
-}
 
 // ══ MF NAV API (mfapi.in) ══
 function debounceMFSearch() {
@@ -1778,34 +1699,24 @@ async function refreshNAV() {
   // Stock price refresh via Twelve Data
   const stocks = (state.stocks||[]).filter(s => s.symbol && s.units > 0);
   if (stocks.length) {
-    const key = localStorage.getItem(TD_KEY);
-    if (!key) {
-      showToast('Add a Twelve Data API key in Manage → Stocks to refresh stock prices');
-    } else {
-      const byExchange = {};
-      stocks.forEach(s => { (byExchange[s.exchange||'NSE'] = byExchange[s.exchange||'NSE']||[]).push(s); });
-      for (const [exchange, list] of Object.entries(byExchange)) {
-        const symbols = list.map(s => s.symbol).join(',');
-        try {
-          const res = await fetch(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(symbols)}&exchange=${exchange}&apikey=${key}`);
-          if (!res.ok) { showToast(`Twelve Data error: HTTP ${res.status}`); failed += list.length; continue; }
-          const data = await res.json();
-          // API-level error (e.g. invalid key, symbol not found)
-          if (data.status === 'error' || data.code) {
-            showToast(`Twelve Data: ${data.message || 'Unknown error'}`);
-            failed += list.length;
-            continue;
-          }
-          list.forEach(s => {
-            const entry = list.length === 1 ? data : data[s.symbol];
-            if (entry && entry.status === 'error') { showToast(`${s.symbol}: ${entry.message}`); failed++; return; }
-            const price = entry ? parseFloat(entry.price) : NaN;
-            if (!isNaN(price) && price > 0) { s.price = price; s.current = Math.round(price * s.units * 100) / 100; updated++; }
-            else { showToast(`No price returned for ${s.symbol} — check symbol/exchange`); failed++; }
-          });
-        } catch(e) { showToast(`Network error fetching prices: ${e.message}`); failed += list.length; }
-      }
-    }
+    const suffix = { NSE: '.NS', BSE: '.BO' };
+    const yahooSymbols = stocks.map(s => s.symbol + (suffix[s.exchange] || '.NS')).join(',');
+    const apiUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yahooSymbols)}`;
+    try {
+      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(apiUrl)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const results = data?.quoteResponse?.result || [];
+      stocks.forEach(s => {
+        const ySymbol = s.symbol + (suffix[s.exchange] || '.NS');
+        const quote = results.find(r => r.symbol === ySymbol);
+        if (quote && quote.regularMarketPrice > 0) {
+          s.price = quote.regularMarketPrice;
+          s.current = Math.round(quote.regularMarketPrice * s.units * 100) / 100;
+          updated++;
+        } else { showToast(`No price for ${s.symbol} — check symbol`); failed++; }
+      });
+    } catch(e) { showToast(`Stock price fetch failed: ${e.message}`); failed += stocks.length; }
   }
 
   if (linkedFunds.length === 0 && stocks.length === 0) {
