@@ -539,7 +539,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
 <div class="screen" id="screen-assets">
   <div class="simple-header">
     <h1>Assets</h1>
-    <p>FD · NPS · PF · Other holdings</p>
+    <p>Stocks · FD · NPS · PF · Other</p>
   </div>
   <div class="scroll-area">
     <div class="content">
@@ -547,9 +547,17 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
         <div>
           <div class="action-tag">Total Other Assets</div>
           <div class="action-text">Non-Portfolio Holdings</div>
-          <div class="action-sub">FD · NPS · PF · Other</div>
+          <div class="action-sub" id="a-sub">Stocks · FD · NPS · PF · Other</div>
         </div>
         <div class="action-amount" id="a-total">₹0</div>
+      </div>
+      <!-- Stocks section -->
+      <div id="stocks-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 2px">
+          <div style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)">STOCKS &amp; ETFs <span id="stocks-total-inline" style="color:var(--ink3)"></span></div>
+          <button onclick="openAddStock()" style="background:rgba(26,86,219,0.1);border:1px solid rgba(26,86,219,0.25);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--blue);cursor:pointer;font-family:var(--body)">＋ Add</button>
+        </div>
+        <div class="fund-list" id="stocks-list"></div>
       </div>
       <div id="assets-list"></div>
     </div>
@@ -607,6 +615,19 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
       </div>
 
 
+      <!-- Stocks & API Key -->
+      <div class="settings-section">
+        <div class="settings-label">Stocks &amp; ETFs (NSE/BSE)</div>
+        <div class="settings-card">
+          <div class="settings-row" onclick="openTDKeySetup()">
+            <div class="settings-icon">🔑</div>
+            <div class="settings-text"><div class="settings-name">Twelve Data API Key</div><div class="settings-desc" id="td-key-desc">Not set — tap to configure</div></div>
+            <div class="settings-chevron">›</div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:0 4px">Free at twelvedata.com — 800 calls/day, no credit card needed</div>
+      </div>
+
       <!-- Danger Zone -->
       <div class="settings-section">
         <div class="settings-label">Danger Zone</div>
@@ -620,6 +641,67 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- Add/Edit Stock Modal -->
+<div class="modal-overlay" id="modal-stock">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-stock-title">Add Stock / ETF</div>
+    <div class="modal-sub">NSE or BSE listed equity</div>
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">NSE Symbol</div>
+        <input class="field-input" id="input-stock-symbol" type="text" placeholder="e.g. RELIANCE" style="text-transform:uppercase">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Exchange</div>
+        <select class="field-input" id="input-stock-exchange">
+          <option value="NSE">NSE</option>
+          <option value="BSE">BSE</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Name (optional label)</div>
+      <input class="field-input" id="input-stock-name" type="text" placeholder="e.g. Reliance Industries">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Qty / Units</div>
+        <input class="field-input" id="input-stock-units" type="number" inputmode="decimal" step="any" placeholder="0">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Avg Buy Price (₹)</div>
+        <input class="field-input" id="input-stock-buy" type="number" inputmode="decimal" placeholder="0">
+      </div>
+    </div>
+    <div id="stock-price-preview" style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:4px 2px;display:none"></div>
+    <button class="btn-save" onclick="saveStock()">Save</button>
+    <button class="btn-cancel" id="btn-delete-stock" onclick="deleteStock()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">🗑 Remove</button>
+    <button class="btn-cancel" onclick="closeModal('modal-stock')">Cancel</button>
+  </div>
+</div>
+
+<!-- Twelve Data API Key Modal -->
+<div class="modal-overlay" id="modal-td-key">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Twelve Data API Key</div>
+    <div class="modal-sub">Free at twelvedata.com · 800 calls/day</div>
+    <div class="field-group">
+      <div class="field-label">API Key</div>
+      <input class="field-input" id="input-td-key" type="text" placeholder="Paste your key here" autocomplete="off">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      1. Go to <strong>twelvedata.com</strong> → Sign up free<br>
+      2. Dashboard → API Keys → copy your key<br>
+      3. Paste above and tap Save
+    </div>
+    <button class="btn-save" onclick="saveTDKey()">Save Key</button>
+    <button class="btn-cancel" id="btn-clear-td-key" onclick="clearTDKey()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">Remove Key</button>
+    <button class="btn-cancel" onclick="closeModal('modal-td-key')">Cancel</button>
   </div>
 </div>
 
@@ -837,6 +919,7 @@ let state = JSON.parse(localStorage.getItem('wm_state') || 'null') || {
     { name:'Debt',               target:0.06, current:29721  },
   ],
   assets: [],
+  stocks: [],
   sip: 30000,
   cash: 10000,
   reviewDate: '2027-03-01',
@@ -850,7 +933,8 @@ function save() { FBSync.schedulePush(); state.lastUpdated = new Date().toISOStr
 // ══ COMPUTED ══
 function getTotal() { return state.funds.reduce((s,f)=>s+f.current,0); }
 function getAssetsTotal() { return (state.assets||[]).reduce((s,a)=>s+a.current,0); }
-function getNetWorth() { return getTotal() + getAssetsTotal(); }
+function getStocksTotal() { return (state.stocks||[]).reduce((s,s2)=>s+s2.current,0); }
+function getNetWorth() { return getTotal() + getAssetsTotal() + getStocksTotal(); }
 function getCategoryTotal(cat) { return (state.assets||[]).filter(a=>a.category===cat).reduce((s,a)=>s+a.current,0); }
 
 const ASSET_CATEGORIES = ['FD','NPS','PF','Other'];
@@ -952,13 +1036,14 @@ function renderAll() {
   renderDecision();
   renderSIP();
   renderLumpsum();
+  renderStocks();
   renderAssets();
   renderSettings();
 }
 
 function renderAssets() {
   if (!state.assets) state.assets = [];
-  document.getElementById('a-total').textContent = fmt(getAssetsTotal());
+  document.getElementById('a-total').textContent = fmt(getAssetsTotal() + getStocksTotal());
   let html = '';
   ASSET_CATEGORIES.forEach(cat => {
     const items = state.assets.filter(a => a.category === cat);
@@ -1009,8 +1094,11 @@ function renderDashboard() {
 
   document.getElementById('d-total').textContent = fmt(getNetWorth());
   const bkd = ASSET_CATEGORIES.filter(c=>getCategoryTotal(c)>0).map(c=>`${c} ${fmt(getCategoryTotal(c))}`).join(' · ');
-  document.getElementById('d-nw-breakdown').textContent = bkd ? `MF ${fmt(total)} · ${bkd}` : `MF ${fmt(total)}`;
-  document.getElementById('d-other-assets').textContent = fmt(getAssetsTotal());
+  const stocksT = getStocksTotal();
+  const stocksPart = stocksT > 0 ? `Stocks ${fmt(stocksT)}` : '';
+  const bkdParts = [stocksPart, bkd].filter(Boolean).join(' · ');
+  document.getElementById('d-nw-breakdown').textContent = bkdParts ? `MF ${fmt(total)} · ${bkdParts}` : `MF ${fmt(total)}`;
+  document.getElementById('d-other-assets').textContent = fmt(getAssetsTotal() + stocksT);
   document.getElementById('d-sip').textContent = fmt(state.sip);
   const mode = getMode();
   document.getElementById('d-mode-label').textContent = mode + ' mode · ' + state.funds.length + ' funds';
@@ -1203,7 +1291,7 @@ function renderSettings() {
     </div>`;
   });
   document.getElementById('fund-settings-list').innerHTML = fundHTML;
-
+  updateTDKeyDesc();
 }
 
 // ══ NAVIGATION ══
@@ -1479,6 +1567,127 @@ function showToast(msg) {
   toast._timer = setTimeout(() => toast.style.opacity = '0', 3000);
 }
 
+// ══ STOCKS CRUD ══
+let managingStockIndex = null;
+const TD_KEY = 'wm_td_key';
+
+function openAddStock() {
+  managingStockIndex = null;
+  document.getElementById('modal-stock-title').textContent = 'Add Stock / ETF';
+  document.getElementById('input-stock-symbol').value = '';
+  document.getElementById('input-stock-exchange').value = 'NSE';
+  document.getElementById('input-stock-name').value = '';
+  document.getElementById('input-stock-units').value = '';
+  document.getElementById('input-stock-buy').value = '';
+  document.getElementById('btn-delete-stock').style.display = 'none';
+  document.getElementById('stock-price-preview').style.display = 'none';
+  openModal('modal-stock');
+}
+
+function openEditStock(i) {
+  managingStockIndex = i;
+  const s = (state.stocks||[])[i];
+  document.getElementById('modal-stock-title').textContent = 'Edit Stock / ETF';
+  document.getElementById('input-stock-symbol').value = s.symbol;
+  document.getElementById('input-stock-exchange').value = s.exchange || 'NSE';
+  document.getElementById('input-stock-name').value = s.name || '';
+  document.getElementById('input-stock-units').value = s.units || '';
+  document.getElementById('input-stock-buy').value = s.buyPrice || '';
+  document.getElementById('btn-delete-stock').style.display = 'block';
+  const prev = document.getElementById('stock-price-preview');
+  if (s.price) {
+    prev.textContent = `Last fetched price: ₹${s.price.toLocaleString('en-IN')} · Value: ${fmt(s.current)}`;
+    prev.style.display = 'block';
+  } else {
+    prev.style.display = 'none';
+  }
+  openModal('modal-stock');
+}
+
+function saveStock() {
+  if (!state.stocks) state.stocks = [];
+  const symbol = document.getElementById('input-stock-symbol').value.trim().toUpperCase();
+  const exchange = document.getElementById('input-stock-exchange').value;
+  const name = document.getElementById('input-stock-name').value.trim() || symbol;
+  const units = parseFloat(document.getElementById('input-stock-units').value) || 0;
+  const buyPrice = parseFloat(document.getElementById('input-stock-buy').value) || 0;
+  if (!symbol) { alert('Please enter a symbol'); return; }
+  const existing = managingStockIndex !== null ? state.stocks[managingStockIndex] : {};
+  const stock = { symbol, exchange, name, units, buyPrice, price: existing.price || 0, current: (existing.price || 0) * units };
+  if (managingStockIndex === null) {
+    state.stocks.push(stock);
+  } else {
+    state.stocks[managingStockIndex] = stock;
+  }
+  save(); renderAll();
+  closeModal('modal-stock');
+}
+
+function deleteStock() {
+  if (managingStockIndex === null) return;
+  state.stocks.splice(managingStockIndex, 1);
+  managingStockIndex = null;
+  save(); renderAll();
+  closeModal('modal-stock');
+  showToast('🗑 Stock removed');
+}
+
+function renderStocks() {
+  if (!state.stocks) state.stocks = [];
+  const total = getStocksTotal();
+  const el = document.getElementById('stocks-list');
+  const inline = document.getElementById('stocks-total-inline');
+  if (inline) inline.textContent = total > 0 ? `· ${fmt(total)}` : '';
+  if (!state.stocks.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--ink4);padding:10px 4px">No stocks yet — tap ＋ to add</div>`;
+    return;
+  }
+  el.innerHTML = state.stocks.map((s, i) => {
+    const gain = s.price && s.buyPrice ? ((s.price - s.buyPrice) / s.buyPrice * 100) : null;
+    const gainColor = gain === null ? 'var(--muted)' : gain >= 0 ? 'var(--green)' : 'var(--red)';
+    const gainText = gain === null ? 'No price yet' : (gain >= 0 ? '+' : '') + gain.toFixed(1) + '%';
+    return `<div class="fund-row" onclick="openEditStock(${i})">
+      <div class="fund-dot" style="background:var(--blue)"></div>
+      <div class="fund-info">
+        <div class="fund-name">${s.symbol} <span style="font-size:10px;color:var(--muted);font-weight:400">${s.exchange}</span></div>
+        <div class="fund-val">${s.name !== s.symbol ? s.name : ''} · ${s.units} units</div>
+      </div>
+      <div class="fund-right">
+        <div class="fund-pct">${fmt(s.current)}</div>
+        <div class="fund-action" style="color:${gainColor}">${gainText}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══ TWELVE DATA API KEY ══
+function openTDKeySetup() {
+  const key = localStorage.getItem(TD_KEY) || '';
+  document.getElementById('input-td-key').value = key;
+  document.getElementById('btn-clear-td-key').style.display = key ? 'block' : 'none';
+  openModal('modal-td-key');
+}
+function saveTDKey() {
+  const key = document.getElementById('input-td-key').value.trim();
+  if (!key) { alert('Please paste a valid API key'); return; }
+  localStorage.setItem(TD_KEY, key);
+  updateTDKeyDesc();
+  closeModal('modal-td-key');
+  showToast('✓ API key saved');
+}
+function clearTDKey() {
+  if (!confirm('Remove API key?')) return;
+  localStorage.removeItem(TD_KEY);
+  updateTDKeyDesc();
+  closeModal('modal-td-key');
+  showToast('API key removed');
+}
+function updateTDKeyDesc() {
+  const key = localStorage.getItem(TD_KEY);
+  const el = document.getElementById('td-key-desc');
+  if (el) el.textContent = key ? `Key set (…${key.slice(-6)})` : 'Not set — tap to configure';
+}
+
 // ══ MF NAV API (mfapi.in) ══
 function debounceMFSearch() {
   clearTimeout(_pendingSearchTimer);
@@ -1526,15 +1735,13 @@ function clearMFScheme() {
 
 async function refreshNAV() {
   const btn = document.getElementById('nav-btn');
-  const linked = state.funds.filter(f => f.schemeCode && f.units > 0);
-  if (!linked.length) {
-    showToast('No funds have scheme code + units set. Edit a fund to link NAV.');
-    return;
-  }
   btn.textContent = '⏳';
   btn.disabled = true;
   let updated = 0, failed = 0;
-  await Promise.all(linked.map(async f => {
+
+  // MF NAV refresh
+  const linkedFunds = state.funds.filter(f => f.schemeCode && f.units > 0);
+  await Promise.all(linkedFunds.map(async f => {
     try {
       const res = await fetch(`https://api.mfapi.in/mf/${f.schemeCode}/latest`);
       const data = await res.json();
@@ -1543,12 +1750,43 @@ async function refreshNAV() {
       else failed++;
     } catch { failed++; }
   }));
-  save(); renderAll();
+
+  // Stock price refresh via Twelve Data
+  const stocks = (state.stocks||[]).filter(s => s.symbol && s.units > 0);
+  if (stocks.length) {
+    const key = localStorage.getItem(TD_KEY);
+    if (!key) {
+      showToast('Add a Twelve Data API key in Manage → Stocks to refresh stock prices');
+    } else {
+      // Group by exchange and batch
+      const byExchange = {};
+      stocks.forEach(s => { (byExchange[s.exchange||'NSE'] = byExchange[s.exchange||'NSE']||[]).push(s); });
+      for (const [exchange, list] of Object.entries(byExchange)) {
+        const symbols = list.map(s => s.symbol).join(',');
+        try {
+          const res = await fetch(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(symbols)}&exchange=${exchange}&apikey=${key}`);
+          const data = await res.json();
+          list.forEach(s => {
+            const entry = list.length === 1 ? data : data[s.symbol];
+            const price = entry ? parseFloat(entry.price) : NaN;
+            if (!isNaN(price) && price > 0) { s.price = price; s.current = Math.round(price * s.units * 100) / 100; updated++; }
+            else failed++;
+          });
+        } catch { failed += list.length; }
+      }
+    }
+  }
+
+  if (linkedFunds.length === 0 && stocks.length === 0) {
+    showToast('No linked funds or stocks. Edit a fund/stock to set units.');
+  } else {
+    save(); renderAll();
+    const msg = updated ? `✓ ${updated} updated` : '';
+    const errMsg = failed ? ` · ${failed} failed` : '';
+    showToast((msg + errMsg) || 'Nothing updated');
+  }
   btn.textContent = '↻ NAV';
   btn.disabled = false;
-  const msg = updated ? `✓ ${updated} fund${updated>1?'s':''} updated` : '';
-  const errMsg = failed ? ` · ${failed} failed` : '';
-  showToast((msg + errMsg) || 'Nothing updated');
 }
 
 // ══ INIT ══
