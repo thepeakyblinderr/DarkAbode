@@ -1648,9 +1648,11 @@ async function runMFSearch() {
   box.style.display = 'block';
   box.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--muted)">Searching…</div>';
   try {
+    const mfSearchUrl = `https://api.mfapi.in/mf/search?q=${encodeURIComponent(q)}`;
     const proxies = [
-      `https://api.mfapi.in/mf/search?q=${encodeURIComponent(q)}`,
-      `https://corsproxy.io/?https://api.mfapi.in/mf/search?q=${encodeURIComponent(q)}`
+      mfSearchUrl,
+      `https://corsproxy.io/?${encodeURIComponent(mfSearchUrl)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(mfSearchUrl)}`
     ];
     let list = null;
     for (const url of proxies) {
@@ -1704,9 +1706,11 @@ async function refreshNAV() {
   // MF NAV refresh
   const linkedFunds = state.funds.filter(f => f.schemeCode && f.units > 0);
   await Promise.all(linkedFunds.map(async f => {
+    const mfNavUrl = `https://api.mfapi.in/mf/${f.schemeCode}/latest`;
     const urls = [
-      `https://api.mfapi.in/mf/${f.schemeCode}/latest`,
-      `https://corsproxy.io/?https://api.mfapi.in/mf/${f.schemeCode}/latest`
+      mfNavUrl,
+      `https://corsproxy.io/?${encodeURIComponent(mfNavUrl)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(mfNavUrl)}`
     ];
     let nav = null;
     for (const url of urls) {
