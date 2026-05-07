@@ -1639,6 +1639,8 @@ function debounceMFSearch() {
   _pendingSearchTimer = setTimeout(runMFSearch, 400);
 }
 
+let _mfSearchResults = [];
+
 async function runMFSearch() {
   const q = document.getElementById('input-mf-search').value.trim();
   const box = document.getElementById('mf-search-results');
@@ -1646,11 +1648,24 @@ async function runMFSearch() {
   box.style.display = 'block';
   box.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--muted)">Searching…</div>';
   try {
-    const res = await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(q)}`);
-    const list = await res.json();
+    const proxies = [
+      `https://api.mfapi.in/mf/search?q=${encodeURIComponent(q)}`,
+      `https://corsproxy.io/?https://api.mfapi.in/mf/search?q=${encodeURIComponent(q)}`
+    ];
+    let list = null;
+    for (const url of proxies) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const json = await res.json();
+        if (Array.isArray(json)) { list = json; break; }
+      } catch { continue; }
+    }
+    if (!list) { box.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--red)">Search failed — check connection</div>'; return; }
     if (!list.length) { box.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--muted)">No results</div>'; return; }
-    box.innerHTML = list.slice(0, 10).map(s =>
-      `<div onclick="selectMFScheme(${s.schemeCode},'${s.schemeName.replace(/'/g,"\\'")}','${s.fundHouse.replace(/'/g,"\\'")}' )" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);font-size:12px;line-height:1.4" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
+    _mfSearchResults = list.slice(0, 10);
+    box.innerHTML = _mfSearchResults.map((s, i) =>
+      `<div onclick="selectMFScheme(${i})" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);font-size:12px;line-height:1.4" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
         <div style="font-weight:600;color:var(--ink)">${s.schemeName}</div>
         <div style="color:var(--muted);font-size:10px">${s.fundHouse}</div>
       </div>`
@@ -1658,15 +1673,17 @@ async function runMFSearch() {
   } catch { box.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--red)">Search failed — check connection</div>'; }
 }
 
-function selectMFScheme(code, name, house) {
-  _pendingSchemeCode = code;
-  document.getElementById('input-mf-search').value = name;
+function selectMFScheme(i) {
+  const s = _mfSearchResults[i];
+  if (!s) return;
+  _pendingSchemeCode = s.schemeCode;
+  document.getElementById('input-mf-search').value = s.schemeName;
   document.getElementById('mf-search-results').style.display = 'none';
-  document.getElementById('mf-selected-scheme').textContent = `✓ ${house} · Code ${code}`;
+  document.getElementById('mf-selected-scheme').textContent = `✓ ${s.fundHouse} · Code ${s.schemeCode}`;
   document.getElementById('mf-selected-scheme').style.display = 'block';
   document.getElementById('btn-clear-scheme').style.display = 'block';
   if (!document.getElementById('input-mf-name').value.trim()) {
-    document.getElementById('input-mf-name').value = name;
+    document.getElementById('input-mf-name').value = s.schemeName;
   }
 }
 
@@ -1687,13 +1704,22 @@ async function refreshNAV() {
   // MF NAV refresh
   const linkedFunds = state.funds.filter(f => f.schemeCode && f.units > 0);
   await Promise.all(linkedFunds.map(async f => {
-    try {
-      const res = await fetch(`https://api.mfapi.in/mf/${f.schemeCode}/latest`);
-      const data = await res.json();
-      const nav = parseFloat(data.data?.[0]?.nav);
-      if (!isNaN(nav) && nav > 0) { f.current = Math.round(nav * f.units * 100) / 100; updated++; }
-      else failed++;
-    } catch { failed++; }
+    const urls = [
+      `https://api.mfapi.in/mf/${f.schemeCode}/latest`,
+      `https://corsproxy.io/?https://api.mfapi.in/mf/${f.schemeCode}/latest`
+    ];
+    let nav = null;
+    for (const url of urls) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const data = await res.json();
+        const n = parseFloat(data.data?.[0]?.nav);
+        if (!isNaN(n) && n > 0) { nav = n; break; }
+      } catch { continue; }
+    }
+    if (nav) { f.current = Math.round(nav * f.units * 100) / 100; updated++; }
+    else failed++;
   }));
 
   // Stock price refresh via Yahoo Finance chart API
