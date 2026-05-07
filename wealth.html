@@ -1003,14 +1003,32 @@ function getCorrectionLumpsum(f) {
   return totalUnderweight !== 0 ? (difference / totalUnderweight) * state.cash : 0;
 }
 
-// Active SIP: auto mode based on deviations
-function getActiveSIP(f) {
-  return getMode() === 'Balanced' ? getBalancedSIP(f) : getCorrectionSIP(f);
+// 3-tier weight: Trim=0, IA gets target+|deviation| (priority boost), others get target
+// Used in Balanced mode so the math always sums to exactly state.sip / state.cash
+function _allocationWeight(f) {
+  const action = getAction(f);
+  if (action === 'Trim') return 0;
+  if (action === 'Increase Allocation') return f.target + Math.abs(getDeviation(f));
+  return f.target;
 }
 
-// Active Lumpsum: Balanced mode shows Balanced Lumpsum, Correction shows Correction
+// Active SIP — 3-tier:
+// Tier 1: Trim → 0 (hard rule, never add to overweight)
+// Tier 2: Correction mode → shortfall-weighted SIP to underweight funds
+// Tier 3: Balanced mode → proportional by target, but IA funds get a priority boost
+function getActiveSIP(f) {
+  if (getAction(f) === 'Trim') return 0;
+  if (getMode() === 'Correction') return getCorrectionSIP(f);
+  const totalWeight = state.funds.reduce((s, x) => s + _allocationWeight(x), 0);
+  return totalWeight > 0 ? state.sip * (_allocationWeight(f) / totalWeight) : 0;
+}
+
+// Active Lumpsum — same 3-tier logic
 function getActiveLumpsum(f) {
-  return getMode() === 'Balanced' ? getBalancedLumpsum(f) : getCorrectionLumpsum(f);
+  if (getAction(f) === 'Trim') return 0;
+  if (getMode() === 'Correction') return getCorrectionLumpsum(f);
+  const totalWeight = state.funds.reduce((s, x) => s + _allocationWeight(x), 0);
+  return totalWeight > 0 ? state.cash * (_allocationWeight(f) / totalWeight) : 0;
 }
 
 function getHealthScore() {
@@ -1282,20 +1300,22 @@ function renderDecision() {
         <span style="font-size:10px;color:var(--muted);margin-left:8px">— showing ${mode} values only</span>
       </div>`;
   state.funds.forEach((f, i) => {
-    const sipAmt = mode === 'Balanced' ? getBalancedSIP(f) : getCorrectionSIP(f);
+    const sipAmt = getActiveSIP(f);
+    const action = getAction(f);
     const display = sipAmt > 0 ? fmt(sipAmt) : 'Skip';
     const valColor = sipAmt > 0 ? 'var(--purple)' : 'var(--muted)';
+    const subLabel = action === 'Trim' ? 'Overweight — no SIP' : action === 'Increase Allocation' ? 'Priority SIP' : mode + ' SIP';
     const dev = getDeviation(f);
-    const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--green)' : 'var(--muted)');
+    const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--blue)' : 'var(--muted)');
     html += `<div class="fund-row" style="margin-bottom:6px">
       <div class="fund-dot" style="background:${dotColor}"></div>
       <div class="fund-info">
         <div class="fund-name">${f.name}</div>
-        <div class="fund-val">${fmtPct(f.target)} target</div>
+        <div class="fund-val">${fmtPct(f.target)} target · ${fmtPct(f.current / getTotal())} actual</div>
       </div>
       <div class="fund-right">
         <div class="fund-pct" style="color:${valColor}">${display}</div>
-        <div class="fund-action" style="font-size:10px">${mode} SIP</div>
+        <div class="fund-action" style="font-size:10px">${subLabel}</div>
       </div>
     </div>`;
   });
@@ -1313,20 +1333,22 @@ function renderDecision() {
         <span style="font-size:10px;color:var(--muted);margin-left:8px">— showing ${mode} values only</span>
       </div>`;
   state.funds.forEach((f, i) => {
-    const lumpAmt = mode === 'Balanced' ? getBalancedLumpsum(f) : getCorrectionLumpsum(f);
+    const lumpAmt = getActiveLumpsum(f);
+    const action = getAction(f);
     const display = lumpAmt > 1 ? fmt(lumpAmt) : 'Skip';
     const valColor = lumpAmt > 1 ? 'var(--purple)' : 'var(--muted)';
+    const subLabel = action === 'Trim' ? 'Overweight — no lumpsum' : action === 'Increase Allocation' ? 'Priority lumpsum' : mode + ' Lumpsum';
     const dev = getDeviation(f);
-    const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--green)' : 'var(--muted)');
+    const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--blue)' : 'var(--muted)');
     html += `<div class="fund-row" style="margin-bottom:6px">
       <div class="fund-dot" style="background:${dotColor}"></div>
       <div class="fund-info">
         <div class="fund-name">${f.name}</div>
-        <div class="fund-val">${fmtPct(f.target)} target</div>
+        <div class="fund-val">${fmtPct(f.target)} target · ${fmtPct(f.current / getTotal())} actual</div>
       </div>
       <div class="fund-right">
         <div class="fund-pct" style="color:${valColor}">${display}</div>
-        <div class="fund-action" style="font-size:10px">${mode} Lumpsum</div>
+        <div class="fund-action" style="font-size:10px">${subLabel}</div>
       </div>
     </div>`;
   });
