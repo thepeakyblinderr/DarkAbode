@@ -3272,7 +3272,13 @@ function _fbGetData() {
 function _fbSetData(data) {
   if (data && data.sv4 != null) {
     localStorage.setItem('sv4', data.sv4);
-    location.reload();
+    // Don't reload while user is actively typing — defer to next backgrounding
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    const typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+    if (!typing) { location.reload(); }
+    else document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') location.reload();
+    }, { once: true });
   }
 }
 </script>
