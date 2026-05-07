@@ -948,13 +948,19 @@ function getDeviation(f) {
   return total > 0 ? (f.current / total) - f.target : 0;
 }
 
-// Matches Excel: =IF(ABS(dev)<=0.03,"Do Nothing",IF(ABS(dev)<=0.05,"Adjust SIP",IF(dev>0.05,"Trim","Increase Allocation")))
+// Bands:
+// ±3%        → Do Nothing
+// +3% to +5% → Adjust SIP (overweight, stop adding — passive correction via SIP redirection)
+// -3% to -5% → Adjust SIP (underweight, gets correction-weighted SIP)
+// > +5%      → Trim (overweight, ₹0 SIP + consider redeeming if units > 1yr)
+// < -5%      → Increase Allocation (priority funding)
 function getAction(f) {
   const dev = getDeviation(f);
   if (Math.abs(dev) <= 0.03) return 'Do Nothing';
-  if (Math.abs(dev) <= 0.05) return 'Adjust SIP';
-  if (dev > 0.05) return 'Trim';
-  return 'Increase Allocation';
+  if (dev > 0.03 && dev <= 0.05) return 'Adjust SIP';   // overweight mild
+  if (dev > 0.05) return 'Trim';                         // overweight — act
+  if (dev < -0.03 && dev >= -0.05) return 'Adjust SIP';  // underweight mild
+  return 'Increase Allocation';                           // underweight — priority
 }
 
 // Mode = Balanced if 4 or more funds are "Do Nothing", else Correction
@@ -1003,29 +1009,38 @@ function getCorrectionLumpsum(f) {
   return totalUnderweight !== 0 ? (difference / totalUnderweight) * state.cash : 0;
 }
 
-// 3-tier weight: Trim=0, IA gets target+|deviation| (priority boost), others get target
-// Used in Balanced mode so the math always sums to exactly state.sip / state.cash
+// Allocation weight for Balanced mode:
+// Overweight (Trim or overweight Adjust SIP) → 0, never add capital
+// Increase Allocation → target + |deviation| (priority boost)
+// Underweight Adjust SIP → target (normal share, correction via SIP)
+// Do Nothing → target (normal proportional share)
 function _allocationWeight(f) {
   const action = getAction(f);
+  const dev = getDeviation(f);
   if (action === 'Trim') return 0;
-  if (action === 'Increase Allocation') return f.target + Math.abs(getDeviation(f));
-  return f.target;
+  if (dev > 0.03) return 0;                                        // overweight Adjust SIP → no SIP
+  if (action === 'Increase Allocation') return f.target + Math.abs(dev); // underweight extreme → priority
+  return f.target;                                                  // Do Nothing / underweight Adjust SIP
 }
 
 // Active SIP — 3-tier:
-// Tier 1: Trim → 0 (hard rule, never add to overweight)
-// Tier 2: Correction mode → shortfall-weighted SIP to underweight funds
-// Tier 3: Balanced mode → proportional by target, but IA funds get a priority boost
+// Overweight (Trim or Adjust SIP dev > +3%) → ₹0 always
+// Correction mode → shortfall-weighted SIP to underweight funds only
+// Balanced mode → weight-proportional, IA funds get priority boost
 function getActiveSIP(f) {
-  if (getAction(f) === 'Trim') return 0;
+  const action = getAction(f);
+  const dev = getDeviation(f);
+  if (action === 'Trim' || dev > 0.03) return 0; // never add to overweight
   if (getMode() === 'Correction') return getCorrectionSIP(f);
   const totalWeight = state.funds.reduce((s, x) => s + _allocationWeight(x), 0);
   return totalWeight > 0 ? state.sip * (_allocationWeight(f) / totalWeight) : 0;
 }
 
-// Active Lumpsum — same 3-tier logic
+// Active Lumpsum — same rules as SIP
 function getActiveLumpsum(f) {
-  if (getAction(f) === 'Trim') return 0;
+  const action = getAction(f);
+  const dev = getDeviation(f);
+  if (action === 'Trim' || dev > 0.03) return 0; // never deploy lumpsum to overweight
   if (getMode() === 'Correction') return getCorrectionLumpsum(f);
   const totalWeight = state.funds.reduce((s, x) => s + _allocationWeight(x), 0);
   return totalWeight > 0 ? state.cash * (_allocationWeight(f) / totalWeight) : 0;
@@ -1035,7 +1050,7 @@ function getHealthScore() {
   const total = getTotal();
   if (!total) return 100;
   const avgDev = state.funds.reduce((s, f) => s + Math.abs(getDeviation(f)), 0) / state.funds.length;
-  return Math.max(0, Math.min(100, Math.round((1 - avgDev / 0.05) * 100)));
+  return Math.max(0, Math.min(100, Math.round((1 - avgDev / 0.05) * 100))); // 0.05 = Trim threshold
 }
 
 function getDaysToReview() {
@@ -1304,7 +1319,7 @@ function renderDecision() {
     const action = getAction(f);
     const display = sipAmt > 0 ? fmt(sipAmt) : 'Skip';
     const valColor = sipAmt > 0 ? 'var(--purple)' : 'var(--muted)';
-    const subLabel = action === 'Trim' ? 'Overweight — no SIP' : action === 'Increase Allocation' ? 'Priority SIP' : mode + ' SIP';
+    const subLabel = (action === 'Trim' || dev > 0.03) ? 'Overweight — no SIP' : action === 'Increase Allocation' ? 'Priority SIP' : mode + ' SIP';
     const dev = getDeviation(f);
     const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--blue)' : 'var(--muted)');
     html += `<div class="fund-row" style="margin-bottom:6px">
@@ -1337,7 +1352,7 @@ function renderDecision() {
     const action = getAction(f);
     const display = lumpAmt > 1 ? fmt(lumpAmt) : 'Skip';
     const valColor = lumpAmt > 1 ? 'var(--purple)' : 'var(--muted)';
-    const subLabel = action === 'Trim' ? 'Overweight — no lumpsum' : action === 'Increase Allocation' ? 'Priority lumpsum' : mode + ' Lumpsum';
+    const subLabel = (action === 'Trim' || dev > 0.03) ? 'Overweight — no lumpsum' : action === 'Increase Allocation' ? 'Priority lumpsum' : mode + ' Lumpsum';
     const dev = getDeviation(f);
     const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--blue)' : 'var(--muted)');
     html += `<div class="fund-row" style="margin-bottom:6px">
