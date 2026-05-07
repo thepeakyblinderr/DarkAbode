@@ -1259,7 +1259,7 @@ function renderSettings() {
       <div class="settings-icon" style="font-size:11px;color:${getColor(i)}">●</div>
       <div class="settings-text">
         <div class="settings-name">${f.name}</div>
-        <div class="settings-desc">Target: ${fmtPct(f.target)} · Current: ${fmt(f.current)}</div>
+        <div class="settings-desc">Target: ${fmtPct(f.target)} · Current: ${fmt(f.current)} · ${f.schemeCode && f.units > 0 ? `<span style="color:var(--green)">NAV linked ✓</span>` : `<span style="color:var(--yellow)">⚠ Link scheme to auto-fetch</span>`}</div>
       </div>
       <div class="settings-chevron" style="color:var(--purple-light)">Edit ›</div>
     </div>`;
@@ -1725,8 +1725,12 @@ async function refreshNAV() {
     }));
   }
 
+  const unlinked = state.funds.filter(f => !f.schemeCode).length;
   if (linkedFunds.length === 0 && stocks.length === 0) {
-    showToast('No linked funds or stocks. Edit a fund/stock to set units.');
+    const hint = unlinked > 0
+      ? `${unlinked} fund${unlinked>1?'s':''} need a scheme linked — edit each fund and search the scheme`
+      : 'Edit funds/stocks to link scheme codes and enter units';
+    showToast(hint);
   } else {
     save(); renderAll();
     const msg = updated ? `✓ ${updated} updated` : '';
