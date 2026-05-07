@@ -700,7 +700,9 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
       2. Dashboard → API Keys → copy your key<br>
       3. Paste above and tap Save
     </div>
+    <div id="td-test-result" style="font-size:12px;padding:8px 10px;border-radius:10px;display:none;margin-bottom:12px"></div>
     <button class="btn-save" onclick="saveTDKey()">Save Key</button>
+    <button class="btn-cancel" onclick="testTDKey()" style="border-color:var(--blue);color:var(--blue)">Test Connection</button>
     <button class="btn-cancel" id="btn-clear-td-key" onclick="clearTDKey()" style="color:var(--red);border-color:rgba(192,57,43,0.3);display:none">Remove Key</button>
     <button class="btn-cancel" onclick="closeModal('modal-td-key')">Cancel</button>
   </div>
@@ -1683,6 +1685,27 @@ function clearTDKey() {
   closeModal('modal-td-key');
   showToast('API key removed');
 }
+async function testTDKey() {
+  const key = document.getElementById('input-td-key').value.trim();
+  const box = document.getElementById('td-test-result');
+  if (!key) { box.textContent = '⚠ Enter a key first'; box.style.background = 'rgba(180,83,9,0.1)'; box.style.color = 'var(--yellow)'; box.style.display = 'block'; return; }
+  box.textContent = 'Testing…'; box.style.background = 'var(--surface2)'; box.style.color = 'var(--muted)'; box.style.display = 'block';
+  try {
+    const res = await fetch(`https://api.twelvedata.com/price?symbol=RELIANCE&exchange=NSE&apikey=${key}`);
+    const data = await res.json();
+    if (data.price) {
+      box.textContent = `✓ Connected! RELIANCE = ₹${parseFloat(data.price).toLocaleString('en-IN')}`;
+      box.style.background = 'rgba(4,120,87,0.1)'; box.style.color = 'var(--green)';
+    } else {
+      box.textContent = `✗ ${data.message || 'No price returned — key may be invalid'}`;
+      box.style.background = 'rgba(192,57,43,0.1)'; box.style.color = 'var(--red)';
+    }
+  } catch(e) {
+    box.textContent = `✗ Network error: ${e.message}`;
+    box.style.background = 'rgba(192,57,43,0.1)'; box.style.color = 'var(--red)';
+  }
+}
+
 function updateTDKeyDesc() {
   const key = localStorage.getItem(TD_KEY);
   const el = document.getElementById('td-key-desc');
@@ -1759,21 +1782,28 @@ async function refreshNAV() {
     if (!key) {
       showToast('Add a Twelve Data API key in Manage → Stocks to refresh stock prices');
     } else {
-      // Group by exchange and batch
       const byExchange = {};
       stocks.forEach(s => { (byExchange[s.exchange||'NSE'] = byExchange[s.exchange||'NSE']||[]).push(s); });
       for (const [exchange, list] of Object.entries(byExchange)) {
         const symbols = list.map(s => s.symbol).join(',');
         try {
           const res = await fetch(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(symbols)}&exchange=${exchange}&apikey=${key}`);
+          if (!res.ok) { showToast(`Twelve Data error: HTTP ${res.status}`); failed += list.length; continue; }
           const data = await res.json();
+          // API-level error (e.g. invalid key, symbol not found)
+          if (data.status === 'error' || data.code) {
+            showToast(`Twelve Data: ${data.message || 'Unknown error'}`);
+            failed += list.length;
+            continue;
+          }
           list.forEach(s => {
             const entry = list.length === 1 ? data : data[s.symbol];
+            if (entry && entry.status === 'error') { showToast(`${s.symbol}: ${entry.message}`); failed++; return; }
             const price = entry ? parseFloat(entry.price) : NaN;
             if (!isNaN(price) && price > 0) { s.price = price; s.current = Math.round(price * s.units * 100) / 100; updated++; }
-            else failed++;
+            else { showToast(`No price returned for ${s.symbol} — check symbol/exchange`); failed++; }
           });
-        } catch { failed += list.length; }
+        } catch(e) { showToast(`Network error fetching prices: ${e.message}`); failed += list.length; }
       }
     }
   }
