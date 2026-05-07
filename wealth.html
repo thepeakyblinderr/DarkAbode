@@ -969,16 +969,16 @@ function getBalancedSIP(f) {
   return state.sip * f.target;
 }
 
-// Correction SIP: underweight funds only, weighted by their shortfall amount
-// Formula: SIP × (shortfall_i / total_shortfall)
+// Correction SIP: funds outside safe zone only (dev < -0.03), weighted by shortfall
+// Aligned with lumpsum threshold so both use the same ±3% band
 function getCorrectionSIP(f) {
   const total = getTotal();
   const dev = getDeviation(f);
-  if (dev >= 0) return 0; // overweight = Skip
+  if (dev >= -0.03) return 0; // within safe zone = Skip
   const shortfall = total * f.target - f.current;
   const totalShortfall = state.funds.reduce((s, x) => {
     const d = getDeviation(x);
-    return d < 0 ? s + (getTotal() * x.target - x.current) : s;
+    return d < -0.03 ? s + (getTotal() * x.target - x.current) : s;
   }, 0);
   return totalShortfall > 0 ? state.sip * (shortfall / totalShortfall) : 0;
 }
@@ -1270,32 +1270,32 @@ function renderDecision() {
   }
 
   // ── SIP Accordion ──
+  const modeColor = mode === 'Balanced' ? 'var(--green)' : 'var(--yellow)';
   html += `<div class="accordion-section">
     <button class="accordion-header" id="acc-sip-hd" onclick="toggleAccordion('acc-sip')">
       <span>🪙 SIP Breakdown <span style="font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400">· ${fmt(state.sip)}/mo</span></span>
       <span class="accordion-chevron">›</span>
     </button>
     <div class="accordion-body" id="acc-sip-body">
-      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:11px;color:var(--muted)">Mode: <span style="color:${mode==='Balanced'?'var(--green)':'var(--yellow)'};font-weight:600">${mode} (Auto)</span></div>
-        <div style="font-size:10px;color:var(--muted)">Balanced · Correction</div>
+      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--muted)">Mode: </span><span style="font-size:11px;color:${modeColor};font-weight:600">${mode} (Auto)</span>
+        <span style="font-size:10px;color:var(--muted);margin-left:8px">— showing ${mode} values only</span>
       </div>`;
   state.funds.forEach((f, i) => {
-    const balSIP = getBalancedSIP(f);
-    const corrSIP = getCorrectionSIP(f);
-    const corrDisplay = corrSIP > 0 ? fmt(corrSIP) : 'Skip';
-    const corrColor = corrSIP > 0 ? 'var(--green)' : 'var(--muted)';
+    const sipAmt = mode === 'Balanced' ? getBalancedSIP(f) : getCorrectionSIP(f);
+    const display = sipAmt > 0 ? fmt(sipAmt) : 'Skip';
+    const valColor = sipAmt > 0 ? 'var(--purple)' : 'var(--muted)';
     const dev = getDeviation(f);
-    const dotColor = dev < -0.005 ? 'var(--red)' : (dev > 0.005 ? 'var(--green)' : 'var(--muted)');
+    const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--green)' : 'var(--muted)');
     html += `<div class="fund-row" style="margin-bottom:6px">
       <div class="fund-dot" style="background:${dotColor}"></div>
       <div class="fund-info">
         <div class="fund-name">${f.name}</div>
-        <div class="fund-val" style="color:var(--blue)">${fmt(balSIP)}</div>
+        <div class="fund-val">${fmtPct(f.target)} target</div>
       </div>
       <div class="fund-right">
-        <div class="fund-pct" style="color:${corrColor}">${corrDisplay}</div>
-        <div class="fund-action" style="font-size:10px">Correction</div>
+        <div class="fund-pct" style="color:${valColor}">${display}</div>
+        <div class="fund-action" style="font-size:10px">${mode} SIP</div>
       </div>
     </div>`;
   });
@@ -1308,26 +1308,25 @@ function renderDecision() {
       <span class="accordion-chevron">›</span>
     </button>
     <div class="accordion-body" id="acc-ls-body">
-      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:11px;color:var(--muted)">Cash: <span style="color:var(--purple);font-weight:600">${fmt(state.cash)}</span></div>
-        <div style="font-size:10px;color:var(--muted)">Balanced · Correction</div>
+      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--muted)">Mode: </span><span style="font-size:11px;color:${modeColor};font-weight:600">${mode} (Auto)</span>
+        <span style="font-size:10px;color:var(--muted);margin-left:8px">— showing ${mode} values only</span>
       </div>`;
   state.funds.forEach((f, i) => {
-    const balLump = getBalancedLumpsum(f);
-    const corrLump = getCorrectionLumpsum(f);
-    const corrDisplay = corrLump > 1 ? fmt(corrLump) : 'Skip';
-    const corrColor = corrLump > 1 ? 'var(--green)' : 'var(--muted)';
+    const lumpAmt = mode === 'Balanced' ? getBalancedLumpsum(f) : getCorrectionLumpsum(f);
+    const display = lumpAmt > 1 ? fmt(lumpAmt) : 'Skip';
+    const valColor = lumpAmt > 1 ? 'var(--purple)' : 'var(--muted)';
     const dev = getDeviation(f);
-    const dotColor = dev < -0.005 ? 'var(--red)' : (dev > 0.005 ? 'var(--green)' : 'var(--muted)');
+    const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--green)' : 'var(--muted)');
     html += `<div class="fund-row" style="margin-bottom:6px">
       <div class="fund-dot" style="background:${dotColor}"></div>
       <div class="fund-info">
         <div class="fund-name">${f.name}</div>
-        <div class="fund-val" style="color:var(--blue)">${fmt(balLump)}</div>
+        <div class="fund-val">${fmtPct(f.target)} target</div>
       </div>
       <div class="fund-right">
-        <div class="fund-pct" style="color:${corrColor}">${corrDisplay}</div>
-        <div class="fund-action" style="font-size:10px">Correction</div>
+        <div class="fund-pct" style="color:${valColor}">${display}</div>
+        <div class="fund-action" style="font-size:10px">${mode} Lumpsum</div>
       </div>
     </div>`;
   });
