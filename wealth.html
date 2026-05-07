@@ -1696,40 +1696,33 @@ async function refreshNAV() {
     } catch { failed++; }
   }));
 
-  // Stock price refresh via Yahoo Finance
+  // Stock price refresh via Yahoo Finance chart API
   const stocks = (state.stocks||[]).filter(s => s.symbol && s.units > 0);
   if (stocks.length) {
     const suffix = { NSE: '.NS', BSE: '.BO' };
-    const yahooSymbols = stocks.map(s => s.symbol + (suffix[s.exchange] || '.NS')).join(',');
-    const apiUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${yahooSymbols}`;
-    const proxies = [
-      `https://corsproxy.io/?${apiUrl}`,
-      `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`
-    ];
-    let data = null;
-    for (const proxy of proxies) {
-      try {
-        const res = await fetch(proxy);
-        if (!res.ok) continue;
-        const json = await res.json();
-        if (json?.quoteResponse?.result?.length >= 0) { data = json; break; }
-      } catch { continue; }
-    }
-    if (!data) {
-      showToast('Could not reach Yahoo Finance — try again later');
-      failed += stocks.length;
-    } else {
-      const results = data.quoteResponse.result || [];
-      stocks.forEach(s => {
-        const ySymbol = s.symbol + (suffix[s.exchange] || '.NS');
-        const quote = results.find(r => r.symbol === ySymbol);
-        if (quote && quote.regularMarketPrice > 0) {
-          s.price = quote.regularMarketPrice;
-          s.current = Math.round(quote.regularMarketPrice * s.units * 100) / 100;
-          updated++;
-        } else { showToast(`No price for ${s.symbol} — verify the NSE symbol`); failed++; }
-      });
-    }
+    await Promise.all(stocks.map(async s => {
+      const ySymbol = s.symbol + (suffix[s.exchange] || '.NS');
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ySymbol}?interval=1d&range=1d`;
+      const proxies = [
+        `https://corsproxy.io/?${url}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+      ];
+      let price = null;
+      for (const proxy of proxies) {
+        try {
+          const res = await fetch(proxy);
+          if (!res.ok) continue;
+          const json = await res.json();
+          const p = json?.chart?.result?.[0]?.meta?.regularMarketPrice;
+          if (p && p > 0) { price = p; break; }
+        } catch { continue; }
+      }
+      if (price) {
+        s.price = price;
+        s.current = Math.round(price * s.units * 100) / 100;
+        updated++;
+      } else { failed++; }
+    }));
   }
 
   if (linkedFunds.length === 0 && stocks.length === 0) {
