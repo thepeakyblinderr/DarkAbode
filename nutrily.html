@@ -634,18 +634,6 @@ html[data-theme="dark"] .toast { background: var(--card); color: var(--text); bo
         <div class="prof-field"><div class="prof-label">Height (cm)</div><input class="prof-input" id="pHt" type="number" placeholder="170"></div>
       </div>
       <button class="prof-save" onclick="saveProf()">Save Profile</button>
-
-  <div class="prof-sec">Data & Backup</div>
-  <div style="display:flex;flex-direction:column;gap:9px">
-    <button onclick="exportBackup()" style="width:100%;padding:13px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s">
-      <span style="font-size:16px">⬇️</span> Export Backup (JSON)
-    </button>
-    <label style="width:100%;padding:13px;background:var(--bg);border:1.5px dashed var(--bdr);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s">
-      <span style="font-size:16px">⬆️</span> Import Backup (JSON)
-      <input type="file" accept=".json" onchange="importBackup(event)" style="display:none">
-    </label>
-    <div style="font-size:11px;color:var(--faint);text-align:center;line-height:1.5">Backup includes all settings, exercise plans, sleep &amp; wellbeing data</div>
-  </div>
 </div>
 
   </div>
@@ -1274,62 +1262,6 @@ async function saveProf(){
   await kP('profile',profile);
   document.getElementById('profOv').classList.remove('open');
   rH();toast('Profile saved!');
-}
-
-async function exportBackup(){
-  try{
-    // collect all kv keys
-    const kvAll=await new Promise(r=>{try{tx('kv').getAll().onsuccess=e=>r(e.target.result);}catch{r([]);}});
-    const backup={
-      version:3,
-      exportedAt:new Date().toISOString(),
-      appName:'Nutrily',
-      kv:kvAll,
-      sleepData,
-      moodData,
-    };
-    const json=JSON.stringify(backup,null,2);
-    const blob=new Blob([json],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    const date=new Date().toISOString().split('T')[0];
-    a.href=url;a.download=`nutrily-backup-${date}.json`;
-    document.body.appendChild(a);a.click();
-    setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);
-    toast('Backup downloaded!');
-  }catch(e){toast('Export failed');}
-}
-
-async function importBackup(event){
-  const file=event.target.files[0];
-  if(!file){return;}
-  try{
-    const text=await file.text();
-    const backup=JSON.parse(text);
-    if(!backup.kv){toast('Invalid backup file');return;}
-    if(!confirm('Import backup? This will restore all settings and data. Your existing data will NOT be deleted — entries will be merged.')){
-      event.target.value='';return;
-    }
-    // restore kv entries
-    for(const item of backup.kv){
-      await kP(item.k,item.v);
-    }
-    // reload state from kv
-    const pr=await kG('profile');if(pr)profile=pr;
-    const ew=await kG('exWeek');if(ew)exWeek=ew;
-    const sd=await kG('sleepData');if(sd)sleepData=sd;
-    const md=await kG('moodData');if(md)moodData=md;
-    const w=await kG('water_'+TODAY);water=w||0;
-    const s=await kG('steps_'+TODAY);steps=s||0;
-    rGl();rStUI();rH();
-    document.getElementById('profOv').classList.remove('open');
-    event.target.value='';
-    toast('Backup restored!');
-  }catch(e){
-    console.error(e);
-    toast('Import failed — invalid file');
-    event.target.value='';
-  }
 }
 
 /* PROGRESS */

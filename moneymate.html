@@ -526,9 +526,6 @@ html[data-theme="dark"] .rec-badge{background:rgba(77,128,230,.2);color:#7da8f0;
     <button class="nav-icon-btn" onclick="openCfg()" title="Settings">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
     </button>
-    <button class="nav-icon-btn" onclick="openMod('m-bkp')" title="Backup">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-    </button>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
   </div>
 </nav>
@@ -700,30 +697,6 @@ html[data-theme="dark"] .rec-badge{background:rgba(77,128,230,.2);color:#7da8f0;
   <div class="mft mrow2" style="display:flex;gap:8px;">
     <button class="btn bg" style="flex:1;justify-content:center" id="det-edit">Edit</button>
     <button class="btn bd" style="flex:1;justify-content:center" onclick="delExp()">Delete</button>
-  </div>
-</div>
-</div>
-
-<!-- BACKUP -->
-<div class="ovr" id="m-bkp">
-<div class="modal">
-  <div class="mhd"><div class="mtl">Backup & Restore</div><button class="mclose" onclick="closeMod('m-bkp')">×</button></div>
-  <div class="mbd">
-    <div class="bxb">
-      <div class="bxt">📤 Export</div>
-      <div class="bxs">Download everything as a portable JSON or CSV file.</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn bp bsm" onclick="expJSON()">Download JSON</button>
-        <button class="btn bg bsm" onclick="expCSV()">Export CSV</button>
-      </div>
-    </div>
-    <div class="bxb">
-      <div class="bxt">📥 Import</div>
-      <div class="bxs">Import a previously exported JSON. Data is merged — no duplicates created.</div>
-      <input type="file" id="imp-f" accept=".json" style="display:none" onchange="impJSON(event)">
-      <button class="btn bg bsm" onclick="document.getElementById('imp-f').click()">Choose JSON file</button>
-    </div>
-    <div class="bzn"><div class="bzt">⚠ Danger Zone</div><button class="btn bd bsm" onclick="clearAll()">Clear all data</button></div>
   </div>
 </div>
 </div>
@@ -2809,42 +2782,10 @@ function saveSettings(){
   saveDB(); closeMod('m-cfg'); toast('Settings saved'); showView(CV);
 }
 
-// ═══════════════════════════════════════════════
-// BACKUP / RESTORE
-// ═══════════════════════════════════════════════
-function expJSON(){
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}));
-  a.download=`moneymate-${tday()}.json`; a.click(); toast('Backup downloaded');
-}
-function expCSV(){
-  const rows=[['Date','Description','Category','Amount','LentTo','Notes','Source']];
-  DB.personal.forEach(e=>rows.push([e.date,e.desc,cat(e.cat).l,e.amount,e.lendTo||'',e.notes||'','Personal']));
-  DB.groups.forEach(g=>(g.expenses||[]).filter(e=>!e.isSettlement).forEach(e=>rows.push([e.date,e.desc,cat(e.cat).l,e.amount,'',e.notes||'',g.name])));
-  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=`moneymate-${tday()}.csv`; a.click(); toast('CSV exported');
-}
-function impJSON(ev){
-  const f=ev.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=e=>{
-    try{
-      const d=JSON.parse(e.target.result);
-      if(d.personal){const ids=new Set(DB.personal.map(x=>x.id));d.personal.forEach(x=>{if(!ids.has(x.id))DB.personal.push(x);});}
-      if(d.groups){const ids=new Set(DB.groups.map(x=>x.id));d.groups.forEach(g=>{if(!ids.has(g.id))DB.groups.push(g);});}
-      if(d.currency)DB.currency=d.currency;
-      if(d.budget)DB.budget=d.budget;
-      saveDB(); closeMod('m-bkp'); toast('Import successful'); showView(CV);
-    }catch(_){toast('Invalid file — must be a MoneyMate JSON');}
-  };
-  r.readAsText(f); ev.target.value='';
-}
 function clearAll(){
   if(!confirm('Delete ALL data permanently? This cannot be undone.'))return;
   DB={user:'You',groups:[],personal:[],currency:'₹',budget:0,version:4};
-  saveDB(); closeMod('m-bkp'); toast('All data cleared'); showView('dash');
+  saveDB(); toast('All data cleared'); showView('dash');
 }
 
 

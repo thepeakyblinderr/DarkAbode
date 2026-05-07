@@ -549,57 +549,12 @@ html[data-theme="dark"] hr{border-color:var(--gray-200);}
     </div>
   </div>
 
-  <!-- BACKUP SCREEN -->
-  <div id="screen-backup" class="screen main-content">
-    <div class="page-title" style="margin-bottom:4px">Backup</div>
-    <div class="page-subtitle" style="margin-bottom:24px">Export your trips as JSON — documents not included</div>
-
-    <div id="backup-status-card" style="background:var(--gray-50);border:var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
-      <div style="font-size:28px" id="backup-status-icon">⚠️</div>
-      <div>
-        <div style="font-size:13px;font-weight:500" id="backup-last-label">No backup yet</div>
-        <div style="font-size:11px;color:var(--gray-400);font-family:var(--font-mono);margin-top:2px" id="backup-last-time">Tap below to create your first backup</div>
-      </div>
-    </div>
-
-    <div style="background:var(--black);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px">
-      <div style="font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Backup All Trips</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:16px;line-height:1.5">All trips, itineraries, packing lists, expenses and travellers in one file. No documents.</div>
-      <button class="btn" style="background:white;color:black;width:100%;font-weight:600;font-size:15px;padding:13px" onclick="backupAll()">⬇ Download Backup</button>
-    </div>
-
-    <div style="border:var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Backup Single Trip</div>
-      <div id="backup-trip-list"></div>
-    </div>
-
-    <div style="border:var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Restore from Backup</div>
-      <div style="font-size:13px;color:var(--gray-600);margin-bottom:12px;line-height:1.5">Import a previously exported file. Only new trips are added — existing trips won't be overwritten.</div>
-      <button class="btn btn-secondary" style="width:100%" onclick="document.getElementById('restore-input').click()">⬆ Import Backup File</button>
-      <input type="file" id="restore-input" accept=".json" onchange="restoreBackup(event)">
-    </div>
-
-    <div style="border:var(--border);border-radius:var(--radius-sm);padding:14px;background:var(--gray-50)">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray-400);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Tip</div>
-      <div style="font-size:12px;color:var(--gray-600);line-height:1.8">
-        1. Tap <strong style="color:var(--black)">Download Backup</strong> before your trip<br>
-        2. Save to <strong style="color:var(--black)">Google Drive, iCloud, or WhatsApp yourself</strong><br>
-        3. Lost your data? Tap <strong style="color:var(--black)">Import Backup File</strong> to restore<br>
-        4. Works across devices — backup on phone, restore on laptop
-      </div>
-    </div>
-  </div>
-
   <nav class="bottom-nav">
     <button class="bnav-item active" onclick="nav('list')" id="bnav-list">
       <span class="bnav-icon">🏠</span><span class="bnav-label">Trips</span>
     </button>
     <button class="bnav-item" onclick="nav2add()" id="bnav-add">
       <span class="bnav-icon">＋</span><span class="bnav-label">New</span>
-    </button>
-    <button class="bnav-item" onclick="nav('backup')" id="bnav-backup">
-      <span class="bnav-icon">💾</span><span class="bnav-label">Backup</span>
     </button>
     <button class="bnav-item" id="bnav-detail" style="display:none" onclick="nav('detail')">
       <span class="bnav-icon">📍</span><span class="bnav-label" id="bnav-detail-label" style="max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Trip</span>
@@ -742,15 +697,6 @@ html[data-theme="dark"] hr{border-color:var(--gray-200);}
       <div class="share-icon">📋</div>
       <div class="share-info"><h4>Copy Summary</h4><p>Copy trip details as text to share via WhatsApp, Messages, etc.</p></div>
     </div>
-    <div class="share-option" onclick="shareJSON()">
-      <div class="share-icon">💾</div>
-      <div class="share-info"><h4>Export as JSON</h4><p>Download trip data to backup or import on another device.</p></div>
-    </div>
-    <div class="share-option" onclick="document.getElementById('import-input').click()">
-      <div class="share-icon">📥</div>
-      <div class="share-info"><h4>Import Trip JSON</h4><p>Import a trip exported from WanderPlan.</p></div>
-    </div>
-    <input type="file" id="import-input" accept=".json" onchange="importTrip(event)">
     <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="closeModal('modal-share')">Close</button>
   </div>
 </div>
@@ -843,7 +789,6 @@ function nav(screen) {
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
   if (screen === 'list') { $('bnav-list').classList.add('active'); renderList(); }
   else if (screen === 'add') { $('bnav-add').classList.add('active'); }
-  else if (screen === 'backup') { $('bnav-backup').classList.add('active'); renderBackupScreen(); }
   else if (screen === 'detail') { $('bnav-detail').classList.add('active'); }
   window.scrollTo(0, 0);
 }
@@ -1982,115 +1927,6 @@ function shareAsText() {
   text += `\nPlanned with WanderPlan`;
   if (navigator.share) { navigator.share({ title: t.name, text }); } else { navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard!')); }
   closeModal('modal-share');
-}
-function shareJSON() {
-  const trip = tripWithoutDocs({ ...getTrip() });
-  const data = { version: 2, exported: new Date().toISOString(), trips: [trip] };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `${trip.name.replace(/\s+/g, '_')}_backup.json`;
-  a.click(); URL.revokeObjectURL(url);
-  localStorage.setItem(BACKUP_TS_KEY, new Date().toISOString());
-  closeModal('modal-share');
-  toast('Exported!');
-}
-function importTrip(event) {
-  closeModal('modal-share');
-  restoreBackup(event);
-}
-
-// ── BACKUP ──
-const BACKUP_TS_KEY = 'wanderplan_last_backup';
-
-function tripWithoutDocs(trip) {
-  const t = { ...trip }; delete t.documents; return t;
-}
-
-function renderBackupScreen() {
-  // Status card
-  const ts = localStorage.getItem(BACKUP_TS_KEY);
-  if (ts) {
-    const d = new Date(ts);
-    const diff = Math.round((Date.now() - d) / 60000);
-    const ago = diff < 1 ? 'just now' : diff < 60 ? `${diff}m ago` : diff < 1440 ? `${Math.round(diff/60)}h ago` : `${Math.round(diff/1440)}d ago`;
-    $('backup-status-icon').textContent = '✅';
-    $('backup-last-label').textContent = `Last backup: ${ago}`;
-    $('backup-last-time').textContent = d.toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    $('backup-status-card').style.borderColor = 'rgba(0,184,122,0.3)';
-    $('backup-status-card').style.background = 'rgba(0,184,122,0.05)';
-  }
-  // Individual trip list
-  const list = $('backup-trip-list');
-  if (!state.trips.length) {
-    list.innerHTML = `<div style="font-size:13px;color:var(--gray-400)">No trips to back up yet.</div>`;
-    return;
-  }
-  list.innerHTML = state.trips.map((t, i, arr) => `
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i < arr.length - 1 ? 'border-bottom:1px solid var(--gray-100)' : ''}">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div>
-        <div style="font-size:11px;color:var(--gray-400);font-family:var(--font-mono);margin-top:2px">${fmtRange(t.start, t.end)}</div>
-      </div>
-      <button class="btn btn-secondary btn-xs" onclick="backupSingle('${t.id}')">⬇ Export</button>
-    </div>
-  `).join('');
-}
-
-function backupAll() {
-  const data = { version: 2, exported: new Date().toISOString(), trips: state.trips.map(tripWithoutDocs) };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const date = new Date().toISOString().split('T')[0];
-  a.href = url; a.download = `wanderplan_backup_${date}.json`;
-  a.click(); URL.revokeObjectURL(url);
-  localStorage.setItem(BACKUP_TS_KEY, new Date().toISOString());
-  renderBackupScreen();
-  toast(`${state.trips.length} trip${state.trips.length !== 1 ? 's' : ''} exported!`);
-}
-
-function backupSingle(id) {
-  const trip = state.trips.find(t => t.id === id);
-  if (!trip) return;
-  const data = { version: 2, exported: new Date().toISOString(), trips: [tripWithoutDocs(trip)] };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `${trip.name.replace(/\s+/g,'_')}_backup.json`;
-  a.click(); URL.revokeObjectURL(url);
-  localStorage.setItem(BACKUP_TS_KEY, new Date().toISOString());
-  renderBackupScreen();
-  toast(`"${trip.name}" exported!`);
-}
-
-async function restoreBackup(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      // support both old single-trip format and new multi-trip format
-      const trips = data.trips || (data.id ? [data] : null);
-      if (!trips?.length) { toast('No trips found in file'); return; }
-      let added = 0;
-      for (const trip of trips) {
-        trip.id = uid();
-        trip.activities = trip.activities || [];
-        trip.documents = [];
-        trip.packingList = trip.packingList || [];
-        trip.expenses = trip.expenses || [];
-        trip.travellers = trip.travellers || [];
-        await saveTrip_db(trip);
-        added++;
-      }
-      nav('list');
-      toast(`${added} trip${added !== 1 ? 's' : ''} restored!`);
-    } catch { toast('Invalid backup file'); }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
 }
 
 // ── DELETE TRIP ──
