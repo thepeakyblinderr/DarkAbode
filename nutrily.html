@@ -1428,12 +1428,18 @@ if ('serviceWorker' in navigator) {
       sw.addEventListener('statechange', () => {
         if (sw.state === 'installed' && navigator.serviceWorker.controller) {
           navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-          window.location.reload();
         }
       });
     });
   }).catch(() => {});
-  navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    const typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+    if (!typing) window.location.reload();
+    else document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') window.location.reload();
+    }, { once: true });
+  });
 }
 
 // ── Abode theme sync ──────────────────────────────────────────
