@@ -315,6 +315,65 @@ html, body {
 /* ── TIMESTAMP ── */
 .timestamp { text-align:center; font-family:var(--mono); font-size:10px; color:var(--ink4); padding:4px 0 8px; }
 
+/* ── REFRESH ROW ── */
+.refresh-row { display:flex; align-items:center; justify-content:space-between; padding:4px 0 8px; }
+.refresh-info { font-family:var(--mono); font-size:10px; color:var(--ink4); }
+.refresh-btn {
+  background:var(--purple); color:#fff; border:none;
+  border-radius:16px; padding:5px 12px;
+  font-size:11px; font-family:var(--body); font-weight:600;
+  cursor:pointer; display:flex; align-items:center; gap:4px;
+  transition:opacity 0.15s;
+}
+.refresh-btn:active { opacity:0.7; }
+.refresh-btn:disabled { opacity:0.5; cursor:wait; }
+
+/* ── DELTA BADGE ── */
+.delta-badge {
+  display:inline-block; font-family:var(--mono); font-size:12px;
+  padding:2px 9px; border-radius:10px; margin-left:6px; vertical-align:middle;
+  font-weight:500;
+}
+.delta-badge.gain { background:#ecfdf5; color:var(--green); }
+.delta-badge.loss { background:#fdf2f2; color:var(--red); }
+
+/* ── DECISION SECTIONS ── */
+.decision-section-hd {
+  font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  font-family:var(--mono); padding:10px 4px 4px; margin-top:0;
+}
+.decision-section-hd.urgent { color:var(--red); }
+.decision-section-hd.ok     { color:var(--green); cursor:pointer; }
+
+/* Color tints for fund rows */
+.fund-row.tint-red    { border-left:3px solid var(--red);    background:rgba(192,57,43,0.04); }
+.fund-row.tint-yellow { border-left:3px solid var(--yellow); background:rgba(180,83,9,0.04); }
+.fund-row.tint-blue   { border-left:3px solid var(--blue);   background:rgba(26,86,219,0.04); }
+
+/* ── ACCORDION ── */
+.accordion-section { background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-top:8px; }
+.accordion-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; cursor:pointer; font-family:var(--sans); font-size:14px; font-weight:700; color:var(--ink);
+  background:var(--surface); border:none; width:100%; text-align:left;
+  transition:background 0.12s;
+}
+.accordion-header:active { background:var(--surface2); }
+.accordion-chevron { font-size:16px; color:var(--ink4); transition:transform 0.2s; display:inline-block; }
+.accordion-header.open .accordion-chevron { transform:rotate(90deg); }
+.accordion-body { display:none; padding:0 12px 12px; }
+.accordion-body.open { display:block; }
+
+/* ── SUMMARY STRIP ── */
+.summary-strip { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:2px; }
+.summary-pill {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:20px; padding:7px 14px;
+  display:flex; flex-direction:column; align-items:center; gap:1px; flex:1; min-width:55px;
+}
+.summary-pill-label { font-size:9px; color:var(--ink4); letter-spacing:.06em; text-transform:uppercase; font-family:var(--mono); }
+.summary-pill-value { font-family:var(--mono); font-size:13px; font-weight:500; color:var(--ink); }
+
 /* ── CHART OVERRIDES for light bg ── */
 .donut-card canvas { filter: none; }
 
@@ -406,11 +465,13 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
         <div class="header-title">Wealth Manager</div>
         <div style="display:flex;align-items:center;gap:8px">
           <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
-          <button id="nav-btn" onclick="refreshNAV()" title="Refresh NAV" style="background:var(--purple);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-family:var(--body);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px">↻ NAV</button>
-          <div class="header-sync" id="sync-time">Tap ↻ to sync</div>
+          <div class="header-sync" id="sync-time"></div>
         </div>
       </div>
-      <div class="portfolio-total" id="d-total">₹4,75,237</div>
+      <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap">
+        <div class="portfolio-total" id="d-total">₹4,75,237</div>
+        <span class="delta-badge" id="d-delta" style="display:none"></span>
+      </div>
       <div class="portfolio-sub">Net Worth · <span id="d-nw-breakdown" style="font-family:var(--mono);font-size:11px"></span></div>
       <div class="health-row">
         <div class="health-label">Portfolio Health</div>
@@ -433,7 +494,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
       <!-- Stat Grid -->
       <div class="stat-grid">
         <div class="stat-card c-red">
-          <div class="stat-label">Underweight</div>
+          <div class="stat-label">Gap to Fix</div>
           <div class="stat-value red" id="d-underweight">-₹12,768</div>
           <div class="stat-sub2" id="d-alert-count">2 funds need attention</div>
         </div>
@@ -492,7 +553,10 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
         </div>
       </div>
 
-      <div class="timestamp" id="d-timestamp">Last updated · —</div>
+      <div class="refresh-row">
+        <div class="refresh-info" id="d-timestamp">Last updated · —</div>
+        <button class="refresh-btn" id="nav-btn" onclick="refreshNAV()">↻ Refresh NAV</button>
+      </div>
     </div>
   </div>
 </div>
@@ -510,32 +574,6 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </div>
 </div>
 
-<!-- ══════════════ SIP SCREEN ══════════════ -->
-<div class="screen" id="screen-sip">
-  <div class="simple-header">
-    <h1>SIP</h1>
-    <p>Monthly investment breakdown</p>
-  </div>
-  <div class="scroll-area">
-    <div class="content">
-      <div class="fund-list" id="sip-list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ LUMPSUM SCREEN ══════════════ -->
-<div class="screen" id="screen-lumpsum">
-  <div class="simple-header">
-    <h1>Lumpsum</h1>
-    <p>One-time correction amounts</p>
-  </div>
-  <div class="scroll-area">
-    <div class="content">
-      <div class="fund-list" id="lumpsum-list"></div>
-    </div>
-  </div>
-</div>
-
 <!-- ══════════════ ASSETS SCREEN ══════════════ -->
 <div class="screen" id="screen-assets">
   <div class="simple-header">
@@ -544,6 +582,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </div>
   <div class="scroll-area">
     <div class="content">
+      <div class="summary-strip" id="assets-summary" style="display:none"></div>
       <div class="action-card">
         <div>
           <div class="action-tag">Total Other Assets</div>
@@ -691,16 +730,6 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
     <div class="nav-label">Decision</div>
     <div class="nav-pip"></div>
   </button>
-  <button class="nav-btn" id="nav-sip" onclick="switchTab('sip')">
-    <div class="nav-icon-wrap">🪙</div>
-    <div class="nav-label">SIP</div>
-    <div class="nav-pip"></div>
-  </button>
-  <button class="nav-btn" id="nav-lumpsum" onclick="switchTab('lumpsum')">
-    <div class="nav-icon-wrap">💰</div>
-    <div class="nav-label">Lumpsum</div>
-    <div class="nav-pip"></div>
-  </button>
   <button class="nav-btn" id="nav-assets" onclick="switchTab('assets')">
     <div class="nav-icon-wrap">🏦</div>
     <div class="nav-label">Assets</div>
@@ -708,7 +737,7 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
   </button>
   <button class="nav-btn" id="nav-settings" onclick="switchTab('settings')">
     <div class="nav-icon-wrap">⚙️</div>
-    <div class="nav-label">More</div>
+    <div class="nav-label">Manage</div>
     <div class="nav-pip"></div>
   </button>
 </nav>
@@ -1008,8 +1037,6 @@ function fmtPct(n) { return (n*100).toFixed(1)+'%'; }
 function renderAll() {
   renderDashboard();
   renderDecision();
-  renderSIP();
-  renderLumpsum();
   renderStocks();
   renderAssets();
   renderSettings();
@@ -1017,7 +1044,23 @@ function renderAll() {
 
 function renderAssets() {
   if (!state.assets) state.assets = [];
-  document.getElementById('a-total').textContent = fmt(getAssetsTotal() + getStocksTotal());
+  const assetsTotal = getAssetsTotal();
+  const stocksTotal = getStocksTotal();
+  document.getElementById('a-total').textContent = fmt(assetsTotal + stocksTotal);
+
+  // Summary strip
+  const stripEl = document.getElementById('assets-summary');
+  if (stripEl) {
+    let stripHtml = '';
+    if (stocksTotal > 0) stripHtml += `<div class="summary-pill"><div class="summary-pill-label">Stocks</div><div class="summary-pill-value" style="color:var(--blue)">${fmt(stocksTotal)}</div></div>`;
+    ASSET_CATEGORIES.forEach(cat => {
+      const t = getCategoryTotal(cat);
+      if (t > 0) stripHtml += `<div class="summary-pill"><div class="summary-pill-label">${cat}</div><div class="summary-pill-value" style="color:${ASSET_COLORS[cat]}">${fmt(t)}</div></div>`;
+    });
+    stripEl.innerHTML = stripHtml;
+    stripEl.style.display = stripHtml ? 'flex' : 'none';
+  }
+
   let html = '';
   ASSET_CATEGORIES.forEach(cat => {
     const items = state.assets.filter(a => a.category === cat);
@@ -1094,6 +1137,16 @@ function renderDashboard() {
     document.getElementById('d-timestamp').textContent = 'Last updated · ' + d.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   }
 
+  // Delta badge
+  const deltaEl = document.getElementById('d-delta');
+  if (deltaEl && state.prevDelta != null && Math.abs(state.prevDelta) > 0.5) {
+    deltaEl.style.display = 'inline-block';
+    deltaEl.className = 'delta-badge ' + (state.prevDelta >= 0 ? 'gain' : 'loss');
+    deltaEl.textContent = (state.prevDelta >= 0 ? '+' : '') + fmt(state.prevDelta) + ' today';
+  } else if (deltaEl) {
+    deltaEl.style.display = 'none';
+  }
+
   // Donut — fully dynamic, rebuilds arcs based on current fund count
   const svg = document.getElementById('donut-svg');
   // Remove old arcs
@@ -1162,33 +1215,71 @@ function renderDashboard() {
 
 function renderDecision() {
   const total = getTotal();
-  let html = '';
-  state.funds.forEach((f, i) => {
-    const dev = getDeviation(f);
-    const devStr = (dev >= 0 ? '+' : '') + fmtPct(dev);
-    const action = getAction(f);
-    const dotColor = action === 'Do Nothing' ? 'var(--muted)' : action === 'Adjust SIP' ? 'var(--yellow)' : action === 'Trim' ? 'var(--blue)' : 'var(--red)';
-    html += `<div class="fund-row" onclick="openFundEdit(${i})" style="animation-delay:${i*0.05}s">
-      <div class="fund-dot" style="background:${dotColor}"></div>
-      <div class="fund-info">
-        <div class="fund-name">${f.name}</div>
-        <div class="fund-val">${fmt(f.current)} · Target ${fmtPct(f.target)}</div>
-      </div>
-      <div class="fund-right">
-        <div class="fund-pct" style="color:${dotColor}">${devStr}</div>
-        <div class="fund-action">${action}</div>
-      </div>
-    </div>`;
-  });
-  document.getElementById('decision-list').innerHTML = html;
-}
-
-function renderSIP() {
   const mode = getMode();
-  let html = `<div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:11px;color:var(--muted)">Mode: <span style="color:${mode==='Balanced'?'var(--green)':'var(--yellow)'};font-weight:600">${mode} (Auto)</span></div>
-    <div style="font-size:10px;color:var(--muted)">Left = Balanced · Right = Correction</div>
-  </div>`;
+  const actionFunds = state.funds.filter(f => getAction(f) !== 'Do Nothing');
+  const okFunds     = state.funds.filter(f => getAction(f) === 'Do Nothing');
+  let html = '';
+
+  // ── Action Required ──
+  if (actionFunds.length > 0) {
+    html += `<div class="decision-section-hd urgent">⚠ Action Required (${actionFunds.length})</div><div class="fund-list" style="margin-bottom:8px">`;
+    actionFunds.forEach((f, idx) => {
+      const i = state.funds.indexOf(f);
+      const dev = getDeviation(f);
+      const devStr = (dev >= 0 ? '+' : '') + fmtPct(dev);
+      const action = getAction(f);
+      const tint = action === 'Increase Allocation' ? 'tint-red' : action === 'Adjust SIP' ? 'tint-yellow' : action === 'Trim' ? 'tint-blue' : '';
+      const dotColor = action === 'Adjust SIP' ? 'var(--yellow)' : action === 'Trim' ? 'var(--blue)' : 'var(--red)';
+      html += `<div class="fund-row ${tint}" onclick="openFundEdit(${i})" style="animation-delay:${idx*0.05}s">
+        <div class="fund-dot" style="background:${dotColor}"></div>
+        <div class="fund-info">
+          <div class="fund-name">${f.name}</div>
+          <div class="fund-val">${fmt(f.current)} · Target ${fmtPct(f.target)}</div>
+        </div>
+        <div class="fund-right">
+          <div class="fund-pct" style="color:${dotColor}">${devStr}</div>
+          <div class="fund-action">${action}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── On Track (collapsible if there are action funds) ──
+  if (okFunds.length > 0) {
+    const collapsed = actionFunds.length > 0;
+    html += `<div class="decision-section-hd ok" onclick="toggleOnTrack()">✓ On Track (${okFunds.length}) <span style="font-size:12px;font-weight:400">${collapsed ? '› tap to expand' : ''}</span></div>
+    <div class="fund-list" id="on-track-list" style="${collapsed ? 'display:none' : ''}">`;
+    okFunds.forEach((f, idx) => {
+      const i = state.funds.indexOf(f);
+      const dev = getDeviation(f);
+      const devStr = (dev >= 0 ? '+' : '') + fmtPct(dev);
+      html += `<div class="fund-row" onclick="openFundEdit(${i})" style="animation-delay:${idx*0.05}s">
+        <div class="fund-dot" style="background:var(--muted)"></div>
+        <div class="fund-info">
+          <div class="fund-name">${f.name}</div>
+          <div class="fund-val">${fmt(f.current)} · Target ${fmtPct(f.target)}</div>
+        </div>
+        <div class="fund-right">
+          <div class="fund-pct" style="color:var(--green)">${devStr}</div>
+          <div class="fund-action">Do Nothing</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── SIP Accordion ──
+  html += `<div class="accordion-section">
+    <button class="accordion-header" id="acc-sip-hd" onclick="toggleAccordion('acc-sip')">
+      <span>🪙 SIP Breakdown <span style="font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400">· ${fmt(state.sip)}/mo</span></span>
+      <span class="accordion-chevron">›</span>
+    </button>
+    <div class="accordion-body" id="acc-sip-body">
+      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:var(--muted)">Mode: <span style="color:${mode==='Balanced'?'var(--green)':'var(--yellow)'};font-weight:600">${mode} (Auto)</span></div>
+        <div style="font-size:10px;color:var(--muted)">Balanced · Correction</div>
+      </div>`;
   state.funds.forEach((f, i) => {
     const balSIP = getBalancedSIP(f);
     const corrSIP = getCorrectionSIP(f);
@@ -1196,7 +1287,7 @@ function renderSIP() {
     const corrColor = corrSIP > 0 ? 'var(--green)' : 'var(--muted)';
     const dev = getDeviation(f);
     const dotColor = dev < -0.005 ? 'var(--red)' : (dev > 0.005 ? 'var(--green)' : 'var(--muted)');
-    html += `<div class="fund-row" onclick="openFundEdit(${i})" style="animation-delay:${i*0.05}s">
+    html += `<div class="fund-row" style="margin-bottom:6px">
       <div class="fund-dot" style="background:${dotColor}"></div>
       <div class="fund-info">
         <div class="fund-name">${f.name}</div>
@@ -1204,32 +1295,35 @@ function renderSIP() {
       </div>
       <div class="fund-right">
         <div class="fund-pct" style="color:${corrColor}">${corrDisplay}</div>
-        <div class="fund-action" style="font-size:10px">Correction SIP</div>
+        <div class="fund-action" style="font-size:10px">Correction</div>
       </div>
     </div>`;
   });
-  document.getElementById('sip-list').innerHTML = html;
-}
+  html += `</div></div>`;
 
-function renderLumpsum() {
-  const mode = getMode();
-  let html = `<div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:11px;color:var(--muted)">Mode: <span style="color:${mode==='Balanced'?'var(--green)':'var(--yellow)'};font-weight:600">${mode} (Auto)</span></div>
-    <div style="font-size:10px;color:var(--muted)">Left = Balanced · Right = Correction</div>
-  </div>`;
+  // ── Lumpsum Accordion ──
+  html += `<div class="accordion-section">
+    <button class="accordion-header" id="acc-ls-hd" onclick="toggleAccordion('acc-ls')">
+      <span>💰 Lumpsum Breakdown <span style="font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400">· ${fmt(state.cash)} cash</span></span>
+      <span class="accordion-chevron">›</span>
+    </button>
+    <div class="accordion-body" id="acc-ls-body">
+      <div style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:var(--muted)">Cash: <span style="color:var(--purple);font-weight:600">${fmt(state.cash)}</span></div>
+        <div style="font-size:10px;color:var(--muted)">Balanced · Correction</div>
+      </div>`;
   state.funds.forEach((f, i) => {
     const balLump = getBalancedLumpsum(f);
     const corrLump = getCorrectionLumpsum(f);
-    const balDisplay = fmt(balLump); // always shows for all funds in balanced
     const corrDisplay = corrLump > 1 ? fmt(corrLump) : 'Skip';
     const corrColor = corrLump > 1 ? 'var(--green)' : 'var(--muted)';
     const dev = getDeviation(f);
     const dotColor = dev < -0.005 ? 'var(--red)' : (dev > 0.005 ? 'var(--green)' : 'var(--muted)');
-    html += `<div class="fund-row" onclick="openFundEdit(${i})" style="animation-delay:${i*0.05}s">
+    html += `<div class="fund-row" style="margin-bottom:6px">
       <div class="fund-dot" style="background:${dotColor}"></div>
       <div class="fund-info">
         <div class="fund-name">${f.name}</div>
-        <div class="fund-val" style="color:var(--blue)">${balDisplay}</div>
+        <div class="fund-val" style="color:var(--blue)">${fmt(balLump)}</div>
       </div>
       <div class="fund-right">
         <div class="fund-pct" style="color:${corrColor}">${corrDisplay}</div>
@@ -1237,8 +1331,11 @@ function renderLumpsum() {
       </div>
     </div>`;
   });
-  document.getElementById('lumpsum-list').innerHTML = html;
+  html += `</div></div>`;
+
+  document.getElementById('decision-list').innerHTML = html;
 }
+
 
 function renderSettings() {
   document.getElementById('s-sip').textContent = fmt(state.sip);
@@ -1275,7 +1372,7 @@ function switchTab(tab) {
   document.getElementById('screen-' + tab).classList.add('active');
   document.getElementById('nav-' + tab).classList.add('active');
   currentTab = tab;
-  // Update FAB
+  // Update FAB — show on assets (add asset) and dashboard (portfolio settings)
   const fab = document.getElementById('main-fab');
   fab.style.display = (tab === 'dashboard' || tab === 'assets') ? 'flex' : 'none';
 }
@@ -1283,7 +1380,21 @@ function switchTab(tab) {
 function handleFAB() {
   if (currentTab === 'dashboard') openPortfolioEdit();
   else if (currentTab === 'assets') openAddAsset();
-  else openFundEdit(0);
+}
+
+function toggleAccordion(id) {
+  const hd = document.getElementById(id + '-hd');
+  const body = document.getElementById(id + '-body');
+  if (!hd || !body) return;
+  const isOpen = body.classList.contains('open');
+  if (isOpen) { body.classList.remove('open'); hd.classList.remove('open'); }
+  else         { body.classList.add('open');    hd.classList.add('open'); }
+}
+
+function toggleOnTrack() {
+  const el = document.getElementById('on-track-list');
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? '' : 'none';
 }
 
 // ══ MODALS ══
@@ -1701,6 +1812,7 @@ async function refreshNAV() {
   const btn = document.getElementById('nav-btn');
   btn.textContent = '⏳';
   btn.disabled = true;
+  const prevNW = getNetWorth();
   let updated = 0, failed = 0;
 
   // MF NAV refresh
@@ -1762,12 +1874,16 @@ async function refreshNAV() {
       : 'Edit funds/stocks to link scheme codes and enter units';
     showToast(hint);
   } else {
+    const newNW = getNetWorth();
+    const delta = newNW - prevNW;
+    if (Math.abs(delta) > 0.5) state.prevDelta = delta;
     save(); renderAll();
     const msg = updated ? `✓ ${updated} updated` : '';
     const errMsg = failed ? ` · ${failed} failed` : '';
-    showToast((msg + errMsg) || 'Nothing updated');
+    const deltaMsg = Math.abs(delta) > 0.5 ? ` · ${delta >= 0 ? '+' : ''}${fmt(delta)}` : '';
+    showToast((msg + errMsg + deltaMsg) || 'Nothing updated');
   }
-  btn.textContent = '↻ NAV';
+  btn.textContent = '↻ Refresh NAV';
   btn.disabled = false;
 }
 
