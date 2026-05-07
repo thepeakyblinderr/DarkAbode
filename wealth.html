@@ -403,7 +403,11 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
     <div class="header">
       <div class="header-top">
         <div class="header-title">Wealth Manager</div>
-        <div style="display:flex;align-items:center;gap:8px"><button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button><div class="header-sync" id="sync-time">Tap ↻ to sync</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+          <button id="nav-btn" onclick="refreshNAV()" title="Refresh NAV" style="background:var(--purple);color:#fff;border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-family:var(--body);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px">↻ NAV</button>
+          <div class="header-sync" id="sync-time">Tap ↻ to sync</div>
+        </div>
       </div>
       <div class="portfolio-total" id="d-total">₹4,75,237</div>
       <div class="portfolio-sub">Net Worth · <span id="d-nw-breakdown" style="font-family:var(--mono);font-size:11px"></span></div>
@@ -727,9 +731,24 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
         <input class="field-input" id="input-mf-target" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.10">
       </div>
       <div class="field-group">
-        <div class="field-label">Current Value (₹)</div>
-        <input class="field-input" id="input-mf-current" type="number" inputmode="decimal" placeholder="0">
+        <div class="field-label">Units held</div>
+        <input class="field-input" id="input-mf-units" type="number" inputmode="decimal" step="any" placeholder="0">
       </div>
+    </div>
+    <!-- NAV Lookup -->
+    <div style="background:var(--surface2);border-radius:12px;padding:12px;margin-bottom:10px">
+      <div class="field-label" style="margin-bottom:6px">MF Scheme (for live NAV)</div>
+      <div style="display:flex;gap:8px">
+        <input class="field-input" id="input-mf-search" type="text" placeholder="Search scheme name…" style="margin:0;flex:1" oninput="debounceMFSearch()">
+        <button onclick="clearMFScheme()" id="btn-clear-scheme" style="padding:0 12px;border:1px solid var(--line2);border-radius:10px;background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer;display:none">✕</button>
+      </div>
+      <div id="mf-search-results" style="margin-top:6px;display:none;max-height:160px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)"></div>
+      <div id="mf-selected-scheme" style="margin-top:6px;font-size:11px;color:var(--green);display:none"></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:5px">If set, NAV × units = current value (auto-updated on refresh)</div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Current Value (₹) <span style="color:var(--muted);font-weight:400">— auto if NAV linked</span></div>
+      <input class="field-input" id="input-mf-current" type="number" inputmode="decimal" placeholder="0">
     </div>
     <div id="mf-target-hint" style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:0 2px"></div>
     <button class="btn-save" onclick="saveManageFund()">Save Fund</button>
@@ -1274,14 +1293,28 @@ function saveReviewDate() {
 // ══ CRUD: FUNDS ══
 let managingFundIndex = null;
 
+let _pendingSchemeCode = null;
+let _pendingSearchTimer = null;
+
+function _resetMFModal() {
+  _pendingSchemeCode = null;
+  document.getElementById('input-mf-search').value = '';
+  document.getElementById('mf-search-results').style.display = 'none';
+  document.getElementById('mf-search-results').innerHTML = '';
+  document.getElementById('mf-selected-scheme').style.display = 'none';
+  document.getElementById('btn-clear-scheme').style.display = 'none';
+}
+
 function openAddFund() {
   managingFundIndex = null;
   document.getElementById('modal-manage-fund-title').textContent = 'Add Fund';
   document.getElementById('modal-manage-fund-sub').textContent = 'New mutual fund';
   document.getElementById('input-mf-name').value = '';
   document.getElementById('input-mf-target').value = '';
+  document.getElementById('input-mf-units').value = '';
   document.getElementById('input-mf-current').value = '';
   document.getElementById('btn-delete-fund').style.display = 'none';
+  _resetMFModal();
   updateMFTargetHint();
   openModal('modal-manage-fund');
 }
@@ -1293,8 +1326,17 @@ function openEditFund(i) {
   document.getElementById('modal-manage-fund-sub').textContent = f.name;
   document.getElementById('input-mf-name').value = f.name;
   document.getElementById('input-mf-target').value = f.target;
+  document.getElementById('input-mf-units').value = f.units || '';
   document.getElementById('input-mf-current').value = f.current;
   document.getElementById('btn-delete-fund').style.display = 'block';
+  _resetMFModal();
+  if (f.schemeCode) {
+    _pendingSchemeCode = f.schemeCode;
+    document.getElementById('mf-selected-scheme').textContent = `✓ Scheme ${f.schemeCode} linked`;
+    document.getElementById('mf-selected-scheme').style.display = 'block';
+    document.getElementById('input-mf-search').value = f.schemeName || '';
+    document.getElementById('btn-clear-scheme').style.display = 'block';
+  }
   updateMFTargetHint();
   openModal('modal-manage-fund');
 }
@@ -1315,15 +1357,23 @@ function updateMFTargetHint() {
 function saveManageFund() {
   const name = document.getElementById('input-mf-name').value.trim();
   const target = parseFloat(document.getElementById('input-mf-target').value);
+  const units = parseFloat(document.getElementById('input-mf-units').value) || 0;
   const current = parseFloat(document.getElementById('input-mf-current').value) || 0;
   if (!name || isNaN(target) || target <= 0 || target > 1) {
     alert('Please enter a valid name and target % between 0 and 1');
     return;
   }
+  const fund = { name, target, current, units };
+  if (_pendingSchemeCode) {
+    fund.schemeCode = _pendingSchemeCode;
+    fund.schemeName = document.getElementById('input-mf-search').value.trim();
+  }
   if (managingFundIndex === null) {
-    state.funds.push({ name, target, current });
+    state.funds.push(fund);
   } else {
-    state.funds[managingFundIndex] = { name, target, current };
+    const existing = state.funds[managingFundIndex];
+    state.funds[managingFundIndex] = { ...existing, ...fund };
+    if (!_pendingSchemeCode) { delete state.funds[managingFundIndex].schemeCode; delete state.funds[managingFundIndex].schemeName; }
   }
   save(); renderAll();
   closeModal('modal-manage-fund');
@@ -1427,6 +1477,78 @@ function showToast(msg) {
   toast.style.opacity = '1';
   clearTimeout(toast._timer);
   toast._timer = setTimeout(() => toast.style.opacity = '0', 3000);
+}
+
+// ══ MF NAV API (mfapi.in) ══
+function debounceMFSearch() {
+  clearTimeout(_pendingSearchTimer);
+  _pendingSearchTimer = setTimeout(runMFSearch, 400);
+}
+
+async function runMFSearch() {
+  const q = document.getElementById('input-mf-search').value.trim();
+  const box = document.getElementById('mf-search-results');
+  if (q.length < 3) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--muted)">Searching…</div>';
+  try {
+    const res = await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(q)}`);
+    const list = await res.json();
+    if (!list.length) { box.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--muted)">No results</div>'; return; }
+    box.innerHTML = list.slice(0, 10).map(s =>
+      `<div onclick="selectMFScheme(${s.schemeCode},'${s.schemeName.replace(/'/g,"\\'")}','${s.fundHouse.replace(/'/g,"\\'")}' )" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line);font-size:12px;line-height:1.4" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
+        <div style="font-weight:600;color:var(--ink)">${s.schemeName}</div>
+        <div style="color:var(--muted);font-size:10px">${s.fundHouse}</div>
+      </div>`
+    ).join('');
+  } catch { box.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--red)">Search failed — check connection</div>'; }
+}
+
+function selectMFScheme(code, name, house) {
+  _pendingSchemeCode = code;
+  document.getElementById('input-mf-search').value = name;
+  document.getElementById('mf-search-results').style.display = 'none';
+  document.getElementById('mf-selected-scheme').textContent = `✓ ${house} · Code ${code}`;
+  document.getElementById('mf-selected-scheme').style.display = 'block';
+  document.getElementById('btn-clear-scheme').style.display = 'block';
+  if (!document.getElementById('input-mf-name').value.trim()) {
+    document.getElementById('input-mf-name').value = name;
+  }
+}
+
+function clearMFScheme() {
+  _pendingSchemeCode = null;
+  document.getElementById('input-mf-search').value = '';
+  document.getElementById('mf-search-results').style.display = 'none';
+  document.getElementById('mf-selected-scheme').style.display = 'none';
+  document.getElementById('btn-clear-scheme').style.display = 'none';
+}
+
+async function refreshNAV() {
+  const btn = document.getElementById('nav-btn');
+  const linked = state.funds.filter(f => f.schemeCode && f.units > 0);
+  if (!linked.length) {
+    showToast('No funds have scheme code + units set. Edit a fund to link NAV.');
+    return;
+  }
+  btn.textContent = '⏳';
+  btn.disabled = true;
+  let updated = 0, failed = 0;
+  await Promise.all(linked.map(async f => {
+    try {
+      const res = await fetch(`https://api.mfapi.in/mf/${f.schemeCode}/latest`);
+      const data = await res.json();
+      const nav = parseFloat(data.data?.[0]?.nav);
+      if (!isNaN(nav) && nav > 0) { f.current = Math.round(nav * f.units * 100) / 100; updated++; }
+      else failed++;
+    } catch { failed++; }
+  }));
+  save(); renderAll();
+  btn.textContent = '↻ NAV';
+  btn.disabled = false;
+  const msg = updated ? `✓ ${updated} fund${updated>1?'s':''} updated` : '';
+  const errMsg = failed ? ` · ${failed} failed` : '';
+  showToast((msg + errMsg) || 'Nothing updated');
 }
 
 // ══ INIT ══
