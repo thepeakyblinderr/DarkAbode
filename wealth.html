@@ -1317,10 +1317,10 @@ function renderDecision() {
   state.funds.forEach((f, i) => {
     const sipAmt = getActiveSIP(f);
     const action = getAction(f);
+    const dev = getDeviation(f);
     const display = sipAmt > 0 ? fmt(sipAmt) : 'Skip';
     const valColor = sipAmt > 0 ? 'var(--purple)' : 'var(--muted)';
     const subLabel = (action === 'Trim' || dev > 0.03) ? 'Overweight — no SIP' : action === 'Increase Allocation' ? 'Priority SIP' : mode + ' SIP';
-    const dev = getDeviation(f);
     const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--blue)' : 'var(--muted)');
     html += `<div class="fund-row" style="margin-bottom:6px">
       <div class="fund-dot" style="background:${dotColor}"></div>
@@ -1350,10 +1350,10 @@ function renderDecision() {
   state.funds.forEach((f, i) => {
     const lumpAmt = getActiveLumpsum(f);
     const action = getAction(f);
+    const dev = getDeviation(f);
     const display = lumpAmt > 1 ? fmt(lumpAmt) : 'Skip';
     const valColor = lumpAmt > 1 ? 'var(--purple)' : 'var(--muted)';
     const subLabel = (action === 'Trim' || dev > 0.03) ? 'Overweight — no lumpsum' : action === 'Increase Allocation' ? 'Priority lumpsum' : mode + ' Lumpsum';
-    const dev = getDeviation(f);
     const dotColor = dev < -0.03 ? 'var(--red)' : (dev > 0.03 ? 'var(--blue)' : 'var(--muted)');
     html += `<div class="fund-row" style="margin-bottom:6px">
       <div class="fund-dot" style="background:${dotColor}"></div>
