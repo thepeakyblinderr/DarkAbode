@@ -416,7 +416,9 @@ function parseLine(line) {
 
 function parseCSV(text) {
   if (!text) return [];
-  const lines = text.trim().split('\n').filter(l => l.trim());
+  // Strip BOM if present
+  const clean = text.replace(/^﻿/, '').trim();
+  const lines = clean.split('\n').filter(l => l.trim());
   if (lines.length < 2) return [];
   const headers = parseLine(lines[0]).map(h =>
     h.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
@@ -429,27 +431,64 @@ function parseCSV(text) {
   }).filter(r => Object.values(r).some(v => v));
 }
 
+function parseNum(s) {
+  if (!s) return 0;
+  // Strip commas (₹1,600.25 → 1600.25) and any currency symbols
+  return parseFloat(String(s).replace(/[,₹\s]/g, '')) || 0;
+}
+
+function parseDate(s) {
+  if (!s) return null;
+  const str = String(s).split(' ')[0].trim(); // strip time part
+  // Try YYYY-MM-DD first
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const d = new Date(str + 'T00:00:00');
+    return isNaN(d.getTime()) ? null : d;
+  }
+  // Try DD-MM-YYYY or DD/MM/YYYY
+  const m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    const [, dd, mm, yy] = m;
+    const yyyy = yy.length === 2 ? '20' + yy : yy;
+    const d = new Date(`${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  // Fallback: let JS try
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function normaliseTrade(r, source) {
-  const typeRaw = (r.trade_type || r.transaction_type || '').toLowerCase();
-  const isBuy  = typeRaw === 'buy'  || typeRaw === 'purchase';
-  const isSell = typeRaw === 'sell' || typeRaw === 'redemption';
+  // trade_type — try multiple column names, handle various values
+  const typeRaw = (
+    r.trade_type || r.transaction_type || r.type || r.order_type || ''
+  ).toLowerCase().trim();
+  const isBuy  = typeRaw === 'buy'  || typeRaw === 'purchase'  || typeRaw === 'b';
+  const isSell = typeRaw === 'sell' || typeRaw === 'redemption' || typeRaw === 's';
   if (!isBuy && !isSell) return null;
 
-  const rawDate = r.trade_date || r.order_execution_time || '';
-  if (!rawDate) return null;
-  const date = new Date(rawDate.split(' ')[0]);
-  if (isNaN(date.getTime())) return null;
+  // Date — try multiple column names
+  const rawDate = r.trade_date || r.order_execution_time || r.date ||
+                  r.allotment_date || r.transaction_date || r.order_date || '';
+  const date = parseDate(rawDate);
+  if (!date) return null;
 
-  const qty   = parseFloat(r.quantity  || r.units || '0');
-  const price = parseFloat(r.price     || r.nav   || '0');
+  // Quantity and price — strip commas
+  const qty   = parseNum(r.quantity || r.units || r.qty || '0');
+  const price = parseNum(r.price    || r.nav   || r.rate || '0');
   if (qty <= 0 || price <= 0) return null;
 
-  const symbol  = (r.symbol || r.trading_symbol || r.scrip_code || r.fund_name || r.scheme_name || '').trim().toUpperCase();
-  const isin    = (r.isin   || '').trim().toUpperCase();
-  const segment = (r.segment || source).toUpperCase();
+  // Symbol — try every plausible column name
+  const symbol = (
+    r.symbol || r.trading_symbol || r.scrip_code ||
+    r.fund_name || r.scheme_name || r.scheme || r.fund ||
+    r.name || r.stock || r.security || r.instrument || ''
+  ).trim().toUpperCase();
+  const isin = (r.isin || '').trim().toUpperCase();
 
   if (!symbol && !isin) return null;
 
+  const segment = (r.segment || source).toUpperCase();
   return { symbol, isin, date, type: isBuy ? 'buy' : 'sell', qty, price, source, segment };
 }
 
@@ -632,11 +671,16 @@ function analyse() {
     .filter(h => h.equity && h.u.ltcgGain > 0)
     .sort((a, b) => b.u.ltcgGain - a.u.ltcgGain);
 
+  const noNavCount = Object.values(portfolio).filter(e => !e.currentNav && e.buys.some(b => b.remaining > 0.0001)).length;
+
   return {
     fy, fyLabel: fyLabel(fy),
     realisedLTCG, realisedSTCG, realisedLTCGDebt, realisedSTCGDebt,
     ltcgTaxable, ltcgTax, stcgTax, totalTax, ltcgHeadroom,
     holdings, harvestCandidates, portfolio,
+    totalTrades: all.length,
+    totalSecurities: Object.keys(portfolio).length,
+    noNavCount,
     hasMF: mfTrades.length > 0, hasEQ: eqTrades.length > 0,
   };
 }
@@ -733,6 +777,15 @@ function renderOverview(data) {
       <button onclick="showTab('harvest')" class="btn primary">View Harvest Plan →</button>
     </div>` : data.ltcgHeadroom <= 0 ? `
     <div class="note fu">₹1.25L LTCG exemption fully used this FY — no further harvest is tax-free.</div>` : ''}
+
+    ${data.noNavCount > 0 ? `
+    <div class="note fu" style="border-color:var(--yellow)">
+      ⚠ ${data.noNavCount} open position${data.noNavCount > 1 ? 's' : ''} have no current NAV — open Wealth app, refresh NAV, then come back. Holdings tab will be empty for these.
+    </div>` : ''}
+
+    <div style="font-family:var(--mono);font-size:10px;color:var(--ink4);text-align:center;padding:4px 0">
+      ${data.totalTrades} trades · ${data.totalSecurities} securities
+    </div>
 
     <button onclick="showUploadSheet()" class="btn fu">↑ Update Tradebooks</button>`;
 }
@@ -966,8 +1019,18 @@ function handleCSV(event, type) {
       localStorage.setItem(type === 'mf' ? 'tax_csv_mf' : 'tax_csv_eq', text);
       localStorage.setItem(type === 'mf' ? 'tax_mf_uploaded' : 'tax_eq_uploaded', new Date().toISOString());
       refreshUploadUI();
+
+      // Diagnostic: show how many rows parsed vs valid trades
+      const rows   = parseCSV(text);
+      const trades = rows.map(r => normaliseTrade(r, type)).filter(Boolean);
+      const label  = type === 'mf' ? 'MF' : 'EQ';
+      if (trades.length === 0 && rows.length > 0) {
+        toast(`⚠ ${label}: ${rows.length} rows read but 0 valid trades — check column names`, 4000);
+      } else {
+        toast(`✓ ${label} tradebook: ${trades.length} trades from ${rows.length} rows`);
+      }
+
       refreshAll();
-      toast(`✓ ${type === 'mf' ? 'MF' : 'EQ'} tradebook loaded — ${parseCSV(text).length} rows`);
     } catch (_) {
       toast('✗ File too large — try a smaller date range');
     }
