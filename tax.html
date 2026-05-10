@@ -1051,6 +1051,7 @@ function handleCSV(event, type) {
       }
 
       refreshAll();
+      FBSync.schedulePush();
     } catch (_) {
       toast('✗ File too large — try a smaller date range');
     }
@@ -1063,6 +1064,7 @@ function clearCSV() {
   ['tax_csv_mf','tax_csv_eq','tax_mf_uploaded','tax_eq_uploaded'].forEach(k => localStorage.removeItem(k));
   refreshUploadUI();
   refreshAll();
+  FBSync.schedulePush();
   hideUploadSheet();
   toast('Tradebooks cleared');
 }
