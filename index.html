@@ -29,6 +29,7 @@
   --wander-c: #047857;
   --nutrily-c: #b87333;
   --hobby-c:   #5b3fd4;
+  --tax-c:     #0f766e;
   --sans: 'Syne', system-ui, sans-serif;
   --body: 'Plus Jakarta Sans', system-ui, sans-serif;
   --mono: 'JetBrains Mono', monospace;
@@ -57,6 +58,7 @@ html[data-theme="dark"] {
   --wander-c:  #2ea878;
   --nutrily-c: #d4904a;
   --hobby-c:   #8b6ff0;
+  --tax-c:     #14b8a6;
   --sh:  0 1px 4px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
   --shlg:0 6px 24px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.25);
 }
@@ -280,6 +282,7 @@ body {
 .card-wander  .card-stripe { background: var(--wander-c); }
 .card-nutrily .card-stripe { background: var(--nutrily-c); }
 .card-hobby  .card-stripe { background: var(--hobby-c); }
+.card-tax    .card-stripe { background: var(--tax-c); }
 
 .card-body {
   padding: 12px 13px 12px;
@@ -304,6 +307,7 @@ body {
 .card-wander  .card-icon-wrap { background: rgba(4,120,87,.1); }
 .card-nutrily .card-icon-wrap { background: rgba(184,115,51,.1); }
 .card-hobby  .card-icon-wrap { background: rgba(91,63,212,.1); }
+.card-tax    .card-icon-wrap { background: rgba(15,118,110,.1); }
 
 .card-icon-wrap svg { width: 17px; height: 17px; stroke-width: 1.8; }
 .card-split   .card-icon-wrap svg { stroke: var(--split-c); }
@@ -312,6 +316,7 @@ body {
 .card-wander  .card-icon-wrap svg { stroke: var(--wander-c); }
 .card-nutrily .card-icon-wrap svg { stroke: var(--nutrily-c); }
 .card-hobby  .card-icon-wrap svg { stroke: var(--hobby-c); }
+.card-tax    .card-icon-wrap svg { stroke: var(--tax-c); }
 
 .card-name {
   font-family: var(--body);
@@ -575,6 +580,7 @@ html[data-theme="dark"] .card-doc     .card-icon-wrap{background:rgba(77,128,230
 html[data-theme="dark"] .card-wander  .card-icon-wrap{background:rgba(46,168,120,.15);}
 html[data-theme="dark"] .card-nutrily .card-icon-wrap{background:rgba(212,144,74,.15);}
 html[data-theme="dark"] .card-hobby  .card-icon-wrap{background:rgba(139,111,240,.15);}
+html[data-theme="dark"] .card-tax    .card-icon-wrap{background:rgba(20,184,166,.15);}
 /* Backup card */
 html[data-theme="dark"] .btn-backup{background:var(--surface2);color:var(--ink3);border-color:var(--line);}
 html[data-theme="dark"] .btn-backup:hover{background:var(--surface);color:var(--ink2);border-color:var(--line2);}
@@ -720,6 +726,18 @@ html[data-theme="dark"] .modal-note{background:var(--surface2);border-color:var(
           <div class="card-name">HobbySpace</div>
           <div class="card-desc">Hobbies &amp; creative balance</div>
           <span class="card-stat-text" id="stat-hobby">—</span>
+        </div>
+      </a>
+
+      <a class="app-card card-tax" href="tax.html" id="card-tax">
+        <div class="card-stripe"></div>
+        <div class="card-body">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/><polyline points="9 9 10 9"/></svg>
+          </div>
+          <div class="card-name">Tax Optimizer</div>
+          <div class="card-desc">LTCG, STCG &amp; harvest planner</div>
+          <span class="card-stat-text" id="stat-tax">Upload tradebooks</span>
         </div>
       </a>
 
