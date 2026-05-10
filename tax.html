@@ -238,6 +238,10 @@ html, body { height:100%; background:var(--bg); font-family:var(--body); color:v
   white-space:nowrap; pointer-events:none;
 }
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="firebase-sync.js"></script>
 </head>
 <body>
 
@@ -346,8 +350,13 @@ html, body { height:100%; background:var(--bg); font-family:var(--body); color:v
       <button onclick="clearCSV()" class="btn danger" style="flex:1;border-radius:12px">Clear All</button>
       <button onclick="hideUploadSheet()" class="btn primary" style="flex:2;border-radius:12px">Done</button>
     </div>
-    <div style="margin-top:12px;font-size:11px;color:var(--ink4);text-align:center;line-height:1.5">
-      CSV columns expected: symbol, isin, trade_date, trade_type, quantity, price
+    <div id="fbSyncPanel" style="
+      margin-top:14px;
+      --bg:var(--surface2);--card:var(--surface);--bdr:var(--line);
+      --text:var(--ink);--muted:var(--ink3);--rs:14px;--red:#c0392b;
+    "></div>
+    <div style="margin-top:10px;font-size:11px;color:var(--ink4);text-align:center;line-height:1.5">
+      Zerodha Kite → Reports → Tradebook → Download
     </div>
   </div>
 </div>
@@ -1088,6 +1097,28 @@ if ('serviceWorker' in navigator) {
     }, { once: true });
   });
 }
+
+// ─── Firebase Sync ────────────────────────────────────────────────────────────
+function _taxGetData() {
+  return {
+    mf:          localStorage.getItem('tax_csv_mf')      || '',
+    eq:          localStorage.getItem('tax_csv_eq')      || '',
+    mf_uploaded: localStorage.getItem('tax_mf_uploaded') || '',
+    eq_uploaded: localStorage.getItem('tax_eq_uploaded') || '',
+  };
+}
+
+function _taxSetData(data) {
+  if (!data) return;
+  let changed = false;
+  if (data.mf)          { localStorage.setItem('tax_csv_mf',      data.mf);          changed = true; }
+  if (data.eq)          { localStorage.setItem('tax_csv_eq',      data.eq);          changed = true; }
+  if (data.mf_uploaded) { localStorage.setItem('tax_mf_uploaded', data.mf_uploaded); }
+  if (data.eq_uploaded) { localStorage.setItem('tax_eq_uploaded', data.eq_uploaded); }
+  if (changed) { refreshUploadUI(); refreshAll(); }
+}
+
+FBSync.init('tax', _taxGetData, _taxSetData);
 
 // ─── Init ──────────────────────────────────────────────────────────────────────
 refreshUploadUI();
