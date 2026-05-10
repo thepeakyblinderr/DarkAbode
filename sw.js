@@ -1,5 +1,5 @@
-// Abode Service Worker v4.0
-const CACHE = 'abode-v7';
+// Abode Service Worker v4.1
+const CACHE = 'abode-v8';
 
 const ASSETS = [
   './',
@@ -10,6 +10,7 @@ const ASSETS = [
   './wanderplan.html',
   './nutrily.html',
   './hobby.html',
+  './tax.html',
   './manifest.json'
 ];
 

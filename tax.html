@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Tax Optimizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #f5f5f3;
+  --surface: #ffffff;
+  --surface2:#f0f0ee;
+  --ink:     #0a0a0a;
+  --ink2:    #3a3a34;
+  --ink3:    #6a6a60;
+  --ink4:    #9a9a8e;
+  --line:    #e4e4e0;
+  --line2:   #c8c8be;
+  --green:   #047857;
+  --red:     #c0392b;
+  --yellow:  #b45309;
+  --blue:    #1a56db;
+  --accent:  #1a56db;
+  --nav-h:   62px;
+  --sans:  'Syne', system-ui, sans-serif;
+  --body:  'Plus Jakarta Sans', system-ui, sans-serif;
+  --mono:  'JetBrains Mono', monospace;
+}
+html[data-theme="dark"] {
+  --bg:      #0f0f0e;
+  --surface: #1a1a18;
+  --surface2:#242422;
+  --ink:     #f0f0ec;
+  --ink2:    #c8c8c0;
+  --ink3:    #8a8a80;
+  --ink4:    #5a5a54;
+  --line:    #2a2a28;
+  --line2:   #3a3a36;
+  --green:   #2ea878;
+  --red:     #e05a4e;
+  --yellow:  #d4900a;
+  --blue:    #4d80e6;
+  --accent:  #4d80e6;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; background:var(--bg); font-family:var(--body); color:var(--ink); overflow:hidden; -webkit-font-smoothing:antialiased; }
+::-webkit-scrollbar { display:none; }
+
+.screen { display:none; flex-direction:column; height:100vh; overflow:hidden; }
+.screen.active { display:flex; }
+
+.scroll-area {
+  flex:1; overflow-y:auto; overflow-x:hidden;
+  padding-bottom:calc(var(--nav-h) + 20px);
+  -webkit-overflow-scrolling:touch;
+}
+
+/* ── Header ── */
+.header {
+  background:var(--surface); border-bottom:1px solid var(--line);
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 20px 14px;
+  flex-shrink:0;
+}
+.header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.header-label { font-family:var(--mono); font-size:10px; font-weight:600; color:var(--ink4); letter-spacing:.1em; text-transform:uppercase; }
+.page-title { font-family:var(--sans); font-size:24px; font-weight:800; color:var(--ink); letter-spacing:-.8px; }
+.page-sub { font-size:12px; color:var(--ink3); margin-top:2px; }
+
+.back-btn {
+  font-family:var(--mono); font-size:11px; color:var(--ink3);
+  background:none; border:none; cursor:pointer; padding:0;
+  transition:color .15s;
+}
+.back-btn:hover { color:var(--ink); }
+.text-btn {
+  font-family:var(--mono); font-size:11px; color:var(--accent);
+  background:none; border:none; cursor:pointer; padding:0;
+}
+
+/* ── Bottom Nav ── */
+.nav {
+  background:var(--surface); border-top:1px solid var(--line);
+  height:var(--nav-h); display:flex; align-items:center;
+  padding:0 8px calc(env(safe-area-inset-bottom,0px));
+  position:fixed; bottom:0; left:0; right:0; z-index:100;
+}
+.nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  gap:2px; background:none; border:none; cursor:pointer;
+  padding:6px 4px; border-radius:10px; transition:background .15s;
+}
+.nav-btn:active { background:var(--surface2); }
+.nav-icon { width:20px; height:20px; }
+.nav-icon svg { width:20px; height:20px; stroke:var(--ink4); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.nav-btn.active .nav-icon svg { stroke:var(--accent); }
+.nav-label { font-family:var(--mono); font-size:9px; color:var(--ink4); letter-spacing:.06em; text-transform:uppercase; }
+.nav-btn.active .nav-label { color:var(--accent); }
+.nav-dot { width:4px; height:4px; border-radius:50%; background:var(--accent); opacity:0; margin-top:1px; }
+.nav-btn.active .nav-dot { opacity:1; }
+
+/* ── Content ── */
+.content { padding:12px 16px; display:flex; flex-direction:column; gap:10px; }
+
+/* ── Card ── */
+.card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:16px; padding:16px; position:relative; overflow:hidden;
+}
+.card-top { position:absolute; top:0; left:0; right:0; height:2.5px; }
+.card-row { display:flex; justify-content:space-between; align-items:center; }
+.card-label { font-family:var(--mono); font-size:10px; color:var(--ink4); letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; }
+.card-value { font-family:var(--mono); font-size:22px; font-weight:500; color:var(--ink); }
+.card-sub { font-size:11px; color:var(--ink3); margin-top:3px; }
+
+/* ── Stat grid ── */
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.stat-card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:14px; position:relative; overflow:hidden;
+}
+.stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2.5px; border-radius:14px 14px 0 0; }
+.stat-card.c-green::after { background:var(--green); }
+.stat-card.c-red::after   { background:var(--red); }
+.stat-card.c-yellow::after{ background:var(--yellow); }
+.stat-card.c-blue::after  { background:var(--blue); }
+.stat-label { font-size:10px; color:var(--ink4); letter-spacing:.06em; text-transform:uppercase; margin-bottom:5px; font-family:var(--mono); }
+.stat-value { font-family:var(--mono); font-size:17px; font-weight:500; color:var(--ink); }
+.stat-value.green { color:var(--green); }
+.stat-value.red   { color:var(--red); }
+.stat-sub { font-size:11px; color:var(--ink3); margin-top:3px; }
+
+/* ── Progress bar ── */
+.prog-labels { display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--ink4); margin-bottom:5px; }
+.prog-bg { height:6px; background:var(--line); border-radius:6px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:6px; background:linear-gradient(90deg,var(--green),#10b981); transition:width .8s ease; }
+.prog-fill.warn { background:linear-gradient(90deg,var(--yellow),#f59e0b); }
+.prog-fill.danger { background:linear-gradient(90deg,var(--red),#ef4444); }
+
+/* ── Fund card ── */
+.fund-card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; overflow:hidden;
+}
+.fund-card-hd { padding:13px 14px 10px; display:flex; justify-content:space-between; align-items:flex-start; }
+.fund-name { font-family:var(--sans); font-size:14px; font-weight:700; color:var(--ink); }
+.type-badge {
+  font-family:var(--mono); font-size:9px; padding:2px 7px;
+  border-radius:20px; font-weight:600; letter-spacing:.05em; text-transform:uppercase;
+  white-space:nowrap; flex-shrink:0;
+}
+.badge-eq   { background:rgba(4,120,87,.1); color:var(--green); }
+.badge-debt { background:rgba(180,83,9,.1); color:var(--yellow); }
+.fund-card-bd { padding:0 14px 13px; display:flex; flex-direction:column; gap:6px; }
+.frow { display:flex; justify-content:space-between; align-items:center; }
+.frow-lbl { font-size:11px; color:var(--ink3); }
+.frow-val { font-family:var(--mono); font-size:12px; color:var(--ink); }
+.frow-val.green { color:var(--green); }
+.frow-val.red   { color:var(--red); }
+.divider { height:1px; background:var(--line); margin:2px 0; }
+
+/* ── Wait badge ── */
+.wait-badge {
+  display:inline-flex; align-items:center; gap:3px;
+  background:rgba(180,83,9,.1); color:var(--yellow);
+  border-radius:20px; padding:3px 8px;
+  font-family:var(--mono); font-size:9px; font-weight:600; letter-spacing:.05em;
+  margin-top:4px;
+}
+
+/* ── Harvest item ── */
+.harvest-item {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:14px;
+}
+.harvest-name { font-family:var(--sans); font-size:14px; font-weight:700; color:var(--ink); margin-bottom:10px; }
+.harvest-row { display:flex; justify-content:space-between; margin-bottom:4px; }
+.harvest-lbl { font-size:11px; color:var(--ink3); }
+.harvest-val { font-family:var(--mono); font-size:12px; color:var(--ink); }
+.harvest-val.green { color:var(--green); }
+.harvest-action {
+  margin-top:10px; padding:9px 12px; background:rgba(26,86,219,.08);
+  border-radius:10px; font-family:var(--mono); font-size:11px; color:var(--accent); font-weight:600;
+}
+
+/* ── Upload area ── */
+.upload-area {
+  border:1.5px dashed var(--line2); border-radius:14px; padding:18px 16px;
+  text-align:center; cursor:pointer; transition:border-color .15s, background .15s;
+  background:var(--surface);
+}
+.upload-area:hover { border-color:var(--accent); background:var(--surface2); }
+.upload-area.has-file { border-color:var(--green); border-style:solid; }
+.upload-title { font-family:var(--sans); font-size:13px; font-weight:700; color:var(--ink); margin-bottom:2px; }
+.upload-sub { font-size:11px; color:var(--ink3); }
+.upload-ok { font-family:var(--mono); font-size:10px; color:var(--green); margin-top:4px; }
+
+/* ── Empty state ── */
+.empty { text-align:center; padding:48px 20px; }
+.empty-icon { font-size:36px; margin-bottom:12px; }
+.empty-title { font-family:var(--sans); font-size:16px; font-weight:700; color:var(--ink); margin-bottom:6px; }
+.empty-sub { font-size:12px; color:var(--ink3); line-height:1.6; }
+
+/* ── Inline note ── */
+.note {
+  background:var(--surface2); border:1px solid var(--line);
+  border-radius:10px; padding:10px 12px;
+  font-size:11px; color:var(--ink3); line-height:1.6;
+}
+
+/* ── Pill button ── */
+.btn {
+  display:block; width:100%; padding:12px; border-radius:12px;
+  border:1px solid var(--line); background:var(--surface);
+  font-family:var(--mono); font-size:12px; color:var(--ink3);
+  cursor:pointer; text-align:center; transition:background .15s;
+}
+.btn:hover { background:var(--surface2); }
+.btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.btn.primary:hover { opacity:.9; }
+.btn.danger { color:var(--red); border-color:var(--line); }
+
+/* ── Animations ── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.fu { animation:fadeUp .35s ease both; }
+
+/* ── Toast ── */
+#toast {
+  position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 76px); left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--ink); color:#fff;
+  border-radius:20px; padding:9px 18px;
+  font-family:var(--mono); font-size:12px; letter-spacing:.02em;
+  z-index:999; transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap; pointer-events:none;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ OVERVIEW TAB ══════════════════════════════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="header">
+    <div class="header-top">
+      <button class="back-btn" onclick="history.back()">← Back</button>
+      <span class="header-label" id="fy-label">Tax Optimizer</span>
+      <button class="text-btn" onclick="showUploadSheet()">CSV ↑</button>
+    </div>
+    <div class="page-title" id="overview-title">Overview</div>
+    <div class="page-sub" id="overview-sub">Upload Zerodha tradebooks to analyse</div>
+  </div>
+  <div class="scroll-area">
+    <div class="content" id="overview-content"></div>
+  </div>
+</div>
+
+<!-- ══ HOLDINGS TAB ══════════════════════════════════════════════════════ -->
+<div id="screen-holdings" class="screen">
+  <div class="header">
+    <div class="header-top">
+      <span class="header-label">Holdings</span>
+      <span id="holdings-count" style="font-family:var(--mono);font-size:10px;color:var(--ink4)"></span>
+    </div>
+    <div class="page-title">Unrealised P&amp;L</div>
+    <div class="page-sub">Current positions &amp; tax exposure</div>
+  </div>
+  <div class="scroll-area">
+    <div class="content" id="holdings-content"></div>
+  </div>
+</div>
+
+<!-- ══ HARVEST TAB ════════════════════════════════════════════════════════ -->
+<div id="screen-harvest" class="screen">
+  <div class="header">
+    <div class="header-top">
+      <span class="header-label">Harvest Planner</span>
+      <span id="harvest-headroom" style="font-family:var(--mono);font-size:10px;color:var(--green)"></span>
+    </div>
+    <div class="page-title">Tax Harvest</div>
+    <div class="page-sub">Use ₹1.25L LTCG exemption optimally</div>
+  </div>
+  <div class="scroll-area">
+    <div class="content" id="harvest-content"></div>
+  </div>
+</div>
+
+<!-- ══ BOTTOM NAV ════════════════════════════════════════════════════════ -->
+<nav class="nav">
+  <button class="nav-btn active" id="nav-overview" onclick="showTab('overview')">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </span>
+    <span class="nav-label">Overview</span>
+    <span class="nav-dot"></span>
+  </button>
+  <button class="nav-btn" id="nav-holdings" onclick="showTab('holdings')">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    </span>
+    <span class="nav-label">Holdings</span>
+    <span class="nav-dot"></span>
+  </button>
+  <button class="nav-btn" id="nav-harvest" onclick="showTab('harvest')">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10"/><path d="M12 12C7 12 3 8.5 3 4c4.5 0 9 3 9 8z"/><line x1="12" y1="12" x2="12" y2="22"/></svg>
+    </span>
+    <span class="nav-label">Harvest</span>
+    <span class="nav-dot"></span>
+  </button>
+</nav>
+
+<!-- ══ UPLOAD SHEET ══════════════════════════════════════════════════════ -->
+<div id="upload-overlay"
+  style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
+    display:flex;align-items:flex-end;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .2s"
+  onclick="hideUploadSheet(event)">
+  <div id="upload-sheet"
+    style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:480px;
+      padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));
+      transform:translateY(40px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+      max-height:80vh;overflow-y:auto">
+    <div style="width:36px;height:4px;background:var(--line2);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-family:var(--sans);font-size:18px;font-weight:800;color:var(--ink);margin-bottom:3px">Upload Tradebooks</div>
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:16px;line-height:1.5">
+      Zerodha Kite → Reports → Tradebook → Download CSV
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="upload-area" id="mf-upload-area" onclick="document.getElementById('mf-file').click()">
+        <div class="upload-title">MF Tradebook</div>
+        <div class="upload-sub">Mutual fund purchases &amp; redemptions</div>
+        <div class="upload-ok" id="mf-upload-ok"></div>
+      </div>
+      <input type="file" id="mf-file" accept=".csv" style="display:none" onchange="handleCSV(event,'mf')">
+      <div class="upload-area" id="eq-upload-area" onclick="document.getElementById('eq-file').click()">
+        <div class="upload-title">EQ Tradebook</div>
+        <div class="upload-sub">Stocks &amp; ETF trades</div>
+        <div class="upload-ok" id="eq-upload-ok"></div>
+      </div>
+      <input type="file" id="eq-file" accept=".csv" style="display:none" onchange="handleCSV(event,'eq')">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="clearCSV()" class="btn danger" style="flex:1;border-radius:12px">Clear All</button>
+      <button onclick="hideUploadSheet()" class="btn primary" style="flex:2;border-radius:12px">Done</button>
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--ink4);text-align:center;line-height:1.5">
+      CSV columns expected: symbol, isin, trade_date, trade_type, quantity, price
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════════════════════ -->
+<div id="toast"></div>
+
+<script>
+// ─── Constants ────────────────────────────────────────────────────────────────
+const LTCG_EXEMPT = 125000;
+const STCG_RATE   = 0.20;
+const LTCG_RATE   = 0.10;
+const DEBT_REGEX  = /debt|liquid|money.?market|gilt|bond|credit|overnight|ultra.?short|short.?term|low.?dur|dynamic.?bond|medium.?term|corporate.?bond|banking.?psu|fmp|fixed.?mat/i;
+
+// ─── Utility ──────────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (n == null || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  let s;
+  if      (abs >= 10000000) s = (n / 10000000).toFixed(2) + ' Cr';
+  else if (abs >= 100000)   s = (n / 100000).toFixed(2) + ' L';
+  else if (abs >= 1000)     s = (n / 1000).toFixed(1) + 'k';
+  else                      s = Math.round(n).toString();
+  return '₹' + s;
+}
+function fmtPct(n) { return (n >= 0 ? '+' : '') + (n * 100).toFixed(1) + '%'; }
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+}
+function daysBetween(a, b) {
+  return Math.round((new Date(b) - new Date(a)) / 86400000);
+}
+function toast(msg, dur = 2600) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.transform = 'translateX(-50%) translateY(80px)', dur);
+}
+
+// ─── Financial Year ───────────────────────────────────────────────────────────
+function fyOfDate(date) {
+  const d = new Date(date);
+  return d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1;
+}
+function currentFYYear() {
+  const now = new Date();
+  return now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+}
+function fyLabel(year) {
+  return `FY${String(year).slice(2)}-${String(year + 1).slice(2)}`;
+}
+
+// ─── CSV Parsing ──────────────────────────────────────────────────────────────
+function parseLine(line) {
+  const out = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { out.push(cur.trim()); cur = ''; }
+    else cur += c;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function parseCSV(text) {
+  if (!text) return [];
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = parseLine(lines[0]).map(h =>
+    h.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+  );
+  return lines.slice(1).map(line => {
+    const vals = parseLine(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i] || '').replace(/^"|"$/g, '').trim());
+    return obj;
+  }).filter(r => Object.values(r).some(v => v));
+}
+
+function normaliseTrade(r, source) {
+  const typeRaw = (r.trade_type || r.transaction_type || '').toLowerCase();
+  const isBuy  = typeRaw === 'buy'  || typeRaw === 'purchase';
+  const isSell = typeRaw === 'sell' || typeRaw === 'redemption';
+  if (!isBuy && !isSell) return null;
+
+  const rawDate = r.trade_date || r.order_execution_time || '';
+  if (!rawDate) return null;
+  const date = new Date(rawDate.split(' ')[0]);
+  if (isNaN(date.getTime())) return null;
+
+  const qty   = parseFloat(r.quantity  || r.units || '0');
+  const price = parseFloat(r.price     || r.nav   || '0');
+  if (qty <= 0 || price <= 0) return null;
+
+  const symbol  = (r.symbol || r.trading_symbol || r.scrip_code || r.fund_name || r.scheme_name || '').trim().toUpperCase();
+  const isin    = (r.isin   || '').trim().toUpperCase();
+  const segment = (r.segment || source).toUpperCase();
+
+  if (!symbol && !isin) return null;
+
+  return { symbol, isin, date, type: isBuy ? 'buy' : 'sell', qty, price, source, segment };
+}
+
+// ─── FIFO Engine ──────────────────────────────────────────────────────────────
+function buildPortfolio(trades) {
+  const byKey = {};
+  for (const t of trades) {
+    const key = t.isin || t.symbol;
+    if (!key) continue;
+    if (!byKey[key]) {
+      byKey[key] = {
+        isin: t.isin, symbol: t.symbol, segment: t.segment, source: t.source,
+        buys: [], sells: [], realisedGains: []
+      };
+    }
+    if (t.type === 'buy') {
+      byKey[key].buys.push({ date: t.date, qty: t.qty, price: t.price, remaining: t.qty });
+    } else {
+      byKey[key].sells.push({ date: t.date, qty: t.qty, price: t.price });
+    }
+  }
+
+  for (const key of Object.keys(byKey)) {
+    const e = byKey[key];
+    e.buys.sort( (a, b) => a.date - b.date);
+    e.sells.sort((a, b) => a.date - b.date);
+
+    for (const sell of e.sells) {
+      let qLeft = sell.qty;
+      for (const buy of e.buys) {
+        if (qLeft <= 0) break;
+        if (buy.remaining <= 0) continue;
+        const matched = Math.min(buy.remaining, qLeft);
+        buy.remaining -= matched;
+        qLeft -= matched;
+        const holdDays = daysBetween(buy.date, sell.date);
+        const gain = (sell.price - buy.price) * matched;
+        e.realisedGains.push({
+          buyDate: buy.date, sellDate: sell.date, qty: matched,
+          buyPrice: buy.price, sellPrice: sell.price,
+          gain, holdDays, isLTCG: holdDays > 365, fy: fyOfDate(sell.date)
+        });
+      }
+    }
+  }
+  return byKey;
+}
+
+// ─── Match with wm_state ──────────────────────────────────────────────────────
+function enrichWithWMState(portfolio) {
+  let wm = null;
+  try { wm = JSON.parse(localStorage.getItem('wm_state') || 'null'); } catch (_) {}
+  if (!wm) return portfolio;
+
+  const wmItems = [
+    ...(wm.funds  || []).map(f => ({
+      isin: f.isin || '', name: f.name || f.schemeName || '',
+      nav: (f.units > 0) ? f.current / f.units : 0, type: 'fund'
+    })),
+    ...(wm.stocks || []).map(s => ({
+      isin: '', name: s.name || s.symbol || '', symbol: s.symbol || '',
+      nav: s.price || 0, type: 'stock'
+    })),
+  ];
+
+  for (const key of Object.keys(portfolio)) {
+    const entry = portfolio[key];
+    let match = null;
+    if (entry.isin) match = wmItems.find(w => w.isin && w.isin === entry.isin);
+    if (!match) {
+      const sym = entry.symbol.toLowerCase();
+      match = wmItems.find(w => {
+        const n = (w.name || w.symbol || '').toLowerCase().replace(/\s+/g, '');
+        const s = sym.replace(/\s+/g, '');
+        return n === s || n.startsWith(s) || s.startsWith(n);
+      });
+    }
+    if (match && match.nav > 0) {
+      entry.currentNav   = match.nav;
+      entry.displayName  = match.name || entry.symbol;
+    }
+  }
+  return portfolio;
+}
+
+// ─── Equity detection ─────────────────────────────────────────────────────────
+function isEquity(entry) {
+  if (entry.source === 'eq') return true;
+  const name = (entry.displayName || entry.symbol || '');
+  return !DEBT_REGEX.test(name);
+}
+
+// ─── Unrealised computation ───────────────────────────────────────────────────
+function computeUnrealised(entry) {
+  const nav = entry.currentNav;
+  if (!nav) return null;
+
+  const today = new Date();
+  const activeLots = entry.buys.filter(b => b.remaining > 0.0001);
+  if (!activeLots.length) return null;
+
+  let ltcgGain = 0, stcgGain = 0, totalCost = 0, totalValue = 0, totalQty = 0;
+  let minWaitDays = Infinity;
+
+  for (const lot of activeLots) {
+    const holdDays = daysBetween(lot.date, today);
+    const value = lot.remaining * nav;
+    const cost  = lot.remaining * lot.price;
+    totalCost  += cost;
+    totalValue += value;
+    totalQty   += lot.remaining;
+    const gain  = value - cost;
+    if (holdDays > 365) {
+      ltcgGain += gain;
+    } else {
+      stcgGain += gain;
+      const daysToLTCG = 366 - holdDays;
+      if (daysToLTCG > 0 && daysToLTCG < minWaitDays) minWaitDays = daysToLTCG;
+    }
+  }
+
+  const avgHoldDays = activeLots.reduce(
+    (s, l) => s + daysBetween(l.date, today) * l.remaining, 0
+  ) / totalQty;
+
+  return {
+    ltcgGain, stcgGain,
+    totalGain: ltcgGain + stcgGain,
+    totalCost, totalValue, totalQty, nav,
+    avgHoldDays: Math.round(avgHoldDays),
+    minWaitDays: minWaitDays === Infinity ? null : minWaitDays,
+  };
+}
+
+// ─── Full Analysis ────────────────────────────────────────────────────────────
+function analyse() {
+  const mfText = localStorage.getItem('tax_csv_mf') || '';
+  const eqText = localStorage.getItem('tax_csv_eq') || '';
+
+  const mfTrades = parseCSV(mfText).map(r => normaliseTrade(r, 'mf')).filter(Boolean);
+  const eqTrades = parseCSV(eqText).map(r => normaliseTrade(r, 'eq')).filter(Boolean);
+  const all = [...mfTrades, ...eqTrades];
+  if (!all.length) return null;
+
+  let portfolio = buildPortfolio(all);
+  portfolio = enrichWithWMState(portfolio);
+
+  const fy = currentFYYear();
+  let realisedLTCG = 0, realisedSTCG = 0;
+  let realisedLTCGDebt = 0, realisedSTCGDebt = 0;
+  const holdings = [];
+
+  for (const key of Object.keys(portfolio)) {
+    const entry = portfolio[key];
+    const equity = isEquity(entry);
+
+    // FY realised gains
+    for (const g of entry.realisedGains.filter(g => g.fy === fy)) {
+      if (equity) {
+        if (g.isLTCG) realisedLTCG += Math.max(0, g.gain);
+        else          realisedSTCG += Math.max(0, g.gain);
+      } else {
+        if (g.isLTCG) realisedLTCGDebt += g.gain;
+        else          realisedSTCGDebt += g.gain;
+      }
+    }
+
+    // Unrealised
+    const u = computeUnrealised(entry);
+    if (u) holdings.push({ key, entry, u, equity });
+  }
+
+  const ltcgTaxable  = Math.max(0, realisedLTCG - LTCG_EXEMPT);
+  const ltcgTax      = ltcgTaxable * LTCG_RATE;
+  const stcgTax      = Math.max(0, realisedSTCG) * STCG_RATE;
+  const totalTax     = ltcgTax + stcgTax;
+  const ltcgHeadroom = Math.max(0, LTCG_EXEMPT - realisedLTCG);
+
+  const harvestCandidates = holdings
+    .filter(h => h.equity && h.u.ltcgGain > 0)
+    .sort((a, b) => b.u.ltcgGain - a.u.ltcgGain);
+
+  return {
+    fy, fyLabel: fyLabel(fy),
+    realisedLTCG, realisedSTCG, realisedLTCGDebt, realisedSTCGDebt,
+    ltcgTaxable, ltcgTax, stcgTax, totalTax, ltcgHeadroom,
+    holdings, harvestCandidates, portfolio,
+    hasMF: mfTrades.length > 0, hasEQ: eqTrades.length > 0,
+  };
+}
+
+// ─── Render: Overview ─────────────────────────────────────────────────────────
+function renderOverview(data) {
+  const content = document.getElementById('overview-content');
+  document.getElementById('fy-label').textContent = data ? data.fyLabel : 'Tax Optimizer';
+  document.getElementById('overview-title').textContent = data ? data.fyLabel : 'Overview';
+  document.getElementById('overview-sub').textContent = data
+    ? `${[data.hasMF && 'MF', data.hasEQ && 'EQ'].filter(Boolean).join(' + ')} tradebook loaded`
+    : 'Upload Zerodha tradebooks to analyse';
+
+  if (!data) {
+    content.innerHTML = `
+      <div class="empty fu">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">No Data Yet</div>
+        <div class="empty-sub">Upload your Zerodha Kite MF Tradebook and/or EQ Tradebook CSV to see your tax analysis.</div>
+      </div>
+      <button class="btn primary fu" onclick="showUploadSheet()">↑ Upload Tradebooks</button>
+      <div class="note fu" style="margin-top:0">Kite → Reports → Tradebook → Select FY → Download</div>`;
+    return;
+  }
+
+  const ltcgPct   = Math.min(100, (data.realisedLTCG / LTCG_EXEMPT) * 100);
+  const fillClass = ltcgPct < 60 ? '' : ltcgPct < 90 ? 'warn' : 'danger';
+  const headroomK = Math.round(Math.max(0, LTCG_EXEMPT - data.realisedLTCG) / 1000);
+
+  content.innerHTML = `
+    <div class="card fu">
+      <div class="card-top" style="background:var(--green)"></div>
+      <div class="card-row" style="align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div class="card-label">LTCG Realised — Equity</div>
+          <div class="card-value">${fmt(data.realisedLTCG)}</div>
+        </div>
+        <div style="text-align:right;padding-top:2px">
+          <div class="card-label">Exempt</div>
+          <div style="font-family:var(--mono);font-size:13px;color:var(--green);font-weight:500">₹1.25 L</div>
+        </div>
+      </div>
+      <div class="prog-labels"><span>${Math.round(ltcgPct)}% used</span><span>₹${headroomK}k headroom</span></div>
+      <div class="prog-bg"><div class="prog-fill ${fillClass}" style="width:${ltcgPct}%"></div></div>
+      <div style="margin-top:10px;padding:9px 12px;border-radius:10px;font-family:var(--mono);font-size:11px;
+        ${data.ltcgTax > 0
+          ? 'background:rgba(192,57,43,.08);color:var(--red)'
+          : 'background:rgba(4,120,87,.08);color:var(--green)'}">
+        ${data.ltcgTax > 0
+          ? `Tax on excess LTCG: ${fmt(data.ltcgTax)}`
+          : '✓ Within exemption — no LTCG tax this FY'}
+      </div>
+    </div>
+
+    <div class="stat-grid fu">
+      <div class="stat-card c-${data.realisedSTCG > 0 ? 'red' : 'green'}">
+        <div class="stat-label">STCG Realised</div>
+        <div class="stat-value ${data.realisedSTCG > 0 ? 'red' : ''}">${fmt(data.realisedSTCG)}</div>
+        <div class="stat-sub">Tax: ${fmt(data.stcgTax)}</div>
+      </div>
+      <div class="stat-card c-${data.totalTax > 0 ? 'yellow' : 'green'}">
+        <div class="stat-label">Est. Tax Outflow</div>
+        <div class="stat-value">${fmt(data.totalTax)}</div>
+        <div class="stat-sub">${data.totalTax === 0 ? 'All clear ✓' : 'Equity only'}</div>
+      </div>
+    </div>
+
+    ${(data.realisedLTCGDebt !== 0 || data.realisedSTCGDebt !== 0) ? `
+    <div class="card fu">
+      <div class="card-label" style="margin-bottom:8px">Debt MF — Slab Rate Tax</div>
+      ${data.realisedLTCGDebt !== 0 ? `
+      <div class="card-row" style="margin-bottom:6px">
+        <span style="font-size:11px;color:var(--ink3)">LTCG (Debt)</span>
+        <span style="font-family:var(--mono);font-size:12px">${fmt(data.realisedLTCGDebt)}</span>
+      </div>` : ''}
+      ${data.realisedSTCGDebt !== 0 ? `
+      <div class="card-row">
+        <span style="font-size:11px;color:var(--ink3)">STCG (Debt)</span>
+        <span style="font-family:var(--mono);font-size:12px">${fmt(data.realisedSTCGDebt)}</span>
+      </div>` : ''}
+      <div class="note" style="margin-top:10px">Debt MF gains are taxed at your income slab rate regardless of holding period. Consult your CA.</div>
+    </div>` : ''}
+
+    ${data.ltcgHeadroom > 500 && data.harvestCandidates.length > 0 ? `
+    <div class="card fu">
+      <div class="card-top" style="background:var(--accent)"></div>
+      <div class="card-label" style="margin-bottom:4px">Harvest Opportunity</div>
+      <div style="font-family:var(--sans);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px">
+        Book up to ${fmt(data.ltcgHeadroom)} tax-free
+      </div>
+      <div style="font-size:12px;color:var(--ink3);margin-bottom:12px">
+        You can realise ${fmt(data.ltcgHeadroom)} more in LTCG this FY without paying any tax.
+      </div>
+      <button onclick="showTab('harvest')" class="btn primary">View Harvest Plan →</button>
+    </div>` : data.ltcgHeadroom <= 0 ? `
+    <div class="note fu">₹1.25L LTCG exemption fully used this FY — no further harvest is tax-free.</div>` : ''}
+
+    <button onclick="showUploadSheet()" class="btn fu">↑ Update Tradebooks</button>`;
+}
+
+// ─── Render: Holdings ─────────────────────────────────────────────────────────
+function renderHoldings(data) {
+  const content = document.getElementById('holdings-content');
+  document.getElementById('holdings-count').textContent = data ? `${data.holdings.length} positions` : '';
+
+  if (!data || !data.holdings.length) {
+    content.innerHTML = `<div class="empty fu">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">No Holdings</div>
+      <div class="empty-sub">${!data ? 'Upload tradebooks to see unrealised P&L.' : 'No open positions found in uploaded tradebooks.'}</div>
+    </div>`;
+    return;
+  }
+
+  const today = new Date();
+  const sorted = [...data.holdings].sort(
+    (a, b) => Math.abs(b.u.totalGain) - Math.abs(a.u.totalGain)
+  );
+
+  content.innerHTML = sorted.map(({ entry, u, equity }) => {
+    const name = entry.displayName || entry.symbol;
+    const pct  = u.totalCost > 0 ? u.totalGain / u.totalCost : 0;
+    const avgCostPerUnit = u.totalQty > 0 ? u.totalCost / u.totalQty : 0;
+    const gainPerUnit = u.nav - avgCostPerUnit;
+
+    // Tax estimate if redeemed now (equity only, using remaining headroom)
+    let taxEstimate = 0;
+    if (equity) {
+      const ltcgAboveExempt = Math.max(0, u.ltcgGain - Math.max(0, data.ltcgHeadroom));
+      taxEstimate = (ltcgAboveExempt * LTCG_RATE) + (Math.max(0, u.stcgGain) * STCG_RATE);
+    }
+
+    const showWait = u.minWaitDays !== null && u.minWaitDays <= 60;
+
+    const holdStr = (() => {
+      const d = u.avgHoldDays;
+      if (d >= 365) return `${Math.floor(d/365)}y ${Math.floor((d%365)/30)}m`;
+      return `${Math.floor(d/30)}m ${d%30}d`;
+    })();
+
+    const qtyStr = u.totalQty < 10
+      ? u.totalQty.toFixed(3)
+      : u.totalQty < 1000
+        ? u.totalQty.toFixed(2)
+        : u.totalQty.toFixed(0);
+
+    return `
+      <div class="fund-card fu">
+        <div class="fund-card-hd">
+          <div style="flex:1;min-width:0;padding-right:8px">
+            <div class="fund-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+            ${showWait ? `<div class="wait-badge">⏳ Wait ${u.minWaitDays}d → LTCG</div>` : ''}
+          </div>
+          <span class="type-badge ${equity ? 'badge-eq' : 'badge-debt'}">${equity ? 'Equity' : 'Debt'}</span>
+        </div>
+        <div class="fund-card-bd">
+          <div class="frow">
+            <span class="frow-lbl">Unrealised gain</span>
+            <span class="frow-val ${u.totalGain >= 0 ? 'green' : 'red'}">
+              ${fmt(u.totalGain)} <span style="font-size:10px">(${fmtPct(pct)})</span>
+            </span>
+          </div>
+          <div class="frow">
+            <span class="frow-lbl">LTCG portion</span>
+            <span class="frow-val">${fmt(u.ltcgGain)}</span>
+          </div>
+          <div class="frow">
+            <span class="frow-lbl">STCG portion</span>
+            <span class="frow-val">${fmt(u.stcgGain)}</span>
+          </div>
+          <div class="divider"></div>
+          <div class="frow">
+            <span class="frow-lbl">Units held</span>
+            <span class="frow-val">${qtyStr}</span>
+          </div>
+          <div class="frow">
+            <span class="frow-lbl">Current NAV</span>
+            <span class="frow-val">₹${u.nav.toFixed(2)}</span>
+          </div>
+          <div class="frow">
+            <span class="frow-lbl">Avg hold period</span>
+            <span class="frow-val">${holdStr}</span>
+          </div>
+          ${equity ? `
+          <div class="divider"></div>
+          <div class="frow">
+            <span class="frow-lbl">Tax if redeemed now</span>
+            <span class="frow-val ${taxEstimate > 0 ? 'red' : 'green'}">${taxEstimate > 0 ? fmt(taxEstimate) : '₹0'}</span>
+          </div>` : `
+          <div class="divider"></div>
+          <div style="font-size:11px;color:var(--ink3)">Debt MF: gains taxed at slab rate</div>`}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── Render: Harvest ──────────────────────────────────────────────────────────
+function renderHarvest(data) {
+  const content = document.getElementById('harvest-content');
+  const hdEl = document.getElementById('harvest-headroom');
+
+  if (!data || !data.harvestCandidates.length) {
+    hdEl.textContent = '';
+    content.innerHTML = `<div class="empty fu">
+      <div class="empty-icon">🌾</div>
+      <div class="empty-title">No Harvest Needed</div>
+      <div class="empty-sub">${!data
+        ? 'Upload tradebooks first.'
+        : data.ltcgHeadroom <= 0
+          ? 'LTCG exemption fully used this FY.'
+          : 'No equity holdings with unrealised LTCG found.'
+      }</div>
+    </div>`;
+    return;
+  }
+
+  hdEl.textContent = `${fmt(data.ltcgHeadroom)} free`;
+
+  let remaining = data.ltcgHeadroom;
+  const items = [];
+
+  for (const { entry, u } of data.harvestCandidates) {
+    if (remaining <= 0) break;
+    const name = entry.displayName || entry.symbol;
+    const canHarvest = Math.min(u.ltcgGain, remaining);
+    remaining -= canHarvest;
+
+    const avgCost = u.totalQty > 0 ? u.totalCost / u.totalQty : 0;
+    const gainPerUnit = u.nav - avgCost;
+    const unitsNeeded = gainPerUnit > 0 ? canHarvest / gainPerUnit : 0;
+    const valueToRedeem = unitsNeeded * u.nav;
+
+    items.push(`
+      <div class="harvest-item fu">
+        <div class="harvest-name">${name}</div>
+        <div class="harvest-row">
+          <span class="harvest-lbl">Unrealised LTCG</span>
+          <span class="harvest-val">${fmt(u.ltcgGain)}</span>
+        </div>
+        <div class="harvest-row">
+          <span class="harvest-lbl">Harvest amount</span>
+          <span class="harvest-val green">${fmt(canHarvest)}</span>
+        </div>
+        ${gainPerUnit > 0 ? `
+        <div class="harvest-row">
+          <span class="harvest-lbl">~Units to redeem</span>
+          <span class="harvest-val">${unitsNeeded.toFixed(3)}</span>
+        </div>
+        <div class="harvest-row">
+          <span class="harvest-lbl">~Redemption value</span>
+          <span class="harvest-val">${fmt(valueToRedeem)}</span>
+        </div>` : ''}
+        <div class="harvest-action">Book ${fmt(canHarvest)} LTCG — zero tax this FY</div>
+      </div>`);
+  }
+
+  const leftover = remaining > 100
+    ? `<div class="note fu">After harvesting above, ₹${Math.round(remaining/1000)}k headroom still remains unused this FY.</div>`
+    : '';
+
+  content.innerHTML = `
+    <div class="card fu">
+      <div class="card-label" style="margin-bottom:6px">How Tax Harvesting Works</div>
+      <div style="font-size:12px;color:var(--ink3);line-height:1.6">
+        Redeem equity MF/stocks with long-term gains, then immediately reinvest at today's price.
+        This resets your cost basis. Up to ₹1.25L of LTCG is tax-free each year —
+        if you don't use this exemption, it lapses. Harvesting is most effective in
+        March before the FY ends.
+      </div>
+    </div>
+    ${items.join('')}
+    ${leftover}
+    <div class="note fu" style="margin-top:0">
+      ⚠ Verify units &amp; exit loads before redeeming. ELSS funds have a 3-year lock-in. Consult your advisor for large redemptions.
+    </div>`;
+}
+
+// ─── Tab Navigation ───────────────────────────────────────────────────────────
+let _analysis = null;
+
+function showTab(tab) {
+  ['overview', 'holdings', 'harvest'].forEach(t => {
+    document.getElementById(`screen-${t}`)?.classList.toggle('active', t === tab);
+    document.getElementById(`nav-${t}`)?.classList.toggle('active', t === tab);
+  });
+}
+
+// ─── Upload Sheet ─────────────────────────────────────────────────────────────
+function showUploadSheet() {
+  const overlay = document.getElementById('upload-overlay');
+  const sheet   = document.getElementById('upload-sheet');
+  overlay.style.opacity = '1';
+  overlay.style.pointerEvents = 'all';
+  sheet.style.transform = 'translateY(0)';
+  refreshUploadUI();
+}
+
+function hideUploadSheet(e) {
+  if (e && e.target !== document.getElementById('upload-overlay')) return;
+  const overlay = document.getElementById('upload-overlay');
+  const sheet   = document.getElementById('upload-sheet');
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
+  sheet.style.transform = 'translateY(40px)';
+}
+
+function refreshUploadUI() {
+  const mfDate = localStorage.getItem('tax_mf_uploaded');
+  const eqDate = localStorage.getItem('tax_eq_uploaded');
+  const mfOk   = document.getElementById('mf-upload-ok');
+  const eqOk   = document.getElementById('eq-upload-ok');
+  const mfArea = document.getElementById('mf-upload-area');
+  const eqArea = document.getElementById('eq-upload-area');
+  if (mfDate) { mfOk.textContent = '✓ Uploaded ' + fmtDate(mfDate); mfArea.classList.add('has-file'); }
+  else        { mfOk.textContent = ''; mfArea.classList.remove('has-file'); }
+  if (eqDate) { eqOk.textContent = '✓ Uploaded ' + fmtDate(eqDate); eqArea.classList.add('has-file'); }
+  else        { eqOk.textContent = ''; eqArea.classList.remove('has-file'); }
+}
+
+function handleCSV(event, type) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const text = ev.target.result;
+    try {
+      localStorage.setItem(type === 'mf' ? 'tax_csv_mf' : 'tax_csv_eq', text);
+      localStorage.setItem(type === 'mf' ? 'tax_mf_uploaded' : 'tax_eq_uploaded', new Date().toISOString());
+      refreshUploadUI();
+      refreshAll();
+      toast(`✓ ${type === 'mf' ? 'MF' : 'EQ'} tradebook loaded — ${parseCSV(text).length} rows`);
+    } catch (_) {
+      toast('✗ File too large — try a smaller date range');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function clearCSV() {
+  ['tax_csv_mf','tax_csv_eq','tax_mf_uploaded','tax_eq_uploaded'].forEach(k => localStorage.removeItem(k));
+  refreshUploadUI();
+  refreshAll();
+  hideUploadSheet();
+  toast('Tradebooks cleared');
+}
+
+// ─── Main Refresh ─────────────────────────────────────────────────────────────
+function refreshAll() {
+  _analysis = analyse();
+  renderOverview(_analysis);
+  renderHoldings(_analysis);
+  renderHarvest(_analysis);
+}
+
+// ─── Theme ─────────────────────────────────────────────────────────────────────
+(function initTheme() {
+  const saved = localStorage.getItem('abode_theme');
+  const sys   = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const theme = saved || sys;
+  document.documentElement.setAttribute('data-theme', theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = theme === 'dark' ? '#0f0f0e' : '#ffffff';
+})();
+
+// ─── Service Worker ───────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    const typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+    if (!typing) window.location.reload();
+    else document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') window.location.reload();
+    }, { once: true });
+  });
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────────
+refreshUploadUI();
+refreshAll();
+</script>
+</body>
+</html>
