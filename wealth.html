@@ -449,6 +449,18 @@ html[data-theme="dark"] .health-track{stroke:var(--line);}
 }
 .theme-btn:hover{background:var(--line);}
 .theme-btn:active{opacity:.7;}
+/* Alert & delta badges in dark */
+html[data-theme="dark"] .alert-badge.bad{background:rgba(224,90,78,.12);color:var(--red);}
+html[data-theme="dark"] .alert-badge.ok{background:rgba(46,168,120,.12);color:var(--green);}
+html[data-theme="dark"] .delta-badge.gain{background:rgba(46,168,120,.12);color:var(--green);}
+html[data-theme="dark"] .delta-badge.loss{background:rgba(224,90,78,.12);color:var(--red);}
+/* Primary action buttons in dark — ink background becomes light, invert text */
+html[data-theme="dark"] .btn-save{color:var(--bg);}
+html[data-theme="dark"] .fab{color:var(--bg);}
+/* Fund tint rows in dark — reduce background tint opacity */
+html[data-theme="dark"] .fund-row.tint-red{background:rgba(224,90,78,.06);}
+html[data-theme="dark"] .fund-row.tint-yellow{background:rgba(212,144,10,.06);}
+html[data-theme="dark"] .fund-row.tint-blue{background:rgba(77,128,230,.06);}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -1678,7 +1690,7 @@ function showToast(msg) {
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'toast';
-    toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);border:1px solid var(--line2);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.15)';
+    toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);border:1px solid var(--line2);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.15)';
     document.body.appendChild(toast);
   }
   toast.textContent = msg;

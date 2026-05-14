@@ -383,15 +383,21 @@ html[data-theme="dark"] .budget-row{border-bottom-color:var(--gray-200);}
 html[data-theme="dark"] .budget-bar-bg{background:var(--gray-200);}
 /* Destination view card */
 html[data-theme="dark"] .dest-view-card{border-color:var(--gray-200);}
-html[data-theme="dark"] .dest-view-head{background:var(--gray-800);color:var(--gray-50);}
+html[data-theme="dark"] .dest-view-head{background:var(--gray-200);color:var(--gray-800);}
+html[data-theme="dark"] .dest-view-dates{color:rgba(34,34,34,0.55);}
 html[data-theme="dark"] .dest-view-body{background:var(--gray-100);}
 /* Share modal & viewer */
 html[data-theme="dark"] .viewer-bar{border-bottom-color:rgba(255,255,255,0.1);}
 html[data-theme="dark"] .viewer-close{background:rgba(255,255,255,0.15);}
 /* Empty states */
 html[data-theme="dark"] .empty-state{color:var(--gray-600);}
-/* Weather card — keeps dark-on-dark look, just adjust */
-html[data-theme="dark"] .weather-card{background:var(--gray-800);color:var(--gray-50);}
+/* Weather card — light in dark mode so fix white text */
+html[data-theme="dark"] .weather-card{background:var(--gray-200);color:var(--gray-800);}
+html[data-theme="dark"] .weather-dest{color:rgba(34,34,34,0.5);}
+html[data-theme="dark"] .weather-desc{color:rgba(34,34,34,0.8);}
+html[data-theme="dark"] .weather-feels{color:rgba(34,34,34,0.5);}
+html[data-theme="dark"] .weather-stats{border-top-color:rgba(34,34,34,0.12);}
+html[data-theme="dark"] .w-stat-label{color:rgba(34,34,34,0.4);}
 /* dividers */
 html[data-theme="dark"] hr{border-color:var(--gray-200);}
 /* Theme toggle */
